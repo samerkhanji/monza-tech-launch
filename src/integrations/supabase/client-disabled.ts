@@ -52,7 +52,23 @@ class MockSupabaseClient {
               data: filtered.slice(0, count),
               error: null
             });
-          }
+          },
+          order: (column: string, options?: { ascending?: boolean }) => ({
+            limit: (count: number): Promise<MockSupabaseResponse> => {
+              const data = this.dataStorage.get(table) || [];
+              const filtered = data.filter(item => item[column] === value);
+              const sorted = [...filtered].sort((a, b) => {
+                if (options?.ascending === false) {
+                  return b[column] > a[column] ? 1 : -1;
+                }
+                return a[column] > b[column] ? 1 : -1;
+              });
+              return Promise.resolve({
+                data: sorted.slice(0, count),
+                error: null
+              });
+            }
+          })
         }),
         order: (column: string, options?: { ascending?: boolean }) => ({
           limit: (count: number): Promise<MockSupabaseResponse> => {
