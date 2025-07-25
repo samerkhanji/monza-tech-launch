@@ -1,0 +1,328 @@
+import React, { useEffect, Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
+import { QueryClient } from '@/contexts/QueryContext';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import Layout from '@/components/layout/Layout';
+import { TutorialProvider } from './contexts/TutorialContext';
+import TutorialModal from './components/TutorialModal';
+import { CarDataProvider } from './contexts/CarDataContext';
+import LoadingSpinner from './components/ui/loading-spinner';
+import GlobalKeyboardShortcuts from './components/GlobalKeyboardShortcuts';
+import { initPerformanceMonitoring, preloadCriticalResources, markAppInteractive } from '@/utils/performance';
+
+// Date Picker Fix - Override problematic CSS to make date pickers functional
+const DatePickerFixStyles = () => (
+  <style>
+    {`
+      /* OVERRIDE: Reset all problematic date input styling */
+      input[type="date"]::-webkit-calendar-picker-indicator {
+        display: block !important;
+        opacity: 1 !important;
+        width: 20px !important;
+        height: 20px !important;
+        background: transparent !important;
+        color: #666 !important;
+        cursor: pointer !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        outline: none !important;
+        visibility: visible !important;
+        position: static !important;
+        right: auto !important;
+        top: auto !important;
+        z-index: auto !important;
+        margin-left: 4px !important;
+      }
+
+      /* Ensure date inputs are fully functional */
+      input[type="date"] {
+        cursor: pointer !important;
+        position: relative !important;
+        background-color: white !important;
+        color: #000 !important;
+      }
+
+      /* PDI date inputs specifically */
+      input[type="date"].pdi-date-input,
+      input[type="date"].calendar-fix,
+      input[type="date"].mt-1,
+      input[type="date"].w-full {
+        background-color: white !important;
+        color: #000 !important;
+        cursor: pointer !important;
+      }
+
+      /* Firefox date picker */
+      input[type="date"]::-moz-calendar-picker {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        cursor: pointer !important;
+      }
+
+      /* Enhanced focus state */
+      input[type="date"]:focus {
+        outline: 2px solid #3b82f6 !important;
+        outline-offset: 2px !important;
+        border-color: #3b82f6 !important;
+      }
+    `}
+  </style>
+);
+
+// Lazy load all route components to improve LCP
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const CarInventory = lazy(() => import('@/pages/CarInventory'));
+const Repairs = lazy(() => import('@/pages/Repairs'));
+const Inventory = lazy(() => import('@/pages/InventoryGarage'));
+const ScanVIN = lazy(() => import('@/pages/ScanVIN'));
+const ScanPart = lazy(() => import('@/pages/ScanPart'));
+const Sales = lazy(() => import('@/pages/Sales'));
+const Analytics = lazy(() => import('@/pages/Analytics'));
+const Reports = lazy(() => import('@/pages/Reports'));
+const EmployeeManagement = lazy(() => import('@/pages/EmployeeManagement'));
+const EmployeeProfile = lazy(() => import('@/pages/EmployeeProfile'));
+const EmployeeAnalytics = lazy(() => import('@/pages/EmployeeAnalytics'));
+const UserManagement = lazy(() => import('@/pages/UserManagement'));
+const Login = lazy(() => import('@/pages/Login'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
+const RequestCenter = lazy(() => import('@/pages/RequestCenter'));
+const NewRequest = lazy(() => import('@/pages/RequestCenter/NewRequest'));
+const OrderedCars = lazy(() => import('@/pages/OrderedCars'));
+const OrderedParts = lazy(() => import('@/pages/OrderedParts'));
+const ShippingETA = lazy(() => import('@/pages/ShippingETA'));
+const RepairHistory = lazy(() => import('@/pages/RepairHistory'));
+const EnhancedRepairHistory = lazy(() => import('@/pages/EnhancedRepairHistory'));
+const InventoryHistory = lazy(() => import('@/pages/InventoryHistory'));
+const InventoryFloor2 = lazy(() => import('@/pages/InventoryFloor2'));
+const GarageSchedule = lazy(() => import('@/pages/GarageSchedule'));
+const FinancialDashboardPage = lazy(() => import('@/pages/FinancialDashboard'));
+const Calendar = lazy(() => import('@/pages/Calendar'));
+const BusinessCalendar = lazy(() => import('@/pages/BusinessCalendar'));
+const MarketingCalendar = lazy(() => import('@/pages/MarketingCalendar'));
+const ApiDocumentation = lazy(() => import('@/pages/ApiDocumentation'));
+const ApiKeyManagement = lazy(() => import('@/pages/ApiKeyManagement'));
+const ShowroomFloor1Page = lazy(() => import('@/pages/ShowroomFloor1'));
+const ShowroomFloor2Page = lazy(() => import('@/pages/ShowroomFloor2'));
+const OwnerFinances = lazy(() => import('@/pages/OwnerFinances'));
+const QualityControl = lazy(() => import('@/pages/QualityControl'));
+const AuditLogPage = lazy(() => import('@/pages/AuditLog'));
+const EmployeeAuditPage = lazy(() => import('@/pages/EmployeeAudit'));
+const SystemSettings = lazy(() => import('@/pages/SystemSettings'));
+const CarFinancial = lazy(() => import('@/pages/CarFinancial'));
+const GarageCarInventory = lazy(() => import('@/pages/GarageCarInventory'));
+const UserActivityDashboard = lazy(() => import('@/pages/UserActivityDashboard'));
+const DataLinkingSummaryPage = lazy(() => import('@/pages/DataLinkingSummary'));
+const TestDriveLogsPage = lazy(() => import('@/pages/TestDriveLogs'));
+const NewCarArrivals = lazy(() => import('@/pages/NewCarArrivals'));
+const ShowroomInventory = lazy(() => import('@/pages/ShowroomInventory'));const NewCarArrivals = lazy(() => import('@/pages/NewCarArrivals'));
+const ShowroomInventory = lazy(() => import('@/pages/ShowroomInventory'));
+const NewCarArrivals = lazy(() => import('@/pages/NewCarArrivals'));
+const ShowroomInventory = lazy(() => import('@/pages/ShowroomInventory'));
+
+// Add error logging for debugging
+window.addEventListener('error', (event) => {
+  console.error('Global error caught:', event.error);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+});
+
+// Loading fallback component for better UX
+const RouteLoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <LoadingSpinner size="lg" />
+  </div>
+);
+
+function AppContent() {
+  console.log('AppContent component rendering...');
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    // Temporarily disable performance monitoring to fix performance issues
+    // const cleanupPerformanceMonitoring = initPerformanceMonitoring({
+    //   logToConsole: false,
+    //   onMetric: (metric) => {
+    //     if (process.env.NODE_ENV === 'development' && metric.rating === 'poor') {
+    //       console.warn(`Poor performance - ${metric.name}: ${metric.value.toFixed(2)}ms (${metric.rating})`);
+    //     }
+    //   }
+    // });
+
+    // Mark app as interactive immediately to prevent delays
+    markAppInteractive();
+
+    // return () => {
+    //   cleanupPerformanceMonitoring();
+    // };
+  }, []);
+
+  useEffect(() => {
+    if (user?.id) {
+      // Initialize the old tour service (we will replace this)
+      // tourService.init(navigate);
+      // if (!tourService.hasCompletedTour()) {
+      //   setTimeout(() => {
+      //     tourService.start();
+      //   }, 500);
+      // }
+    }
+  }, [user, navigate]);
+
+  return (
+    <ErrorBoundary>
+      <QueryClient>
+              <ErrorBoundary>
+                <NotificationProvider>
+                  <ErrorBoundary>
+                    <Suspense fallback={<RouteLoadingFallback />}>
+                      <Routes>
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/" element={<Layout />}>
+                          <Route index element={<Dashboard />} />
+                          <Route path="dashboard" element={<Dashboard />} />
+                          <Route path="car-inventory" element={<CarInventory />} />
+                          <Route path="repairs" element={<Repairs />} />
+                          <Route path="inventory" element={<Inventory />} />
+                          <Route path="inventory-floor-2" element={<InventoryFloor2 />} />
+                          <Route path="inventory-history" element={<InventoryHistory />} />
+                          <Route path="scan-vin" element={<ScanVIN />} />
+                          <Route path="scan-part" element={<ScanPart />} />
+                          <Route path="sales" element={<Sales />} />
+                          <Route path="analytics" element={<Analytics />} />
+                          <Route path="reports" element={<Reports />} />
+                          <Route path="employee-management" element={<EmployeeManagement />} />
+                          <Route path="employee-profile" element={<EmployeeProfile />} />
+                          <Route path="employee-analytics" element={<EmployeeAnalytics />} />
+                          <Route path="user-management" element={<UserManagement />} />
+                          <Route path="requests" element={<RequestCenter />} />
+                          <Route path="requests/new" element={<NewRequest />} />
+                          <Route path="ordered-cars" element={<OrderedCars />} />
+                          <Route path="ordered-parts" element={<OrderedParts />} />
+                          <Route path="shipping-eta" element={<ShippingETA />} />
+                          <Route path="repair-history" element={<RepairHistory />} />
+                          <Route path="enhanced-repair-history" element={<EnhancedRepairHistory />} />
+                          <Route path="garage-schedule" element={<GarageSchedule />} />
+                          <Route path="calendar" element={<Calendar />} />
+                          <Route path="business-calendar" element={<BusinessCalendar />} />
+                          <Route path="marketing-calendar" element={<MarketingCalendar />} />
+                          <Route path="api-documentation" element={<ApiDocumentation />} />
+                          <Route path="api-key-management" element={<ApiKeyManagement />} />
+                          <Route path="showroom-floor-1" element={<ShowroomFloor1Page />} />
+                          <Route path="showroom-floor-2" element={<ShowroomFloor2Page />} />
+                          <Route path="financial-dashboard" element={<FinancialDashboardPage />} />
+                          <Route path="car-financial" element={<CarFinancial />} />
+                          <Route path="finances" element={<OwnerFinances />} />
+                          <Route path="quality-control" element={<QualityControl />} />
+                          <Route path="audit-log" element={<AuditLogPage />} />
+                          <Route path="employee-audit/:userId" element={<EmployeeAuditPage />} />
+                          <Route path="system-settings" element={<SystemSettings />} />
+                          <Route path="garage-car-inventory" element={<GarageCarInventory />} />
+                          <Route path="user-activity-dashboard" element={<UserActivityDashboard />} />
+                          <Route path="data-linking-summary" element={<DataLinkingSummaryPage />} />
+                          <Route path="test-drive-logs" element={<TestDriveLogsPage />} />
+                          <Route path="new-car-arrivals" element={<NewCarArrivals />} />
+                          <Route path="showroom-inventory" element={<ShowroomInventory />} />                          <Route path="new-car-arrivals" element={<NewCarArrivals />} />
+                          <Route path="showroom-inventory" element={<ShowroomInventory />} />
+                          <Route path="new-car-arrivals" element={<NewCarArrivals />} />
+                          <Route path="showroom-inventory" element={<ShowroomInventory />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Route>
+                      </Routes>
+                    </Suspense>
+                    <Toaster />
+              {/* The TourButton is the old tutorial trigger, we will replace this functionality */}
+              {/* <TourButton /> */}
+                  </ErrorBoundary>
+                </NotificationProvider>
+              </ErrorBoundary>
+      </QueryClient>
+    </ErrorBoundary>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <style>
+        {`
+          /* CRITICAL FIX: Date Picker Functionality - Override problematic CSS */
+          input[type="date"]::-webkit-calendar-picker-indicator {
+            display: block !important;
+            opacity: 1 !important;
+            width: 20px !important;
+            height: 20px !important;
+            background: transparent !important;
+            color: #666 !important;
+            cursor: pointer !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            outline: none !important;
+            visibility: visible !important;
+            position: static !important;
+            right: auto !important;
+            top: auto !important;
+            z-index: auto !important;
+            margin-left: 4px !important;
+          }
+
+          /* Ensure date inputs are fully functional */
+          input[type="date"] {
+            cursor: pointer !important;
+            position: relative !important;
+            background-color: white !important;
+            color: #000 !important;
+          }
+
+          /* PDI date inputs specifically */
+          input[type="date"].pdi-date-input,
+          input[type="date"].calendar-fix,
+          input[type="date"].mt-1,
+          input[type="date"].w-full {
+            background-color: white !important;
+            color: #000 !important;
+            cursor: pointer !important;
+          }
+
+          /* Firefox date picker */
+          input[type="date"]::-moz-calendar-picker {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            cursor: pointer !important;
+          }
+
+          /* Enhanced focus and hover states */
+          input[type="date"]:focus {
+            outline: 2px solid #3b82f6 !important;
+            outline-offset: 2px !important;
+            border-color: #3b82f6 !important;
+          }
+
+          input[type="date"]:hover {
+            border-color: #94a3b8 !important;
+          }
+        `}
+      </style>
+      <AuthProvider>
+        <CarDataProvider>
+          <TutorialProvider>
+            <AppContent />
+            <TutorialModal />
+            <GlobalKeyboardShortcuts />
+          </TutorialProvider>
+        </CarDataProvider>
+      </AuthProvider>
+    </Router>
+  );
+}
+
+export default App;

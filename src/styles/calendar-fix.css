@@ -1,0 +1,41 @@
+/* 
+ * REASONABLE CALENDAR POSITIONING FIX
+ * Essential rules needed to make calendars work properly without overlapping forms
+ */
+
+/* Make date inputs have white backgrounds */
+input[type="date"] {
+  background: white !important;
+}
+
+/* Style the calendar icon with white background and border */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 4px !important;
+  padding: 2px !important;
+  opacity: 1 !important;
+}
+
+/* Make calendar popup appear above dialogs with reasonable z-index */
+[data-radix-dialog-content] input[type="date"]::-webkit-calendar-picker-indicator {
+  z-index: 1060 !important;
+}
+
+/* Make React Calendar popovers appear above dialogs with reasonable z-index */
+[data-radix-popover-content] {
+  z-index: 1050 !important;
+  background: white !important;
+}
+
+/* Allow calendar popups to overflow dialog boundaries */
+[data-radix-dialog-content] {
+  overflow: visible !important;
+}
+
+/* Utility class for problematic date inputs */
+.calendar-fix::-webkit-calendar-picker-indicator {
+  z-index: 1060 !important;
+  background: white !important;
+  opacity: 1 !important;
+} 

@@ -1,0 +1,164 @@
+/* NOTIFICATION LAYOUT FIXES */
+
+/* Ensure notification dialogs have proper spacing */
+[data-radix-dialog-content] .notification-content {
+  max-height: calc(90vh - 140px) !important;
+  overflow-y: auto !important;
+  padding: 1rem !important;
+}
+
+/* Improve button layout in notification headers */
+.notification-header-buttons {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+/* Ensure "Mark All Read" button always fits */
+.notification-mark-all-read {
+  white-space: nowrap !important;
+  min-width: fit-content !important;
+  flex-shrink: 0 !important;
+}
+
+/* Responsive layout for notification filters */
+.notification-filters {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+}
+
+@media (min-width: 640px) {
+  .notification-filters {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .notification-filters {
+    gap: 1rem !important;
+  }
+}
+
+/* Ensure search input doesn't overflow */
+.notification-search {
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+
+/* Button group styling for notification actions */
+.notification-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+/* Ensure proper spacing in notification cards */
+.notification-card {
+  margin-bottom: 0.5rem !important;
+}
+
+.notification-card:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Improve notification dropdown layout */
+.notification-dropdown {
+  max-width: 24rem !important;
+  min-width: 20rem !important;
+}
+
+@media (max-width: 640px) {
+  .notification-dropdown {
+    max-width: calc(100vw - 2rem) !important;
+    min-width: auto !important;
+  }
+}
+
+/* Ensure notification badges don't overflow */
+.notification-badge {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100px !important;
+}
+
+/* Improve notification content scrolling */
+.notification-scroll-area {
+  max-height: 60vh !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #cbd5e1 #f1f5f9 !important;
+}
+
+.notification-scroll-area::-webkit-scrollbar {
+  width: 8px !important;
+}
+
+.notification-scroll-area::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 4px !important;
+}
+
+.notification-scroll-area::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-radius: 4px !important;
+}
+
+.notification-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .notification-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+  
+  .notification-actions {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+  
+  .notification-search {
+    width: 100% !important;
+  }
+}
+
+/* Ensure buttons don't wrap awkwardly */
+.notification-button {
+  white-space: nowrap !important;
+  min-width: fit-content !important;
+}
+
+/* Improve spacing for notification items */
+.notification-item {
+  padding: 0.75rem !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.notification-item:last-child {
+  border-bottom: none !important;
+}
+
+/* Ensure proper text wrapping in notifications */
+.notification-text {
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Improve notification dialog responsiveness */
+@media (max-width: 640px) {
+  [data-radix-dialog-content] {
+    max-width: 95vw !important;
+    width: 95vw !important;
+    margin: 1rem !important;
+  }
+} 

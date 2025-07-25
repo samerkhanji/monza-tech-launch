@@ -1,0 +1,194 @@
+/* Dialog Sizing and Scrolling Fixes */
+
+/* Global Dialog Content Improvements */
+[data-radix-dialog-content] {
+  max-width: min(95vw, 1200px) !important;
+  width: 95vw !important;
+  max-height: 95vh !important;
+  overflow: hidden !important;
+}
+
+/* PDI Dialog Specific Fixes */
+.pdi-dialog [data-radix-dialog-content] {
+  max-width: min(95vw, 1400px) !important;
+  width: 95vw !important;
+  max-height: 95vh !important;
+}
+
+/* Car Status Dialog Fixes */
+.car-status-dialog [data-radix-dialog-content] {
+  max-width: min(95vw, 1000px) !important;
+  width: 95vw !important;
+  max-height: 95vh !important;
+}
+
+/* Test Drive Dialog Fixes */
+.test-drive-dialog [data-radix-dialog-content] {
+  max-width: min(95vw, 800px) !important;
+  width: 95vw !important;
+  max-height: 95vh !important;
+}
+
+/* Sticky Headers for All Dialogs */
+[data-radix-dialog-content] > div:first-child {
+  position: sticky !important;
+  top: 0 !important;
+  background: white !important;
+  z-index: 10 !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding-bottom: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Scrollable Content Areas */
+[data-radix-dialog-content] > div:not(:first-child) {
+  overflow-y: auto !important;
+  max-height: calc(95vh - 120px) !important;
+  padding: 0.25rem !important;
+  padding-bottom: 1rem !important;
+}
+
+/* Form Container Improvements */
+.dialog-form-container {
+  max-height: calc(95vh - 140px) !important;
+  overflow-y: auto !important;
+  padding: 0.5rem !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  [data-radix-dialog-content] {
+    max-width: 98vw !important;
+    width: 98vw !important;
+    max-height: 98vh !important;
+    margin: 1vh auto !important;
+  }
+  
+  [data-radix-dialog-content] > div:not(:first-child) {
+    max-height: calc(98vh - 100px) !important;
+  }
+}
+
+/* Ensure Proper Z-Index for Dialog Overlays */
+[data-radix-dialog-overlay] {
+  z-index: 50000 !important;
+}
+
+[data-radix-dialog-content] {
+  z-index: 50001 !important;
+}
+
+/* Fix for Very Long Forms */
+.long-form-dialog [data-radix-dialog-content] {
+  max-height: 98vh !important;
+}
+
+.long-form-dialog [data-radix-dialog-content] > div:not(:first-child) {
+  max-height: calc(98vh - 80px) !important;
+}
+
+/* Custom Scrollbar for Better UX */
+[data-radix-dialog-content] *::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-radix-dialog-content] *::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+[data-radix-dialog-content] *::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+[data-radix-dialog-content] *::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Ensure Footer Buttons Are Always Visible */
+.dialog-footer {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: white !important;
+  border-top: 1px solid #e5e7eb !important;
+  padding-top: 1rem !important;
+  margin-top: 1rem !important;
+  z-index: 10 !important;
+}
+
+/* Fix Input Focus Issues in Dialogs */
+[data-radix-dialog-content] input,
+[data-radix-dialog-content] textarea,
+[data-radix-dialog-content] select {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Enhanced Visual Separation */
+[data-radix-dialog-content] .space-y-6 > * + * {
+  margin-top: 1.5rem !important;
+}
+
+[data-radix-dialog-content] .space-y-4 > * + * {
+  margin-top: 1rem !important;
+}
+
+/* Grid Layout Improvements in Dialogs */
+[data-radix-dialog-content] .grid {
+  gap: 1rem !important;
+}
+
+/* Card Spacing in Dialogs */
+[data-radix-dialog-content] .grid > .card,
+[data-radix-dialog-content] .grid > div > .card {
+  margin-bottom: 1rem !important;
+}
+
+/* Ensure Tab Content is Scrollable */
+[data-radix-tabs-content] {
+  max-height: calc(95vh - 200px) !important;
+  overflow-y: auto !important;
+}
+
+/* Fix for DateTime Inputs */
+.test-drive-dialog input[type="datetime-local"] {
+  min-height: 40px !important;
+  padding: 8px !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+}
+
+/* PDI Checklist Specific Improvements */
+.pdi-checklist-content {
+  max-height: calc(95vh - 140px) !important;
+  overflow-y: auto !important;
+  padding: 1rem !important;
+}
+
+/* Status Selection Improvements */
+.status-selector {
+  min-height: 48px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+
+/* Emergency Improvements for Small Screens */
+@media (max-height: 600px) {
+  [data-radix-dialog-content] {
+    max-height: 95vh !important;
+  }
+  
+  [data-radix-dialog-content] > div:not(:first-child) {
+    max-height: calc(95vh - 60px) !important;
+  }
+}
+
+/* Fix for Nested Dialogs */
+[data-radix-dialog-content][style*="z-index: 99999"] {
+  z-index: 99999 !important;
+}
+
+[data-radix-dialog-overlay][style*="z-index: 99999"] {
+  z-index: 99998 !important;
+} 

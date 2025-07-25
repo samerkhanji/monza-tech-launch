@@ -1,0 +1,647 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* ========================================== */
+/* ULTIMATE SINGLE SCROLLBAR - NUCLEAR SOLUTION */
+/* ========================================== */
+
+/* ========================================== */
+/* DELIVERY DIALOG SCROLLBAR FIX - EMERGENCY  */
+/* ========================================== */
+
+/* Force proper scrolling structure for delivery dialogs */
+[data-radix-dialog-content] {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 95vh !important;
+}
+
+/* Enhanced scrollbar for dialog content areas */
+[data-radix-dialog-content] .overflow-y-auto {
+  scrollbar-width: thin !important;
+  scrollbar-color: #ffd700 #f8fafc !important;
+}
+
+/* Webkit scrollbar styling for dialogs */
+[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar {
+  width: 12px !important;
+  display: block !important;
+}
+
+[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar-track {
+  background: #f8fafc !important;
+  border-radius: 6px !important;
+}
+
+[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ffd700, #ffed4a) !important;
+  border-radius: 6px !important;
+  border: 2px solid #f8fafc !important;
+}
+
+[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ffed4a, #ffd700) !important;
+}
+
+/* Ensure footer buttons are always visible in dialogs */
+[data-radix-dialog-content] .flex-shrink-0 {
+  flex-shrink: 0 !important;
+  position: sticky !important;
+  bottom: 0 !important;
+  background: white !important;
+  z-index: 10 !important;
+}
+
+/* Specific fix for delivery date dialog */
+[data-radix-dialog-content]:has([data-dialog-title*="Set Delivery Date"]) .flex-1 {
+  max-height: calc(95vh - 140px) !important;
+  overflow-y: auto !important;
+  padding-bottom: 20px !important;
+}
+
+/* Mobile responsive dialog fixes */
+@media (max-width: 768px) {
+  [data-radix-dialog-content] {
+    max-height: 100vh !important;
+    height: 100vh !important;
+  }
+  
+  [data-radix-dialog-content] .flex-1 {
+    max-height: calc(100vh - 160px) !important;
+  }
+}
+
+/* STEP 1: COMPLETELY REMOVE ALL SCROLLBARS FROM EVERYTHING */
+*,
+*::before,
+*::after {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* STEP 2: FORCE EVERYTHING TO BE NON-SCROLLABLE */
+*:not(html):not(body) {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* STEP 3: ONLY MAIN PAGE CAN SCROLL */
+html,
+body {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  scrollbar-width: thin !important;
+  -ms-overflow-style: auto !important;
+}
+
+/* STEP 4: BEAUTIFUL SINGLE SCROLLBAR */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: block !important;
+  width: 20px !important;
+  background: #f8fafc !important;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: #f8fafc !important;
+  border-radius: 10px !important;
+  margin: 10px !important;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.1) !important;
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ffd700 0%, #e6c200 50%, #ccad00 100%) !important;
+  border-radius: 10px !important;
+  border: 3px solid #f8fafc !important;
+  min-height: 50px !important;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3) !important;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #e6c200 0%, #ccad00 50%, #b8970d 100%) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+  transform: scale(1.1) !important;
+}
+
+/* STEP 5: REMOVE ALL FIXED HEIGHTS */
+.ScrollArea,
+[data-radix-scroll-area-root],
+[data-radix-scroll-area-viewport],
+.card-scroll-area,
+.overflow-auto,
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-scroll,
+.max-h-96,
+.max-h-80,
+.max-h-64,
+.max-h-48,
+.max-h-32,
+.h-96,
+.h-80,
+.h-64,
+.h-48,
+.h-32,
+.h-\[400px\],
+.h-\[500px\],
+.h-\[600px\],
+.max-h-\[400px\],
+.max-h-\[500px\],
+.max-h-\[600px\],
+.h-\[calc\(100vh-120px\)\] {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* STEP 6: FORCE LAYOUT CONTAINERS TO EXPAND */
+#root,
+.container,
+.dashboard-container,
+.workflow-container,
+.main-container,
+.app-container,
+[data-radix-tabs-content],
+.card,
+.Card,
+.CardContent,
+.space-y-6,
+.space-y-4,
+.space-y-3,
+.flex,
+.flex-col,
+.flex-row,
+.flex-1,
+.grid {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+  flex: none !important;
+}
+
+/* STEP 7: OVERRIDE INLINE STYLES */
+[style*="overflow"],
+[style*="max-height"],
+[style*="height: 100vh"],
+[style*="height: calc"],
+[class*="overflow"],
+[class*="max-h"],
+[class*="h-"] {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* STEP 8: NUCLEAR OVERRIDE FOR ANY REMAINING ELEMENTS */
+div,
+section,
+article,
+main,
+aside,
+nav,
+header,
+footer,
+ul,
+ol,
+li,
+p,
+span,
+table,
+tbody,
+thead,
+tr,
+td,
+th,
+form,
+fieldset {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* STEP 9: MOBILE OPTIMIZATION */
+@media (max-width: 768px) {
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    width: 16px !important;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+  
+  .card,
+  .Card {
+    margin-bottom: 0.5rem !important;
+    padding: 0.75rem !important;
+  }
+}
+
+/* STEP 10: READABLE TEXT */
+.text-xs {
+  font-size: 14px !important;
+}
+
+.text-sm {
+  font-size: 15px !important;
+}
+
+/* STEP 11: PROPER SPACING WITHOUT SCROLL */
+.space-y-2 > * + * {
+  margin-top: 8px !important;
+}
+
+.space-y-4 > * + * {
+  margin-top: 16px !important;
+}
+
+.space-y-6 > * + * {
+  margin-top: 24px !important;
+}
+
+/* STEP 12: DIALOGS GET THEIR OWN SCROLL IF NEEDED */
+[data-radix-dialog-content] {
+  max-width: 90vw !important;
+  width: 90vw !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+[data-radix-dialog-content] * {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+[data-radix-dialog-content]::-webkit-scrollbar {
+  display: block !important;
+  width: 12px !important;
+  background: #f8fafc !important;
+}
+
+[data-radix-dialog-content]::-webkit-scrollbar-track {
+  background: #f8fafc !important;
+  border-radius: 6px !important;
+}
+
+[data-radix-dialog-content]::-webkit-scrollbar-thumb {
+  background: #ffd700 !important;
+  border-radius: 6px !important;
+  border: 2px solid #f8fafc !important;
+}
+
+[data-radix-dialog-content]::-webkit-scrollbar-thumb:hover {
+  background: #e6c200 !important;
+}
+
+/* STEP 13: FINAL ABSOLUTE OVERRIDE */
+* {
+  box-sizing: border-box !important;
+}
+
+*:not(html):not(body):not([data-radix-dialog-content]) {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*:not(html):not(body):not([data-radix-dialog-content])::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Legacy styles for backward compatibility */
+.custom-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+
+.dashboard-container {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+.card-scroll-area {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+.dashboard-card {
+  transition: box-shadow 0.2s ease-out, transform 0.1s ease-out;
+  will-change: transform;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-content {
+  contain: layout style;
+}
+
+/* Custom scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(217, 159, 59, 0.2);
+  border-radius: 20px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(217, 159, 59, 0.4);
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(217, 159, 59, 0.2) transparent;
+}
+
+/* Dashboard Scroll Optimization */
+.dashboard-container {
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Card content scrolling optimization */
+.card-scroll-area {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.card-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.card-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.card-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.8);
+}
+
+/* Optimize card transitions */
+.dashboard-card {
+  transition: box-shadow 0.2s ease-out, transform 0.1s ease-out;
+  will-change: transform;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Prevent layout shift during scrolling */
+.card-content {
+  contain: layout style;
+}
+
+/* Mobile responsiveness for cards */
+@media (max-width: 768px) {
+  .card-scroll-area {
+    max-height: 300px !important;
+  }
+}
+
+/* Large screen optimization */
+@media (min-width: 1024px) {
+  .card-scroll-area {
+    max-height: 600px !important;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-container,
+  .card-scroll-area,
+  .dashboard-card {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}
+
+/* ========================================== */
+/* MINIMAL SCROLLBARS SOLUTION - MAXIMUM 1-2 */
+/* ========================================== */
+
+/* AGGRESSIVE: Remove ALL scroll areas except main page */
+.card-scroll-area,
+.max-h-\[500px\],
+.max-h-\[400px\],
+.max-h-\[300px\],
+.overflow-y-auto:not(body):not(#root),
+.overflow-auto:not(body):not(#root) {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* Force cards to expand naturally */
+.dashboard-card,
+[data-radix-tabs-content],
+.space-y-3,
+.space-y-4,
+.space-y-6 {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* Hide ALL other scrollbars except main page */
+*:not(body):not(#root):not([data-radix-dialog-content])::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+}
+
+*:not(body):not(#root):not([data-radix-dialog-content]) {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* Only allow main page scrolling */
+body, #root {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: 100vh !important;
+}
+
+/* Beautiful main scrollbar */
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar {
+  width: 14px !important;
+  background: #f8fafc !important;
+}
+
+body::-webkit-scrollbar-track,
+#root::-webkit-scrollbar-track {
+  background: #f8fafc !important;
+  border-radius: 7px !important;
+}
+
+body::-webkit-scrollbar-thumb,
+#root::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ffd700 0%, #e6c200 100%) !important;
+  border-radius: 7px !important;
+  border: 2px solid #f8fafc !important;
+}
+
+body::-webkit-scrollbar-thumb:hover,
+#root::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #e6c200 0%, #ccad00 100%) !important;
+}
+
+/* Force content to flow naturally */
+.container {
+  padding: 1rem !important;
+  width: 100% !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* Emergency override for stubborn scroll areas */
+* {
+  box-sizing: border-box !important;
+}
+
+*:not(body):not(#root):not([data-radix-dialog-content]) {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+}
+
+/* ============================================= */
+/* EMERGENCY DELIVERY DIALOG FIX - HIGHEST PRIORITY */
+/* ============================================= */
+
+/* FINAL OVERRIDE: Ensure delivery dialog can scroll */
+[data-radix-dialog-content] {
+  overflow-y: auto !important;
+  max-height: 95vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Show scrollbar ONLY in dialogs */
+[data-radix-dialog-content]::-webkit-scrollbar {
+  display: block !important;
+  width: 16px !important;
+  background: #f8fafc !important;
+}
+
+[data-radix-dialog-content]::-webkit-scrollbar-track {
+  background: #f8fafc !important;
+  border-radius: 8px !important;
+}
+
+[data-radix-dialog-content]::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ffd700, #ffed4a) !important;
+  border-radius: 8px !important;
+  border: 3px solid #f8fafc !important;
+}
+
+[data-radix-dialog-content]::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ffed4a, #ffd700) !important;
+}
+
+/* Ensure content inside dialogs can scroll */
+[data-radix-dialog-content] .flex-1 {
+  overflow-y: auto !important;
+  flex: 1 !important;
+  max-height: calc(95vh - 140px) !important;
+}
+
+/* Force footer to stick at bottom */
+[data-radix-dialog-content] .flex-shrink-0:last-child {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: white !important;
+  z-index: 999 !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.15) !important;
+}
+

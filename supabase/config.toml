@@ -1,0 +1,7 @@
+project_id = "wunqntfreyezylvbzvxc"
+
+[functions.monzabot-gpt]
+verify_jwt = true
+
+[functions.voice-to-text]
+verify_jwt = true

@@ -1,0 +1,79 @@
+/* ===================================== */
+/* DELIVERY DATE DIALOG SCROLLBAR FIX   */
+/* ===================================== */
+
+/* Ensure delivery dialog has proper scrolling */
+.delivery-date-dialog [data-radix-dialog-content] {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 95vh !important;
+  height: 95vh !important;
+  overflow: hidden !important;
+}
+
+/* Fix the scrollable content area in delivery dialog */
+.delivery-date-dialog .flex-1.overflow-y-auto {
+  scrollbar-width: thin !important;
+  scrollbar-color: #ffd700 #f8fafc !important;
+  max-height: calc(95vh - 140px) !important;
+  padding-bottom: 40px !important;
+}
+
+/* Beautiful golden scrollbar for webkit browsers */
+.delivery-date-dialog .flex-1.overflow-y-auto::-webkit-scrollbar {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.delivery-date-dialog .flex-1.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f8fafc !important;
+  border-radius: 6px !important;
+}
+
+.delivery-date-dialog .flex-1.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ffd700, #ffed4a) !important;
+  border-radius: 6px !important;
+  border: 2px solid #f8fafc !important;
+}
+
+.delivery-date-dialog .flex-1.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ffed4a, #ffd700) !important;
+}
+
+/* Make footer sticky and always visible */
+.delivery-date-dialog .border-t.border-gray-200 {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: white !important;
+  z-index: 10 !important;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
+  flex-shrink: 0 !important;
+}
+
+/* Ensure calendar picker doesn't overflow */
+.delivery-date-dialog .calendar-picker {
+  max-height: calc(60vh - 150px) !important;
+  overflow: auto !important;
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 768px) {
+  .delivery-date-dialog [data-radix-dialog-content] {
+    max-height: 100vh !important;
+    height: 100vh !important;
+  }
+  
+  .delivery-date-dialog .flex-1.overflow-y-auto {
+    max-height: calc(100vh - 160px) !important;
+  }
+}
+
+/* Additional clearance for content */
+.delivery-date-dialog .space-y-6:last-child {
+  padding-bottom: 20px !important;
+}
+
+/* Smooth scrolling */
+.delivery-date-dialog * {
+  scroll-behavior: smooth !important;
+} 

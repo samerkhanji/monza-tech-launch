@@ -1,0 +1,142 @@
+/* PDI CHECKLIST SCROLLBAR FIX */
+
+/* Enhanced scrollbar for PDI dialogs */
+.pdi-scroll-container {
+  scrollbar-width: thin !important;
+  scrollbar-color: #ffd700 #f1f5f9 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-gutter: stable !important;
+}
+
+/* Force scrollbar to always show on webkit browsers */
+.pdi-scroll-container::-webkit-scrollbar {
+  width: 16px !important;
+  display: block !important;
+  background: #f1f5f9 !important;
+  border-radius: 0 !important;
+}
+
+/* Webkit scrollbar styling for PDI dialogs */
+.pdi-scroll-container::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 8px !important;
+  margin: 4px !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ffd700, #ffed4a) !important;
+  border-radius: 8px !important;
+  border: 2px solid #f1f5f9 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+  min-height: 40px !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ffed4a, #ffd700) !important;
+  transform: scale(1.02) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(135deg, #fbbf24, #ffd700) !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-corner {
+  background: #f1f5f9 !important;
+}
+
+/* Ensure content has proper spacing for scrollbar */
+.pdi-scroll-container .w-\[1100px\] {
+  margin-right: 8px !important;
+}
+
+/* Smooth scrolling */
+.pdi-scroll-container {
+  scroll-behavior: smooth !important;
+}
+
+/* Mobile responsive scrollbar */
+@media (max-width: 768px) {
+  .pdi-scroll-container::-webkit-scrollbar {
+    width: 12px !important;
+  }
+  
+  .pdi-scroll-container .w-\[1100px\] {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-right: 4px !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .pdi-scroll-container::-webkit-scrollbar-thumb {
+    background: #000000 !important;
+    border: 2px solid #ffffff !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .pdi-scroll-container {
+    scroll-behavior: auto !important;
+  }
+  
+  .pdi-scroll-container::-webkit-scrollbar-thumb:hover {
+    transform: none !important;
+  }
+}
+
+/* PDI Dialog specific improvements */
+[data-radix-dialog-content] .pdi-scroll-container {
+  max-height: calc(95vh - 140px) !important;
+  padding: 1rem !important;
+}
+
+/* Ensure PDI content is properly contained */
+.pdi-content-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Fix for PDI form width on smaller screens */
+@media (max-width: 1200px) {
+  .pdi-content-wrapper .w-\[1100px\] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: auto !important;
+  }
+  
+  .pdi-form-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: auto !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* Ensure PDI form is properly contained and scrollable */
+.pdi-form-container {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+}
+
+/* Improve PDI form responsiveness */
+@media (max-width: 768px) {
+  .pdi-form-container {
+    padding: 1rem !important;
+    font-size: 12px !important;
+  }
+  
+  .pdi-form-container table {
+    font-size: 11px !important;
+  }
+  
+  .pdi-form-container input,
+  .pdi-form-container select {
+    font-size: 11px !important;
+    padding: 4px !important;
+  }
+} 

@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .dialog-content, .DialogContent, .modal-content, .ModalContent {
+    @apply bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6;
+    backdrop-filter: none !important;
+    background-opacity: 100% !important;
+  }
+} 

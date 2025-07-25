@@ -1,0 +1,712 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --monza-yellow: #FFD700;
+  --monza-black: #1a1a1a;
+  --monza-gray: #6b7280;
+  --monza-blue: #3b82f6;
+  --monza-red: #ef4444;
+  --monza-green: #10b981;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+}
+
+@layer components {
+  /* Monza specific color classes */
+  .monza-yellow {
+    color: var(--monza-yellow);
+  }
+  
+  .bg-monza-yellow {
+    background-color: var(--monza-yellow);
+  }
+  
+  .border-monza-yellow {
+    border-color: var(--monza-yellow);
+  }
+  
+  .monza-black {
+    color: var(--monza-black);
+  }
+  
+  .bg-monza-black {
+    background-color: var(--monza-black);
+  }
+  
+  .monza-gray {
+    color: var(--monza-gray);
+  }
+  
+  .bg-monza-gray {
+    background-color: var(--monza-gray);
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--monza-yellow);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #e6c200;
+  }
+
+  /* Enhanced focus styles */
+  .focus-ring-monza:focus {
+    --tw-ring-color: var(--monza-yellow);
+  }
+  
+  .focus-border-monza:focus {
+    border-color: var(--monza-yellow);
+  }
+
+  /* Calendar and DatePicker fixes */
+  .react-day-picker,
+  [data-radix-popper-content-wrapper] {
+    z-index: 9999 !important;
+  }
+  
+  .react-day-picker .rdp-day_selected {
+    background-color: var(--monza-yellow) !important;
+    color: var(--monza-black) !important;
+  }
+  
+  .react-day-picker .rdp-day_today {
+    background-color: rgba(255, 215, 0, 0.2) !important;
+    color: var(--monza-black) !important;
+    font-weight: bold !important;
+  }
+
+  /* SIMPLE CALENDAR FIX - Only what we need */
+  input[type="date"] {
+    background: white !important;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    background: white !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 4px !important;
+    padding: 2px !important;
+    opacity: 1 !important;
+  }
+
+  /* Calendar popup fix for dialogs */
+  [data-radix-dialog-content] input[type="date"]::-webkit-calendar-picker-indicator {
+    position: relative !important;
+    z-index: 999999 !important;
+  }
+
+  /* Popover calendars above dialogs */
+  [data-radix-popover-content] {
+    z-index: 99999 !important;
+    background: white !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  /* Dialog overflow for calendar popups */
+  [data-radix-dialog-content] {
+    overflow: visible !important;
+  }
+
+  /* Dialog and Modal z-index hierarchy - FIXED for calendar transparency */
+  [data-radix-dialog-overlay] {
+    z-index: 90 !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    overflow: visible !important;
+    position: fixed !important;
+  }
+  
+  [data-radix-dialog-content] {
+    z-index: 100 !important;
+    overflow: visible !important;
+    position: relative !important;
+  }
+
+  /* Calendar System Protection - HIGHEST priority for react calendars */
+  .calendar-widget,
+  .date-picker-popup,
+  .rdp,
+  [class*="calendar"],
+  [class*="date-picker"],
+  [data-radix-calendar] {
+    z-index: 99999 !important;
+    background: white !important;
+    position: relative !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  /* Native browser calendar popup window - MAXIMUM priority */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    z-index: 999999 !important;
+    position: relative !important;
+  }
+
+  /* Date input focus state for calendar popup */
+  input[type="date"]:focus,
+  input[type="date"]:active {
+    z-index: 999999 !important;
+    position: relative !important;
+  }
+
+  /* Force calendar popup container to highest level */
+  input[type="date"]:focus::-webkit-calendar-picker-indicator,
+  input[type="date"]:active::-webkit-calendar-picker-indicator {
+    z-index: 9999999 !important;
+  }
+
+  /* ENHANCED: Native date input calendar fixes for transparency issues */
+  input[type="date"] {
+    position: relative !important;
+    z-index: 1000 !important;
+    background: white !important;
+  }
+
+  /* Force date picker calendar to appear above dialogs */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    z-index: 999999 !important;
+    position: relative !important;
+    background: white !important;
+    padding: 4px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+  }
+  
+  input[type="date"]::-webkit-datetime-edit {
+    z-index: 999999 !important;
+    position: relative !important;
+    background: white !important;
+  }
+  
+  input[type="date"]::-webkit-inner-spin-button {
+    z-index: 999999 !important;
+    background: white !important;
+  }
+  
+  /* Chrome/Safari date picker popup container */
+  input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  input[type="date"]::-webkit-calendar-picker-indicator:focus,
+  input[type="date"]::-webkit-calendar-picker-indicator:active {
+    z-index: 9999999 !important;
+    background: #f3f4f6 !important;
+  }
+
+  /* Webkit calendar popup window override */
+  input[type="date"]:focus,
+  input[type="date"]:active {
+    z-index: 999999 !important;
+    position: relative !important;
+  }
+
+  /* Force date input containers in dialogs to allow overflow */
+  [data-radix-dialog-content] input[type="date"] {
+    position: relative !important;
+    z-index: 99999 !important;
+    overflow: visible !important;
+  }
+  
+  [data-radix-dialog-content] input[type="date"]:focus,
+  [data-radix-dialog-content] input[type="date"]:active {
+    z-index: 999999 !important;
+    overflow: visible !important;
+  }
+
+  /* Additional WebKit calendar fixes for transparency */
+  ::-webkit-calendar-picker-indicator {
+    z-index: 999999 !important;
+    position: relative !important;
+    background: white !important;
+    opacity: 1 !important;
+  }
+
+  /* Force all date input components to highest z-index with background */
+  input[type="date"] *,
+  input[type="date"]:before,
+  input[type="date"]:after {
+    z-index: 999999 !important;
+    background: white !important;
+  }
+
+  /* Ensure date picker calendar appears above everything with white background */
+  input[type="date"]::-webkit-calendar-picker-indicator:active,
+  input[type="date"]::-webkit-calendar-picker-indicator:focus {
+    z-index: 9999999 !important;
+    background: white !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  /* Dialog container should allow calendar popup overflow */
+  [data-radix-dialog-content] {
+    overflow: visible !important;
+    position: relative !important;
+  }
+
+  [data-radix-dialog-overlay] {
+    overflow: visible !important;
+    position: fixed !important;
+  }
+
+  /* Force calendar popup to be opaque */
+  input[type="date"]:focus::-webkit-calendar-picker-indicator,
+  input[type="date"]:active::-webkit-calendar-picker-indicator {
+    opacity: 1 !important;
+    background: white !important;
+    border: 1px solid #d1d5db !important;
+  }
+
+  /* Specific fix for webkit calendar popup window */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: none !important;
+    -webkit-filter: none !important;
+    background-color: white !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3e%3cpath fill-rule='evenodd' d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z' clip-rule='evenodd'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 16px 16px !important;
+  }
+
+  /* Button styles with consistent Monza branding */
+  .btn-monza {
+    @apply bg-monza-yellow text-monza-black font-medium px-4 py-2 rounded-md transition-all duration-200 border border-monza-yellow;
+  }
+  
+  .btn-monza:hover {
+    @apply bg-yellow-400 transform scale-105 shadow-lg;
+  }
+
+  .btn-monza-outline {
+    @apply border border-gray-200 bg-white text-gray-700 hover:bg-monza-yellow/10 hover:border-monza-yellow hover:text-monza-black;
+  }
+
+  .btn-success {
+    @apply bg-green-600 text-white hover:bg-green-700 border border-green-600;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 border border-red-600;
+  }
+
+  .btn-warning {
+    @apply bg-yellow-500 text-yellow-900 hover:bg-yellow-600 border border-yellow-500;
+  }
+
+  .btn-info {
+    @apply bg-blue-600 text-white hover:bg-blue-700 border border-blue-600;
+  }
+
+  /* Card shadows */
+  .card-monza {
+    @apply bg-white border border-gray-200 rounded-lg shadow-sm;
+  }
+  
+  .card-monza:hover {
+    @apply shadow-md border-monza-yellow/20;
+  }
+
+  /* Table styling with consistent Monza branding */
+  .table-monza th {
+    @apply bg-gray-100 font-semibold text-gray-900 border-b border-gray-200;
+  }
+  
+  .table-monza tbody tr:hover {
+    @apply bg-monza-yellow/10;
+  }
+
+  .table-monza td {
+    @apply border-b border-gray-100;
+  }
+
+  /* Badge styling with consistent colors */
+  .badge-monza {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .badge-success {
+    @apply bg-monza-yellow/20 text-monza-black border border-monza-yellow/40;
+  }
+  
+  .badge-warning {
+    @apply bg-monza-gray/15 text-monza-gray border border-monza-gray/30;
+  }
+  
+  .badge-info {
+    @apply bg-monza-yellow/15 text-monza-black border border-monza-yellow/30;
+  }
+  
+  .badge-danger {
+    @apply bg-monza-gray/20 text-monza-gray border border-monza-gray/40;
+  }
+
+  .badge-primary {
+    @apply bg-monza-yellow/20 text-monza-black border border-monza-yellow/40;
+  }
+
+  .badge-secondary {
+    @apply bg-monza-gray/10 text-monza-gray border border-monza-gray/20;
+  }
+
+  /* Status-specific badge colors using Monza brand */
+  .status-completed {
+    @apply bg-monza-yellow/20 text-monza-black border border-monza-yellow/40;
+  }
+
+  .status-pending {
+    @apply bg-monza-gray/15 text-monza-gray border border-monza-gray/30;
+  }
+
+  .status-in-progress {
+    @apply bg-monza-yellow/15 text-monza-black border border-monza-yellow/30;
+  }
+
+  .status-cancelled {
+    @apply bg-monza-gray/20 text-monza-gray border border-monza-gray/40;
+  }
+
+  .status-available {
+    @apply bg-monza-yellow/20 text-monza-black border border-monza-yellow/40;
+  }
+
+  .status-reserved {
+    @apply bg-monza-gray/15 text-monza-gray border border-monza-gray/30;
+  }
+
+  .status-sold {
+    @apply bg-monza-gray/20 text-monza-gray border border-monza-gray/40;
+  }
+
+  /* Loading animations */
+  .loading-spinner {
+    @apply animate-spin h-4 w-4 border-2 border-monza-yellow border-t-transparent rounded-full;
+  }
+
+  /* Toast notifications */
+  .toast-success {
+    @apply border-l-4 border-green-500 bg-green-50;
+  }
+  
+  .toast-error {
+    @apply border-l-4 border-red-500 bg-red-50;
+  }
+  
+  .toast-warning {
+    @apply border-l-4 border-yellow-500 bg-yellow-50;
+  }
+
+  .toast-info {
+    @apply border-l-4 border-blue-500 bg-blue-50;
+  }
+
+  /* Modal improvements */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50;
+  }
+  
+  .modal-content {
+    @apply bg-white rounded-lg shadow-xl border border-gray-200 max-h-[90vh] overflow-y-auto;
+  }
+
+  /* Form improvements with Monza styling */
+  .form-group {
+    @apply space-y-2;
+  }
+  
+  .form-label {
+    @apply text-sm font-medium text-monza-black;
+  }
+  
+  .form-input {
+    @apply w-full px-3 py-2 border border-gray-200 rounded-md focus:border-monza-yellow focus:ring-1 focus:ring-monza-yellow;
+  }
+  
+  .form-error {
+    @apply text-sm text-red-600;
+  }
+
+  /* Navigation improvements */
+  .nav-link {
+    @apply px-3 py-2 rounded-md text-sm font-medium transition-colors;
+  }
+  
+  .nav-link:hover {
+    @apply bg-monza-yellow/10 text-monza-black;
+  }
+  
+  .nav-link.active {
+    @apply bg-monza-yellow text-monza-black;
+  }
+
+  /* Action button groups */
+  .action-buttons {
+    @apply flex gap-1 justify-end;
+  }
+
+  .action-buttons .btn-icon {
+    @apply h-8 w-8 p-0;
+  }
+
+  /* Consistent spacing for content areas */
+  .content-section {
+    @apply space-y-6 p-6 bg-gray-50 min-h-screen;
+  }
+
+  .page-header {
+    @apply flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4;
+  }
+
+  .page-title {
+    @apply text-3xl font-bold text-monza-black tracking-tight;
+  }
+
+  .page-subtitle {
+    @apply text-gray-600 mt-1;
+  }
+
+  /* Consistent table styling across all pages */
+  .table-container {
+    @apply bg-white rounded-lg border shadow-sm overflow-x-auto;
+  }
+
+  .table-header {
+    @apply bg-gray-50 border-b;
+  }
+
+  .table-row {
+    @apply hover:bg-monza-yellow/5 transition-colors;
+  }
+
+  .table-cell {
+    @apply px-4 py-3 text-sm;
+  }
+
+  .table-cell-header {
+    @apply px-4 py-3 text-sm font-semibold text-monza-black;
+  }
+}
+
+@layer utilities {
+  /* Responsive improvements */
+  @media (max-width: 640px) {
+    .container {
+      @apply px-4;
+    }
+    
+    .table-responsive {
+      @apply overflow-x-auto;
+    }
+    
+    .btn-stack {
+      @apply flex flex-col space-y-2 w-full;
+    }
+    
+    .btn-stack button {
+      @apply w-full;
+    }
+  }
+
+  /* Dropdown menu z-index fix with consistent styling */
+  .dropdown-menu {
+    z-index: 1000;
+    background: white;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+  }
+
+  .dropdown-menu-item {
+    @apply px-3 py-2 text-sm text-gray-700 hover:bg-monza-yellow/10 hover:text-monza-black cursor-pointer transition-colors;
+  }
+
+  /* Enhanced accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Print styles */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+    
+    .print-full-width {
+      width: 100% !important;
+    }
+  }
+
+  /* Consistent focus states across the app */
+  input:focus, select:focus, textarea:focus, button:focus {
+    outline: 2px solid var(--monza-yellow);
+    outline-offset: 2px;
+  }
+
+  /* Consistent disabled states */
+  .disabled, [disabled] {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  /* ========================================
+   COMPREHENSIVE Z-INDEX HIERARCHY SYSTEM
+   Prevents ALL transparency/overlay issues
+   ======================================== */
+
+  /* Base z-index levels:
+     1-9: Normal content
+     10-49: Fixed headers, sidebars
+     50-89: Overlays, tooltips
+     90-99: Modal backgrounds
+     100-999: Modal content
+     1000-9999: Calendars, dropdowns in modals
+     10000+: Critical system overlays
+     100000+: Native browser calendars
+  */
+
+  /* Tooltip System */
+  [data-radix-tooltip-content] {
+    z-index: 5000 !important;
+  }
+
+  /* Select/Dropdown System */
+  [data-radix-select-content] {
+    z-index: 8000 !important;
+    background: white !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  [data-radix-select-viewport] {
+    z-index: 8000 !important;
+  }
+
+  /* Dropdown Menu System */
+  [data-radix-dropdown-menu-content] {
+    z-index: 8500 !important;
+  }
+
+  /* Context Menu System */
+  [data-radix-context-menu-content] {
+    z-index: 8500 !important;
+  }
+
+  /* Toast/Notification System */
+  [data-radix-toast-viewport] {
+    z-index: 10000 !important;
+  }
+
+  [data-radix-toast] {
+    z-index: 10000 !important;
+  }
+
+  /* Sheet/Sidebar System */
+  [data-radix-sheet-overlay] {
+    z-index: 95 !important;
+  }
+
+  [data-radix-sheet-content] {
+    z-index: 105 !important;
+  }
+
+  /* Portal Content */
+  [data-portal] {
+    z-index: 9999 !important;
+  }
+
+  /* Prevent Background Scroll */
+  body[data-scroll-locked] {
+    overflow: hidden !important;
+  }
+
+  /* Emergency Override Class */
+  .force-top-layer {
+    z-index: 999999 !important;
+    position: relative !important;
+  }
+
+  /* Calendar Fix Utility Class - Apply this to any problematic date inputs */
+  .calendar-fix {
+    position: relative !important;
+    z-index: 999999 !important;
+  }
+  
+  .calendar-fix::-webkit-calendar-picker-indicator {
+    z-index: 999999 !important;
+    background: white !important;
+    opacity: 1 !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 4px !important;
+    padding: 2px !important;
+  }
+  
+  .calendar-fix:focus::-webkit-calendar-picker-indicator,
+  .calendar-fix:active::-webkit-calendar-picker-indicator {
+    z-index: 99999999 !important;
+    background: #f9fafb !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Dialog Date Input Override - Automatically applies to all date inputs in dialogs */
+  [data-radix-dialog-content] input[type="date"] {
+    position: relative !important;
+    z-index: 999999 !important;
+  }
+  
+  [data-radix-dialog-content] input[type="date"]::-webkit-calendar-picker-indicator {
+    z-index: 99999999 !important;
+    background: white !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 4px !important;
+    padding: 2px !important;
+  }
+
+  /* Universal date input failsafe - applies to ALL date inputs */
+  input[type="date"] {
+    background: white !important;
+    position: relative !important;
+  }
+  
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    background: white !important;
+    opacity: 1 !important;
+    position: relative !important;
+  }
+
+  /* Custom Component Protection */
+  .modal,
+  .popup,
+  .overlay,
+  .dropdown,
+  .tooltip {
+    z-index: inherit !important;
+  }
+
+  /* Enhanced Modal Content */
+  .modal-content,
+  .dialog-content {
+    overflow: visible !important;
+    z-index: inherit !important;
+  }
+
+  /* ======================================== */
+}

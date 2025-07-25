@@ -1,0 +1,72 @@
+/* Date Picker Fix - Override problematic CSS */
+
+/* Reset all problematic date input styling */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: block !important;
+  opacity: 1 !important;
+  width: 20px !important;
+  height: 20px !important;
+  background: transparent !important;
+  color: #666 !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+  visibility: visible !important;
+  position: static !important;
+  right: auto !important;
+  top: auto !important;
+  z-index: auto !important;
+  margin-left: 4px !important;
+}
+
+/* Ensure date inputs are fully functional */
+input[type="date"] {
+  cursor: pointer !important;
+  position: relative !important;
+  background-color: white !important;
+  color: #000 !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+/* PDI date inputs specifically */
+input[type="date"].pdi-date-input,
+input[type="date"].calendar-fix,
+input[type="date"].mt-1,
+input[type="date"].w-full {
+  background-color: white !important;
+  color: #000 !important;
+  cursor: pointer !important;
+}
+
+/* Firefox date picker */
+input[type="date"]::-moz-calendar-picker {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+}
+
+/* Enhanced focus state */
+input[type="date"]:focus {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  border-color: #3b82f6 !important;
+}
+
+/* Hover state for better UX */
+input[type="date"]:hover {
+  border-color: #94a3b8 !important;
+}
+
+/* Remove spinner buttons */
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-outer-spin-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+  visibility: hidden !important;
+}

@@ -1,0 +1,235 @@
+/* Component-specific styles - separated from main index.css for better performance */
+
+/* ========================================
+   COMPREHENSIVE CALENDAR & DATE PICKER FIXES
+   ======================================== */
+
+/* Base calendar widget styling */
+.react-day-picker,
+.rdp,
+.calendar-widget,
+.date-picker-popup,
+[class*="calendar"],
+[class*="date-picker"],
+[data-radix-calendar],
+[data-radix-popper-content-wrapper] {
+  z-index: 1050 !important;
+  background: white !important;
+  position: relative !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  padding: 16px !important;
+  margin: 4px !important;
+}
+
+/* Calendar within dialogs - special handling */
+[data-radix-dialog-content] .react-day-picker,
+[data-radix-dialog-content] .rdp,
+[data-radix-dialog-content] .calendar-widget,
+[data-radix-dialog-content] [class*="calendar"] {
+  z-index: 1060 !important;
+  background: white !important;
+  position: relative !important;
+  overflow: visible !important;
+  border: 2px solid var(--monza-yellow) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  padding: 16px !important;
+  margin: 8px 0 !important;
+}
+
+/* Calendar selected day styling */
+.react-day-picker .rdp-day_selected,
+.rdp-day_selected {
+  background-color: var(--monza-yellow) !important;
+  color: var(--monza-black) !important;
+  font-weight: bold !important;
+  border-radius: 6px !important;
+}
+
+/* Calendar today styling */
+.react-day-picker .rdp-day_today,
+.rdp-day_today {
+  background-color: rgba(255, 215, 0, 0.2) !important;
+  color: var(--monza-black) !important;
+  font-weight: bold !important;
+  border: 2px solid var(--monza-yellow) !important;
+  border-radius: 6px !important;
+}
+
+/* Calendar navigation buttons */
+.react-day-picker .rdp-nav_button,
+.rdp-nav_button {
+  background: var(--monza-yellow) !important;
+  color: var(--monza-black) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: bold !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-day-picker .rdp-nav_button:hover,
+.rdp-nav_button:hover {
+  background: var(--monza-yellow-darker) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Calendar day cells */
+.react-day-picker .rdp-day,
+.rdp-day {
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.react-day-picker .rdp-day:hover,
+.rdp-day:hover {
+  background-color: rgba(255, 215, 0, 0.1) !important;
+  color: var(--monza-black) !important;
+}
+
+/* Calendar header */
+.react-day-picker .rdp-caption,
+.rdp-caption {
+  font-weight: bold !important;
+  font-size: 16px !important;
+  color: var(--monza-black) !important;
+  margin-bottom: 16px !important;
+}
+
+/* ========================================
+   DIALOG & MODAL OPTIMIZATIONS
+   ======================================== */
+
+/* Universal Dialog Fixes for Better Sizing and Scrolling */
+[data-radix-dialog-content] {
+  max-width: min(95vw, 1200px) !important;
+  width: 95vw !important;
+  max-height: 95vh !important;
+  overflow: hidden !important;
+}
+
+/* Make dialog headers sticky */
+[data-radix-dialog-content] > div:first-child {
+  position: sticky !important;
+  top: 0 !important;
+  background: white !important;
+  z-index: 10 !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding-bottom: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Make dialog content scrollable */
+[data-radix-dialog-content] > div:not(:first-child) {
+  overflow-y: auto !important;
+  max-height: calc(95vh - 120px) !important;
+  padding: 0.25rem !important;
+  padding-bottom: 1rem !important;
+}
+
+/* Custom scrollbar styling */
+[data-radix-dialog-content] *::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-radix-dialog-content] *::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+[data-radix-dialog-content] *::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+[data-radix-dialog-content] *::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ========================================
+   FORM & INPUT OPTIMIZATIONS
+   ======================================== */
+
+/* Date input optimizations */
+input[type="date"] {
+  cursor: pointer !important;
+  position: relative !important;
+  background-color: white !important;
+  color: #000 !important;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer !important;
+  opacity: 1 !important;
+  width: 20px !important;
+  height: 20px !important;
+  background: transparent !important;
+  color: #666 !important;
+  margin-left: 4px !important;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-outer-spin-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Enhanced focus state for better usability */
+input[type="date"]:focus {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  border-color: #3b82f6 !important;
+}
+
+/* ========================================
+   RESPONSIVE OPTIMIZATIONS
+   ======================================== */
+
+/* Mobile responsive improvements */
+@media (max-width: 768px) {
+  [data-radix-dialog-content] {
+    max-width: 98vw !important;
+    width: 98vw !important;
+    max-height: 98vh !important;
+    margin: 1vh auto !important;
+  }
+  
+  [data-radix-dialog-content] > div:not(:first-child) {
+    max-height: calc(98vh - 100px) !important;
+  }
+
+  /* Mobile calendar improvements */
+  .react-day-picker,
+  .rdp,
+  [data-radix-dialog-content] .react-day-picker,
+  [data-radix-dialog-content] .rdp {
+    padding: 12px !important;
+    margin: 4px 0 !important;
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screens */
+  .react-day-picker .rdp-day,
+  .rdp-day {
+    padding: 8px !important;
+    font-size: 12px !important;
+  }
+
+  .react-day-picker .rdp-nav_button,
+  .rdp-nav_button {
+    width: 28px !important;
+    height: 28px !important;
+  }
+} 

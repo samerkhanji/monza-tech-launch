@@ -1,0 +1,43 @@
+/* DELIVERY DIALOG SCROLLBAR FIX */
+
+/* Force proper scrolling structure for delivery dialogs */
+[data-radix-dialog-content] {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 95vh !important;
+}
+
+/* Enhanced scrollbar for main content area */
+.overflow-y-auto {
+  scrollbar-width: thin !important;
+  scrollbar-color: #ffd700 #f8fafc !important;
+}
+
+/* Webkit scrollbar styling */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 12px !important;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f8fafc !important;
+  border-radius: 6px !important;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ffd700, #ffed4a) !important;
+  border-radius: 6px !important;
+  border: 2px solid #f8fafc !important;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ffed4a, #ffd700) !important;
+}
+
+/* Ensure footer buttons are always visible */
+.flex-shrink-0 {
+  flex-shrink: 0 !important;
+  position: sticky !important;
+  bottom: 0 !important;
+  background: white !important;
+  z-index: 10 !important;
+} 

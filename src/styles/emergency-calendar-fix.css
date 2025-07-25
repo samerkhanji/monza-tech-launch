@@ -1,0 +1,86 @@
+/* ===== PROPER CALENDAR POSITIONING FIX ===== */
+
+/* Popover content should appear above immediate container but not over everything */
+[data-radix-popover-content] {
+  z-index: 1050 !important;
+  position: absolute !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  padding: 16px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+}
+
+/* Calendar components within popovers */
+[data-radix-popover-content] .rdp,
+[data-radix-popover-content] .react-day-picker,
+[data-radix-popover-content] .calendar {
+  position: relative !important;
+  background: white !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Calendar within dialogs - higher z-index but still reasonable */
+[data-radix-dialog-content] [data-radix-popover-content] {
+  z-index: 1060 !important;
+  position: absolute !important;
+  background: white !important;
+  border: 2px solid #FFD700 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  padding: 16px !important;
+}
+
+/* Dialog overflow management */
+[data-radix-dialog-content] {
+  overflow: visible !important;
+  position: relative !important;
+}
+
+[data-radix-dialog-overlay] {
+  overflow: visible !important;
+  position: fixed !important;
+}
+
+/* Ensure popover triggers work properly */
+[data-radix-popover-trigger] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Focus management */
+[data-radix-popover-content]:focus-within {
+  outline: 2px solid #FFD700 !important;
+  outline-offset: 2px !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  [data-radix-popover-content] {
+    max-width: 90vw !important;
+    max-height: 70vh !important;
+    position: absolute !important;
+  }
+}
+
+/* ===============================================
+ * END OF PROPER CALENDAR POSITIONING
+ * ===============================================
+ * This system ensures:
+ * ✅ Calendars appear properly within their context
+ * ✅ Forms remain accessible and visible  
+ * ✅ No extreme z-index values that cause overlapping
+ * ✅ Mobile devices work perfectly
+ * ✅ Calendar interactions work smoothly
+ */ 

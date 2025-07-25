@@ -1,0 +1,129 @@
+/* Dashboard Scroll Optimization */
+
+/* Main page container - single scroll area */
+.dashboard-container {
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  /* Optimize scrolling on mobile */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Card content scrolling optimization */
+.card-scroll-area {
+  /* Smooth scrolling within cards */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.card-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.card-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.card-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.8);
+}
+
+/* Optimize card transitions */
+.dashboard-card {
+  transition: box-shadow 0.2s ease-out, transform 0.1s ease-out;
+  will-change: transform;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Prevent layout shift during scrolling */
+.card-content {
+  contain: layout style;
+}
+
+/* Mobile responsiveness for cards */
+@media (max-width: 768px) {
+  .card-scroll-area {
+    max-height: 300px; /* Shorter on mobile */
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Large screen optimization */
+@media (min-width: 1024px) {
+  .card-scroll-area {
+    max-height: 600px; /* Taller on desktop */
+  }
+}
+
+/* Performance optimizations */
+.performance-optimized {
+  /* Reduce repaints */
+  backface-visibility: hidden;
+  perspective: 1000px;
+  
+  /* Optimize animations */
+  transform: translate3d(0, 0, 0);
+}
+
+/* Focus states for accessibility */
+.card-scroll-area:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-container,
+  .card-scroll-area,
+  .dashboard-card {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}
+
+/* Loading state optimization */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Print optimizations */
+@media print {
+  .card-scroll-area {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  .dashboard-card {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+} 

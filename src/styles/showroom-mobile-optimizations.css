@@ -1,0 +1,298 @@
+/* ShowroomFloor2 Mobile Optimizations */
+
+/* GPU-accelerated animations for better performance */
+.showroom-card {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Optimized hover effects that don't trigger layout */
+.showroom-card:hover {
+  transform: translateZ(0) scale(1.02);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile-first responsive table */
+@media (max-width: 1023px) {
+  .showroom-table-desktop {
+    display: none;
+  }
+  
+  .showroom-mobile-cards {
+    display: block;
+  }
+}
+
+@media (min-width: 1024px) {
+  .showroom-table-desktop {
+    display: block;
+  }
+  
+  .showroom-mobile-cards {
+    display: none;
+  }
+}
+
+/* Mobile car card optimizations */
+.mobile-car-card {
+  /* Optimize for touch */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  
+  /* Prevent text selection on mobile */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  
+  /* Optimize rendering */
+  contain: layout style paint;
+  
+  /* Smooth animations */
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.mobile-car-card:active {
+  transform: scale(0.98);
+}
+
+/* Touch-friendly button sizing */
+.mobile-action-button {
+  min-height: 44px; /* iOS accessibility guideline */
+  min-width: 44px;
+  padding: 12px 16px;
+  
+  /* Better touch feedback */
+  transition: all 0.15s ease-out;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+.mobile-action-button:active {
+  transform: scale(0.95);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Optimized select dropdown for mobile */
+.mobile-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  
+  /* Better touch target */
+  min-height: 44px;
+  padding: 12px 40px 12px 16px;
+  
+  /* Prevent zoom on iOS */
+  font-size: 16px;
+  
+  /* Custom arrow */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23374151' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+}
+
+/* Mobile dialog optimizations */
+@media (max-width: 640px) {
+  .mobile-dialog {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height */
+    border-radius: 0;
+    max-width: 100vw;
+  }
+  
+  .mobile-dialog-content {
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
+}
+
+/* Performance optimizations */
+.virtualized-list {
+  /* Optimize for scrolling performance */
+  contain: strict;
+  overflow-anchor: none;
+}
+
+/* Badge animations optimization */
+.status-badge {
+  transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+  will-change: transform, opacity;
+}
+
+.status-badge:hover {
+  transform: scale(1.05);
+}
+
+.status-badge:active {
+  transform: scale(0.95);
+}
+
+/* Grid optimizations for different screen sizes */
+.responsive-grid {
+  display: grid;
+  gap: 1rem;
+  
+  /* Mobile first */
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Skeleton loading optimizations */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 2s infinite;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Form optimizations for mobile */
+.mobile-form-input {
+  /* Prevent zoom on iOS */
+  font-size: 16px;
+  
+  /* Better touch targets */
+  min-height: 44px;
+  padding: 12px 16px;
+  
+  /* Smooth focus transitions */
+  transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.mobile-form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Error state styling */
+.mobile-form-input.error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Loading states */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+  .mobile-car-card {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+  }
+  
+  .skeleton {
+    background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+    background-size: 200% 100%;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-car-card,
+  .status-badge,
+  .mobile-action-button {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .mobile-car-card {
+    border-width: 2px;
+    border-color: #000;
+  }
+  
+  .mobile-action-button {
+    border-width: 2px;
+    border-color: #000;
+  }
+}
+
+/* Print styles */
+@media print {
+  .mobile-action-button,
+  .mobile-select {
+    display: none;
+  }
+  
+  .mobile-car-card {
+    break-inside: avoid;
+    border: 1px solid #000;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Performance critical CSS */
+.critical-path {
+  /* Inline critical CSS for above-the-fold content */
+  display: block;
+  visibility: visible;
+}
+
+/* Non-critical CSS that can be loaded asynchronously */
+.non-critical {
+  /* These styles can be loaded after initial paint */
+  contain: layout style paint;
+}
+
+/* Optimize font loading */
+.font-optimized {
+  font-display: swap; /* Show fallback font while loading */
+}
+
+/* Container queries for component-based responsive design */
+@container (min-width: 300px) {
+  .card-container {
+    padding: 1rem;
+  }
+}
+
+@container (min-width: 500px) {
+  .card-container {
+    padding: 1.5rem;
+  }
+} 
