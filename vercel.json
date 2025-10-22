@@ -2,11 +2,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "functions": {
-    "app/api/**/*.js": {
-      "maxDuration": 10
-    }
-  },
   "rewrites": [
     {
       "source": "/(.*)",
@@ -58,6 +53,5 @@
       ]
     }
   ],
-  "regions": ["all"],
-  "crons": []
+  "regions": ["iad1"]
 }
