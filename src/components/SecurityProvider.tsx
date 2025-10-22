@@ -1,6 +1,6 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import { AlertTriangle, Shield, Lock } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert-fixed';
 import securityConfig from '@/utils/securityConfig';
 
 interface SecurityContextType {

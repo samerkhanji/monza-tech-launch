@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useAuth } from "@/contexts/AuthContext";
 import { AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert-fixed";
 
 interface PermissionGuardProps {
   permission: string;

@@ -11,7 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { TermsAgreement } from '@/services/termsService';
 import Logo from '@/components/ui/logo';
 import { useAuth } from '@/contexts/AuthContext';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert-fixed';
 import { Clock, Shield, User, AlertTriangle } from 'lucide-react';
 
 interface TermsAgreementDialogProps {

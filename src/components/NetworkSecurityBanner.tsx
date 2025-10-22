@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert-fixed';
 import { Button } from '@/components/ui/button';
 import { useNetworkSecurity } from '@/hooks/useNetworkSecurity';
 import { Shield, Wifi, AlertTriangle, CheckCircle, XCircle, Settings } from 'lucide-react';
