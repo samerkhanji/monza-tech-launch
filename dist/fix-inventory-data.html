@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Inventory Data - Monza TECH</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-bottom: 30px; text-align: center; }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .status.info { background-color: #e3f2fd; border-color: #2196f3; color: #1565c0; }
+        .status.success { background-color: #e8f5e8; border-color: #4caf50; color: #2e7d32; }
+        .status.error { background-color: #ffebee; border-color: #f44336; color: #c62828; }
+        .status.warning { background-color: #fff3e0; border-color: #ff9800; color: #e65100; }
+        button {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background-color: #1565c0; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #4caf50;
+            transition: width 0.3s ease;
+        }
+        #log {
+            background-color: #1e1e1e;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Inventory Data Display</h1>
+        
+        <div id="status" class="status info">
+            <strong>Issue: Car Inventory showing 0 cars</strong><br>
+            The app reads from 'cars' table but data was uploaded to 'car_inventory' table.<br>
+            This will copy your stock data to the correct table.
+        </div>
+
+        <div id="progress-container" style="display: none;">
+            <div class="progress">
+                <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+            </div>
+            <div id="progress-text">Preparing...</div>
+        </div>
+
+        <button id="checkBtn" onclick="checkTables()">1. Check Current State</button>
+        <button id="fixBtn" onclick="fixInventoryData()" disabled>2. Fix Data Display</button>
+        <button id="verifyBtn" onclick="verifyFix()" disabled>3. Verify Fix</button>
+
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://wunqntfreyezylvbzvxc.supabase.co';
+        let supabase = null;
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${type}] ${message}`);
+        }
+
+        function setStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = `<strong>${message}</strong>`;
+        }
+
+        function updateProgress(percentage, text) {
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            
+            if (percentage > 0) {
+                progressContainer.style.display = 'block';
+                progressBar.style.width = percentage + '%';
+                progressText.textContent = text;
+            } else {
+                progressContainer.style.display = 'none';
+            }
+        }
+
+        async function initSupabase() {
+            if (!supabase) {
+                const anonKey = prompt('Please enter your Supabase ANON KEY:\\n(Get it from: https://supabase.com/dashboard/project/wunqntfreyezylvbzvxc/settings/api)');
+                if (!anonKey) return false;
+                supabase = window.supabase.createClient(SUPABASE_URL, anonKey);
+                log('✅ Supabase client initialized');
+            }
+            return true;
+        }
+
+        async function checkTables() {
+            if (!(await initSupabase())) return;
+
+            log('🔍 Checking current database state...');
+            
+            try {
+                // Check cars table
+                const { data: carsData, error: carsError } = await supabase
+                    .from('cars')
+                    .select('*', { count: 'exact' });
+
+                let carsCount = 0;
+                if (carsError) {
+                    log(`❌ cars table error: ${carsError.message}`);
+                } else {
+                    carsCount = carsData?.length || 0;
+                    log(`📊 cars table: ${carsCount} records`);
+                }
+
+                // Check car_inventory table
+                const { data: inventoryData, error: inventoryError } = await supabase
+                    .from('car_inventory')
+                    .select('*', { count: 'exact' });
+
+                let inventoryCount = 0;
+                if (inventoryError) {
+                    log(`❌ car_inventory table error: ${inventoryError.message}`);
+                } else {
+                    inventoryCount = inventoryData?.length || 0;
+                    log(`📦 car_inventory table: ${inventoryCount} records`);
+                }
+
+                // Determine what to do
+                if (inventoryCount > 0 && carsCount === 0) {
+                    setStatus(`Found ${inventoryCount} vehicles in car_inventory but cars table is empty. Ready to fix!`, 'warning');
+                    document.getElementById('fixBtn').disabled = false;
+                } else if (carsCount > 0) {
+                    setStatus(`cars table already has ${carsCount} records. Check if data is displaying correctly.`, 'success');
+                    document.getElementById('verifyBtn').disabled = false;
+                } else {
+                    setStatus('No data found in either table. Please upload your stock data first.', 'error');
+                }
+
+            } catch (error) {
+                log(`❌ Error checking tables: ${error.message}`);
+                setStatus('Error checking database state', 'error');
+            }
+        }
+
+        async function fixInventoryData() {
+            if (!(await initSupabase())) return;
+
+            const fixBtn = document.getElementById('fixBtn');
+            fixBtn.disabled = true;
+            fixBtn.textContent = 'Fixing...';
+
+            log('🔧 Copying data from car_inventory to cars table...');
+            updateProgress(10, 'Fetching inventory data...');
+
+            try {
+                // Get all data from car_inventory
+                const { data: inventoryData, error: fetchError } = await supabase
+                    .from('car_inventory')
+                    .select('*');
+
+                if (fetchError) {
+                    throw new Error(`Failed to fetch car_inventory: ${fetchError.message}`);
+                }
+
+                if (!inventoryData || inventoryData.length === 0) {
+                    throw new Error('No data found in car_inventory table');
+                }
+
+                log(`📊 Found ${inventoryData.length} vehicles to copy`);
+                updateProgress(25, 'Transforming data structure...');
+
+                // Transform data to match cars table structure
+                const carsData = inventoryData.map(item => ({
+                    vin_number: item.vin,
+                    brand: 'Voyah',
+                    model: item.model,
+                    year: item.model_year,
+                    color: item.color,
+                    category: item.vehicle_type === 'EV' ? 'EV' : 'REV',
+                    status: item.status === 'Available' ? 'in_stock' : 
+                           item.status === 'Sold' ? 'sold' : 
+                           item.status === 'Reserved' ? 'reserved' : 'in_stock',
+                    current_location: item.status === 'Available' ? 'Inventory' : 
+                                    item.status === 'Sold' ? 'Delivered' : 'Reserved',
+                    selling_price: item.selling_price || 50000, // Use existing or default
+                    battery_percentage: 100,
+                    range_km: 520, // Default range
+                    arrival_date: item.created_at || new Date().toISOString(),
+                    customs: 'paid', // Default to paid
+                    notes: [
+                        item.notes,
+                        item.client_name ? `Client: ${item.client_name}` : null,
+                        item.delivery_date ? `Delivery: ${item.delivery_date}` : null,
+                        item.vehicle_warranty_expiry ? `Warranty: ${item.vehicle_warranty_expiry}` : null
+                    ].filter(Boolean).join(' | '),
+                    created_at: item.created_at,
+                    updated_at: item.updated_at || new Date().toISOString()
+                }));
+
+                log(`🔄 Transformed ${carsData.length} records for cars table`);
+                updateProgress(50, 'Uploading to cars table...');
+
+                // Clear existing data in cars table first
+                const { error: deleteError } = await supabase
+                    .from('cars')
+                    .delete()
+                    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+
+                if (deleteError) {
+                    log(`⚠️ Could not clear cars table: ${deleteError.message}`);
+                }
+
+                // Insert in batches
+                const batchSize = 25;
+                let successCount = 0;
+                let errorCount = 0;
+
+                for (let i = 0; i < carsData.length; i += batchSize) {
+                    const batch = carsData.slice(i, i + batchSize);
+                    const batchNum = Math.floor(i/batchSize) + 1;
+                    const totalBatches = Math.ceil(carsData.length / batchSize);
+                    
+                    log(`📤 Uploading batch ${batchNum}/${totalBatches} (${batch.length} vehicles)...`);
+                    updateProgress(50 + (i / carsData.length) * 45, `Uploading batch ${batchNum}/${totalBatches}...`);
+                    
+                    const { data, error } = await supabase
+                        .from('cars')
+                        .insert(batch)
+                        .select();
+
+                    if (error) {
+                        log(`❌ Error in batch ${batchNum}: ${error.message}`);
+                        errorCount += batch.length;
+                    } else {
+                        log(`✅ Successfully uploaded batch ${batchNum}`);
+                        successCount += batch.length;
+                    }
+                }
+
+                updateProgress(100, 'Fix completed!');
+
+                if (successCount > 0) {
+                    log(`🎉 Fix completed successfully!`);
+                    log(`✅ Successfully copied: ${successCount} vehicles`);
+                    log(`❌ Failed uploads: ${errorCount} vehicles`);
+                    
+                    setStatus(`Fix completed! ${successCount} vehicles are now in the cars table. Refresh your Car Inventory page.`, 'success');
+                    document.getElementById('verifyBtn').disabled = false;
+                } else {
+                    throw new Error('No vehicles were successfully copied');
+                }
+
+            } catch (error) {
+                log(`❌ Fix failed: ${error.message}`);
+                setStatus('Fix failed - check console for details', 'error');
+            } finally {
+                fixBtn.disabled = false;
+                fixBtn.textContent = '2. Fix Data Display';
+            }
+        }
+
+        async function verifyFix() {
+            if (!(await initSupabase())) return;
+
+            log('✅ Verifying fix...');
+
+            try {
+                const { data, error } = await supabase
+                    .from('cars')
+                    .select('*', { count: 'exact' });
+
+                if (error) {
+                    throw new Error(`Verification failed: ${error.message}`);
+                }
+
+                const count = data?.length || 0;
+                log(`📊 Verification: cars table now has ${count} records`);
+
+                if (count > 0) {
+                    // Show sample data
+                    const soldCount = data.filter(car => car.status === 'sold').length;
+                    const inStockCount = data.filter(car => car.status === 'in_stock').length;
+                    const reservedCount = data.filter(car => car.status === 'reserved').length;
+
+                    log(`📈 Status breakdown:`);
+                    log(`   💰 Sold: ${soldCount}`);
+                    log(`   📦 In Stock: ${inStockCount}`);
+                    log(`   📋 Reserved: ${reservedCount}`);
+
+                    setStatus(`Verification successful! ${count} vehicles found. Your Car Inventory should now show data.`, 'success');
+                    
+                    log(`🚀 Next steps:`);
+                    log(`1. Go to your Car Inventory page: http://localhost:5173/car-inventory`);
+                    log(`2. Refresh the page if it's already open`);
+                    log(`3. You should now see all your vehicles!`);
+                } else {
+                    setStatus('Verification failed - cars table is still empty', 'error');
+                }
+
+            } catch (error) {
+                log(`❌ Verification error: ${error.message}`);
+                setStatus('Verification failed', 'error');
+            }
+        }
+
+        // Initialize
+        log('🔧 Inventory Fix Tool Ready');
+        log('Click "1. Check Current State" to diagnose the issue');
+    </script>
+</body>
+</html>

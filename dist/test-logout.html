@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Logout Fix</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-bottom: 30px; text-align: center; }
+        .status {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .success { border-color: #28a745; background: #d4edda; }
+        .error { border-color: #dc3545; background: #f8d7da; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Logout Fix Test</h1>
+        
+        <div class="status">
+            <strong>✅ Logout Fix Applied!</strong><br>
+            The logout redirect issue has been fixed by:<br>
+            1. Removing duplicate navigation in Navbar logout<br>
+            2. Fixing mock auth provider to properly clear user<br>
+            3. Letting Layout component handle redirect naturally
+        </div>
+
+        <div class="status success">
+            <strong>🎯 How to Test:</strong><br>
+            1. Go to your main app: <a href="http://localhost:5173/" target="_blank">http://localhost:5173/</a><br>
+            2. Make sure you're logged in<br>
+            3. Click the "Logout" button in the top right<br>
+            4. You should be redirected to login page without "Page Not Found" error
+        </div>
+
+        <div class="status">
+            <strong>🔍 What Was Fixed:</strong><br>
+            <strong>Before:</strong> Logout → Manual navigate to /login → Layout detects no user → Navigate to /login → Conflict/Loop<br>
+            <strong>After:</strong> Logout → Clear user → Layout detects no user → Clean redirect to /login
+        </div>
+
+        <button onclick="window.open('http://localhost:5173/', '_blank')">Test Logout Now</button>
+        <button onclick="showDebugScript()">Show Debug Script</button>
+
+        <div id="debug" style="display: none;">
+            <div class="status">
+                <strong>🐛 Debug Script (Run in Browser Console)</strong><br>
+                If logout still doesn't work, run this in the app's console:
+                <pre style="background: #f1f1f1; padding: 10px; margin: 10px 0; overflow-x: auto;">
+// Check current auth state
+console.log('Current user:', window.React && window.React.useContext ? 'Check React context' : 'React context not available');
+
+// Force logout (if still having issues)
+if (window.location.pathname !== '/login') {
+    console.log('Forcing navigation to login...');
+    window.location.href = '/login';
+}
+
+// Clear any cached auth data
+localStorage.clear();
+sessionStorage.clear();
+console.log('✅ Cleared all storage');
+                </pre>
+            </div>
+        </div>
+
+        <script>
+            function showDebugScript() {
+                const debugDiv = document.getElementById('debug');
+                debugDiv.style.display = debugDiv.style.display === 'none' ? 'block' : 'none';
+            }
+        </script>
+    </div>
+</body>
+</html>

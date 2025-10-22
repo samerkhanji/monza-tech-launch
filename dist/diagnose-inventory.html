@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnose Car Inventory Issue</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-bottom: 30px; text-align: center; }
+        .diagnostic {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .success { border-color: #28a745; background: #d4edda; }
+        .error { border-color: #dc3545; background: #f8d7da; }
+        .warning { border-color: #ffc107; background: #fff3cd; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        #log {
+            background-color: #1e1e1e;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            margin-top: 20px;
+        }
+        .code-block {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Car Inventory Diagnostic Tool</h1>
+        
+        <div class="diagnostic">
+            <strong>🎯 Goal</strong><br>
+            Find out why Car Inventory shows 0 cars and fix it.
+        </div>
+
+        <button onclick="runFullDiagnostic()">🔍 Run Full Diagnostic</button>
+        <button onclick="trySimpleFix()">⚡ Try Simple Fix</button>
+        <button onclick="checkAuthStatus()">🔑 Check Auth Status</button>
+
+        <div id="results"></div>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function showResults(html) {
+            document.getElementById('results').innerHTML = html;
+        }
+
+        async function checkAuthStatus() {
+            log('🔑 Checking authentication status...');
+            
+            try {
+                // Try to access the parent window's context (if opened from the main app)
+                if (window.opener && window.opener.location.origin === window.location.origin) {
+                    log('✅ Opened from main app, checking auth state...');
+                    
+                    // Try to get auth state from parent
+                    const authCheck = `
+                        if (window.supabase) {
+                            window.supabase.auth.getSession().then(({data: {session}}) => {
+                                console.log('Auth session:', session ? 'Authenticated' : 'Not authenticated');
+                                if (session) {
+                                    console.log('User:', session.user.email);
+                                } else {
+                                    console.log('No active session');
+                                }
+                            });
+                        }
+                    `;
+                    
+                    log('Run this in the main app console:');
+                    showResults(`<div class="code-block">${authCheck}</div>`);
+                } else {
+                    log('⚠️ Not opened from main app. Please run diagnostic from Car Inventory page.');
+                    showResults(`
+                        <div class="diagnostic warning">
+                            <strong>⚠️ Authentication Check</strong><br>
+                            Please go to the Car Inventory page and run this in the browser console:<br><br>
+                            <div class="code-block">
+                                // Check auth status
+                                if (window.supabase) {
+                                    window.supabase.auth.getSession().then(({data: {session}}) => {
+                                        console.log('Auth session:', session ? 'Authenticated' : 'Not authenticated');
+                                        if (session) {
+                                            console.log('User:', session.user.email);
+                                        }
+                                    });
+                                } else {
+                                    console.log('Supabase not available');
+                                }
+                            </div>
+                        </div>
+                    `);
+                }
+            } catch (error) {
+                log(`❌ Error checking auth: ${error.message}`);
+            }
+        }
+
+        async function runFullDiagnostic() {
+            log('🔍 Starting full diagnostic...');
+            showResults('');
+            
+            let resultsHtml = '<h3>🔍 Diagnostic Results</h3>';
+            
+            // Check 1: Environment
+            resultsHtml += `
+                <div class="diagnostic">
+                    <strong>🌐 Environment Check</strong><br>
+                    Current URL: ${window.location.href}<br>
+                    Origin: ${window.location.origin}<br>
+                    Expected: http://localhost:5173
+                </div>
+            `;
+            
+            // Check 2: Network connectivity
+            try {
+                const response = await fetch('http://localhost:5173/');
+                if (response.ok) {
+                    resultsHtml += `
+                        <div class="diagnostic success">
+                            <strong>✅ App Server</strong><br>
+                            Development server is running and accessible
+                        </div>
+                    `;
+                } else {
+                    resultsHtml += `
+                        <div class="diagnostic error">
+                            <strong>❌ App Server</strong><br>
+                            Server returned status: ${response.status}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsHtml += `
+                    <div class="diagnostic error">
+                        <strong>❌ App Server</strong><br>
+                        Cannot connect to development server: ${error.message}
+                    </div>
+                `;
+            }
+            
+            // Check 3: Supabase connectivity
+            try {
+                const supabaseUrl = 'https://wunqntfreyezylvbzvxc.supabase.co';
+                const healthCheck = await fetch(`${supabaseUrl}/rest/v1/`, {
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1bnFudGZyZXllenlsdmJ6dnhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NDE4MDIsImV4cCI6MjA2MzMxNzgwMn0.AphXufXZef_wAvVT3TXl2s_JQwbI9wK6KN2uCQgVc5o'
+                    }
+                });
+                
+                if (healthCheck.ok) {
+                    resultsHtml += `
+                        <div class="diagnostic success">
+                            <strong>✅ Supabase Connection</strong><br>
+                            Supabase is accessible
+                        </div>
+                    `;
+                } else {
+                    resultsHtml += `
+                        <div class="diagnostic warning">
+                            <strong>⚠️ Supabase Connection</strong><br>
+                            Status: ${healthCheck.status} - May need authentication
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsHtml += `
+                    <div class="diagnostic error">
+                        <strong>❌ Supabase Connection</strong><br>
+                        Cannot connect to Supabase: ${error.message}
+                    </div>
+                `;
+            }
+            
+            // Recommendations
+            resultsHtml += `
+                <div class="diagnostic">
+                    <strong>💡 Next Steps</strong><br>
+                    1. Make sure you're logged into the main app<br>
+                    2. Try the "Simple Fix" button below<br>
+                    3. Check browser console for detailed errors<br>
+                    4. Verify you have proper permissions in the app
+                </div>
+            `;
+            
+            showResults(resultsHtml);
+            log('✅ Diagnostic complete');
+        }
+
+        async function trySimpleFix() {
+            log('⚡ Attempting simple fix...');
+            
+            showResults(`
+                <div class="diagnostic warning">
+                    <strong>⚡ Simple Fix Attempt</strong><br>
+                    This will try common solutions to get your inventory showing.<br><br>
+                    
+                    <strong>Method 1: Browser Console Script</strong><br>
+                    Go to Car Inventory page and run this in console:<br>
+                    <div class="code-block">
+// Force refresh inventory data
+if (window.location.pathname.includes('car-inventory')) {
+    // Try to refresh the page component
+    window.location.reload();
+} else {
+    // Navigate to car inventory
+    window.location.href = '/car-inventory';
+}
+                    </div><br>
+                    
+                    <strong>Method 2: Direct Navigation</strong><br>
+                    Try these links in order:<br>
+                    <a href="http://localhost:5173/" target="_blank">1. Main App Dashboard</a><br>
+                    <a href="http://localhost:5173/car-inventory" target="_blank">2. Car Inventory Page</a><br><br>
+                    
+                    <strong>Method 3: Clear Cache</strong><br>
+                    1. Press Ctrl+Shift+R (hard refresh)<br>
+                    2. Clear browser cache<br>
+                    3. Restart browser<br><br>
+                    
+                    <strong>Method 4: Check Login Status</strong><br>
+                    Make sure you're logged in as one of the Monza employees:<br>
+                    - Houssam (Owner)<br>
+                    - Samer (Owner)<br>
+                    - Kareem (Owner)<br>
+                    - Mark (Garage Manager)<br>
+                </div>
+            `);
+            
+            log('📋 Simple fix instructions displayed');
+        }
+
+        // Initialize
+        log('🔍 Car Inventory Diagnostic Tool Ready');
+        log('Click "Run Full Diagnostic" to check your system');
+    </script>
+</body>
+</html>

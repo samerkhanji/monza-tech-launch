@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Showroom Floor 2</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .secondary {
+            background: #6b7280;
+        }
+        .secondary:hover {
+            background: #4b5563;
+        }
+        .danger {
+            background: #ef4444;
+        }
+        .danger:hover {
+            background: #dc2626;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .data-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Showroom Floor 2</h1>
+        
+        <div class="info">
+            <strong>🔍 DIAGNOSTIC TOOL:</strong> This will help us understand exactly what data exists and where it's coming from.
+        </div>
+        
+        <button onclick="fullDiagnostic()" class="primary">🔍 FULL DIAGNOSTIC</button>
+        <button onclick="checkFloor2Data()" class="secondary">🏢 Check Floor 2 Data</button>
+        <button onclick="checkAllCarData()" class="secondary">🚗 Check All Car Data</button>
+        <button onclick="clearEverything()" class="danger">💥 CLEAR EVERYTHING</button>
+        <button onclick="goToFloor2()" class="secondary">🏢 Go to Floor 2</button>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function fullDiagnostic() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            let html = '<h2>🔍 FULL DIAGNOSTIC REPORT</h2>';
+            
+            // Check all localStorage keys
+            const allKeys = Object.keys(localStorage);
+            html += `<div class="info"><strong>📊 Total localStorage keys:</strong> ${allKeys.length}</div>`;
+            
+            // Check car-related keys
+            const carKeys = allKeys.filter(key => 
+                key.toLowerCase().includes('car') ||
+                key.toLowerCase().includes('showroom') ||
+                key.toLowerCase().includes('floor') ||
+                key.toLowerCase().includes('inventory')
+            );
+            
+            html += `<div class="warning"><strong>🚗 Car-related keys (${carKeys.length}):</strong></div>`;
+            carKeys.forEach(key => {
+                const value = localStorage.getItem(key);
+                let data = [];
+                try {
+                    data = JSON.parse(value);
+                } catch (e) {
+                    data = [value];
+                }
+                
+                html += `<div class="data-item">
+                    <strong>${key}:</strong> ${Array.isArray(data) ? data.length + ' items' : 'string data'}
+                    ${Array.isArray(data) && data.length > 0 ? `<br>Sample: ${JSON.stringify(data[0]).substring(0, 100)}...` : ''}
+                </div>`;
+            });
+            
+            // Check specifically for showroomFloor2Cars
+            const floor2Cars = localStorage.getItem('showroomFloor2Cars');
+            if (floor2Cars) {
+                const cars = JSON.parse(floor2Cars);
+                html += `<div class="error">
+                    <strong>🚨 SHOWROOM FLOOR 2 CARS FOUND (${cars.length}):</strong>
+                    <pre>${JSON.stringify(cars, null, 2)}</pre>
+                </div>`;
+            } else {
+                html += `<div class="success">✅ No showroomFloor2Cars found</div>`;
+            }
+            
+            // Check for any other keys that might contain floor 2 data
+            const floor2Keys = allKeys.filter(key => 
+                key.toLowerCase().includes('floor2') || 
+                key.toLowerCase().includes('floor 2') ||
+                key.toLowerCase().includes('showroom2')
+            );
+            
+            if (floor2Keys.length > 0) {
+                html += `<div class="warning">
+                    <strong>🏢 Other Floor 2 related keys:</strong>
+                    <br>${floor2Keys.join(', ')}
+                </div>`;
+            }
+            
+            // Check sessionStorage
+            const sessionKeys = Object.keys(sessionStorage);
+            if (sessionKeys.length > 0) {
+                html += `<div class="info">
+                    <strong>📋 SessionStorage keys (${sessionKeys.length}):</strong>
+                    <br>${sessionKeys.join(', ')}
+                </div>`;
+            }
+            
+            status.innerHTML = html;
+        }
+        
+        function checkFloor2Data() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            const floor2Cars = localStorage.getItem('showroomFloor2Cars');
+            if (floor2Cars) {
+                const cars = JSON.parse(floor2Cars);
+                status.innerHTML = `
+                    <div class="error">
+                        <strong>🚨 SHOWROOM FLOOR 2 DATA FOUND:</strong>
+                        <br>• Number of cars: ${cars.length}
+                        <br>• Cars: ${cars.map(car => `${car.model} (${car.vinNumber})`).join(', ')}
+                        <pre>${JSON.stringify(cars, null, 2)}</pre>
+                    </div>
+                `;
+            } else {
+                status.innerHTML = `
+                    <div class="success">
+                        <strong>✅ NO SHOWROOM FLOOR 2 DATA FOUND</strong>
+                        <br>The showroomFloor2Cars key does not exist in localStorage.
+                    </div>
+                `;
+            }
+        }
+        
+        function checkAllCarData() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            const carKeys = [
+                'carInventory',
+                'showroomFloor1Cars',
+                'showroomFloor2Cars',
+                'garageCars',
+                'inventoryFloor2Cars',
+                'realCarData',
+                'mockCarData'
+            ];
+            
+            let html = '<h3>🚗 All Car Data Sources:</h3>';
+            
+            carKeys.forEach(key => {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        html += `<div class="warning">
+                            <strong>${key}:</strong> ${Array.isArray(parsed) ? parsed.length + ' cars' : 'data exists'}
+                        </div>`;
+                    } catch (e) {
+                        html += `<div class="warning">
+                            <strong>${key}:</strong> string data exists
+                        </div>`;
+                    }
+                } else {
+                    html += `<div class="success">✅ ${key}: No data</div>`;
+                }
+            });
+            
+            status.innerHTML = html;
+        }
+        
+        function clearEverything() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            try {
+                // Clear ALL localStorage
+                localStorage.clear();
+                
+                // Clear ALL sessionStorage
+                sessionStorage.clear();
+                
+                // Clear any cached data
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => {
+                            caches.delete(name);
+                        });
+                    });
+                }
+                
+                status.innerHTML = `
+                    <div class="success">
+                        <strong>💥 EVERYTHING CLEARED!</strong>
+                        <br>• All localStorage cleared
+                        <br>• All sessionStorage cleared
+                        <br>• All browser cache cleared
+                        <br><br><strong>✅ The app should now be completely empty!</strong>
+                    </div>
+                `;
+                
+                // Force reload after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '/showroom-floor-2';
+                }, 3000);
+                
+            } catch (error) {
+                status.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Clear failed:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function goToFloor2() {
+            window.location.href = '/showroom-floor-2';
+        }
+        
+        // Auto-run diagnostic on page load
+        window.onload = function() {
+            fullDiagnostic();
+        };
+    </script>
+</body>
+</html> 

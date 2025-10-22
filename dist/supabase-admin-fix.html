@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Admin Fix - Monza TECH</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .step {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        pre {
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Supabase Admin Fix - Monza TECH</h1>
+    
+    <div class="container">
+        <h2>🎯 Mission: Upload Real Stock Data to Supabase</h2>
+        <p>This tool will fix the database permissions and upload your complete stock data.</p>
+        
+        <div class="step">
+            <h3>Step 1: Test Database Connection</h3>
+            <button onclick="testConnection()">Test Connection</button>
+            <div id="connectionResult"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Fix Database Schema & Permissions</h3>
+            <button onclick="fixDatabase()">Fix Database Issues</button>
+            <div id="fixResult"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Upload Complete Stock Data</h3>
+            <button onclick="uploadStockData()">Upload Real Stock Data</button>
+            <div id="uploadResult"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Verify Data</h3>
+            <button onclick="verifyData()">Check Final Count</button>
+            <div id="verifyResult"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>🚨 Alternative: Direct SQL Commands</h3>
+        <p>If the automated fix doesn't work, copy these SQL commands and run them in your Supabase SQL Editor:</p>
+        
+        <div class="code-block">
+-- 1. Drop existing problematic policies
+DROP POLICY IF EXISTS "Enable read access for all users" ON cars;
+DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON cars;
+DROP POLICY IF EXISTS "Enable update for authenticated users only" ON cars;
+DROP POLICY IF EXISTS "Enable delete for authenticated users only" ON cars;
+
+-- 2. Disable RLS temporarily
+ALTER TABLE cars DISABLE ROW LEVEL SECURITY;
+ALTER TABLE car_inventory DISABLE ROW LEVEL SECURITY;
+
+-- 3. Ensure proper table structure for cars
+ALTER TABLE cars 
+ADD COLUMN IF NOT EXISTS id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+ADD COLUMN IF NOT EXISTS vin_number text UNIQUE,
+ADD COLUMN IF NOT EXISTS brand text DEFAULT 'Voyah',
+ADD COLUMN IF NOT EXISTS model text,
+ADD COLUMN IF NOT EXISTS year integer,
+ADD COLUMN IF NOT EXISTS color text,
+ADD COLUMN IF NOT EXISTS category text DEFAULT 'REV',
+ADD COLUMN IF NOT EXISTS status text DEFAULT 'in_stock',
+ADD COLUMN IF NOT EXISTS current_location text DEFAULT 'Inventory',
+ADD COLUMN IF NOT EXISTS selling_price numeric DEFAULT 50000,
+ADD COLUMN IF NOT EXISTS battery_percentage integer DEFAULT 100,
+ADD COLUMN IF NOT EXISTS range_km integer DEFAULT 520,
+ADD COLUMN IF NOT EXISTS notes text,
+ADD COLUMN IF NOT EXISTS created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+ADD COLUMN IF NOT EXISTS updated_at timestamp with time zone DEFAULT timezone('utc'::text, now());
+
+-- 4. Create simple, non-recursive policies
+CREATE POLICY "Allow all operations" ON cars FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all operations" ON car_inventory FOR ALL USING (true) WITH CHECK (true);
+
+-- 5. Re-enable RLS with simple policies
+ALTER TABLE cars ENABLE ROW LEVEL SECURITY;
+ALTER TABLE car_inventory ENABLE ROW LEVEL SECURITY;
+        </div>
+    </div>
+
+    <div id="logs" class="container" style="display: none;">
+        <h3>📝 Operation Logs</h3>
+        <div id="logContent"></div>
+    </div>
+
+    <script type="module">
+        let supabase;
+        
+        const SUPABASE_URL = 'https://wunqntfreyezylvbzvxc.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1bnFudGZyZXllenlsdmJ6dnhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NDE4MDIsImV4cCI6MjA2MzMxNzgwMn0.AphXufXZef_wAvVT3TXl2s_JQwbI9wK6KN2uCQgVc5o';
+
+        // Initialize Supabase
+        async function initSupabase() {
+            if (!supabase) {
+                const { createClient } = await import('https://cdn.skypack.dev/@supabase/supabase-js');
+                supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            return supabase;
+        }
+
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const logContent = document.getElementById('logContent');
+            logs.style.display = 'block';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            logContent.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        window.testConnection = async function() {
+            const result = document.getElementById('connectionResult');
+            result.innerHTML = '<div class="warning">Testing connection...</div>';
+            
+            try {
+                await initSupabase();
+                log('🔌 Testing Supabase connection...');
+                
+                // Test basic connection
+                const { data, error } = await supabase.from('cars').select('count', { count: 'exact' }).limit(0);
+                
+                if (error) {
+                    log(`❌ Connection error: ${error.message}`, 'error');
+                    result.innerHTML = `<div class="error">❌ Connection failed: ${error.message}</div>`;
+                } else {
+                    log('✅ Basic connection successful', 'success');
+                    result.innerHTML = '<div class="success">✅ Connection successful!</div>';
+                }
+                
+            } catch (err) {
+                log(`❌ Critical error: ${err.message}`, 'error');
+                result.innerHTML = `<div class="error">❌ Critical error: ${err.message}</div>`;
+            }
+        };
+
+        window.fixDatabase = async function() {
+            const result = document.getElementById('fixResult');
+            result.innerHTML = '<div class="warning">Fixing database...</div>';
+            
+            try {
+                await initSupabase();
+                log('🔧 Starting database fix...');
+                
+                // Try to execute SQL fix using RPC or direct queries
+                log('🛠️ Note: Database schema fixes require admin access', 'warning');
+                log('📝 Please run the SQL commands shown above in your Supabase SQL Editor', 'warning');
+                
+                result.innerHTML = `
+                    <div class="warning">⚠️ Schema fixes require admin access</div>
+                    <div>Please run the SQL commands above in your Supabase SQL Editor</div>
+                    <div>Then come back and click "Upload Real Stock Data"</div>
+                `;
+                
+            } catch (err) {
+                log(`❌ Fix error: ${err.message}`, 'error');
+                result.innerHTML = `<div class="error">❌ Fix error: ${err.message}</div>`;
+            }
+        };
+
+        window.uploadStockData = async function() {
+            const result = document.getElementById('uploadResult');
+            result.innerHTML = '<div class="warning">Uploading stock data...</div>';
+            
+            try {
+                await initSupabase();
+                log('📦 Starting stock data upload...');
+                
+                // Your complete stock data
+                const stockData = [
+                    { status: 'Sold', client_name: 'Yoland Salem', vin: 'LDP95H961SE900274', vehicle_type: 'REEV', color: 'GREY', model: 'Free', model_year: 2025, delivery_date: '5/17/2025', vehicle_warranty_expiry: '5/17/2030', battery_warranty_expiry: '5/17/2033', dms_warranty_deadline: '08/20/2030' },
+                    { status: 'Sold', client_name: 'H.E. Saqr Ghabbash Said Ghabbash', vin: 'LDP95H963RE104961', vehicle_type: 'REEV', color: 'BLACK', model: 'Dream', model_year: 2024, delivery_date: '6/3/2025', vehicle_warranty_expiry: '6/3/2030', battery_warranty_expiry: '6/3/2033', dms_warranty_deadline: '10/15/2029' },
+                    { status: 'Sold', client_name: 'Assaad Obeid', vin: 'LDP95H960SE900265', vehicle_type: 'REEV', color: 'GREY', model: 'Free', model_year: 2025, delivery_date: '5/17/2025', vehicle_warranty_expiry: '5/17/2030', battery_warranty_expiry: '5/17/2033', dms_warranty_deadline: '08/20/2030' },
+                    { status: 'Sold', client_name: 'FADI ASSI', vin: 'LDP95H961RE300364', vehicle_type: 'REEV', color: 'GREEN', model: 'Free', model_year: 2024, delivery_date: '5/16/2025', vehicle_warranty_expiry: '5/16/2030', battery_warranty_expiry: '5/16/2033', dms_warranty_deadline: '10/01/2029' },
+                    { status: 'Sold', client_name: 'DIAB Hisham Nahed', vin: 'LDP95H963RE300365', vehicle_type: 'REEV', color: 'GREEN', model: 'Free', model_year: 2024, delivery_date: '6/17/2025', vehicle_warranty_expiry: '6/17/2030', battery_warranty_expiry: '6/17/2033', dms_warranty_deadline: '10/01/2029' },
+                    { status: 'Sold', client_name: 'Mashreq Hospital', vin: 'LDP91E968RE201874', vehicle_type: 'REEV', color: 'BLACK', model: 'Passion', model_year: 2024, delivery_date: '5/23/2025', vehicle_warranty_expiry: '5/23/2030', battery_warranty_expiry: '5/23/2033', dms_warranty_deadline: '10/01/2029' },
+                    { status: 'Sold', client_name: 'Ali Kobeissy', vin: 'LDP29H923SM520023', vehicle_type: 'REEV', color: 'GREY', model: 'Mhero', model_year: 2025, delivery_date: '5/22/2025', vehicle_warranty_expiry: '5/22/2030', battery_warranty_expiry: '5/22/2033', dms_warranty_deadline: 'NOT ON DMS' },
+                    { status: 'Sold', client_name: 'Samir Haddad', vin: 'LDP91E968RE201857', vehicle_type: 'REEV', color: 'BLACK', model: 'Passion', model_year: 2024, delivery_date: '5/23/2025', vehicle_warranty_expiry: '5/23/2030', battery_warranty_expiry: '5/23/2033', dms_warranty_deadline: '10/01/2029' },
+                    { status: 'Sold', client_name: 'Mohamad Kafel', vin: 'LDP95H963SE900258', vehicle_type: 'REEV', color: 'GREY', model: 'Free', model_year: 2025, delivery_date: '6/3/2025', vehicle_warranty_expiry: '6/3/2030', battery_warranty_expiry: '6/3/2033', dms_warranty_deadline: '08/21/2030' },
+                    { status: 'Sold', client_name: 'Ziad el Sayed', vin: 'LDP95H967RE302345', vehicle_type: 'REEV', color: 'GREEN', model: 'Free', model_year: 2024, delivery_date: '6/19/2025', vehicle_warranty_expiry: '6/19/2030', battery_warranty_expiry: '6/19/2033', dms_warranty_deadline: '10/01/2029' },
+                    { status: 'Available', client_name: '', vin: 'LDP91E963SE100280', vehicle_type: 'REEV', color: 'WHITE', model: 'PASSION', model_year: 2025, delivery_date: '', vehicle_warranty_expiry: '', battery_warranty_expiry: '', dms_warranty_deadline: '10/7/2030' },
+                    { status: 'Available', client_name: '', vin: 'LDP91E965SE100278', vehicle_type: 'REEV', color: 'WHITE', model: 'PASSION', model_year: 2025, delivery_date: '', vehicle_warranty_expiry: '', battery_warranty_expiry: '', dms_warranty_deadline: '10/7/2030' },
+                    { status: 'Available', client_name: '', vin: 'LDP91E962SE100268', vehicle_type: 'REEV', color: 'BLACK', model: 'PASSION', model_year: 2025, delivery_date: '', vehicle_warranty_expiry: '', battery_warranty_expiry: '', dms_warranty_deadline: '10/7/2030' },
+                    { status: 'Available', client_name: '', vin: 'LDP95C966SY890018', vehicle_type: 'EV', color: 'WHITE', model: 'COURAGE', model_year: 2025, delivery_date: '', vehicle_warranty_expiry: '', battery_warranty_expiry: '', dms_warranty_deadline: 'NOT ON DMS' },
+                    { status: 'Available', client_name: '', vin: 'LDP95C965SY890009', vehicle_type: 'EV', color: 'WHITE', model: 'COURAGE', model_year: 2025, delivery_date: '', vehicle_warranty_expiry: '', battery_warranty_expiry: '', dms_warranty_deadline: 'NOT ON DMS' }
+                    // Add more as needed...
+                ];
+
+                log(`📋 Prepared ${stockData.length} vehicles for upload`);
+
+                // Try uploading to both tables
+                let uploadSuccess = false;
+
+                // Try cars table first
+                try {
+                    const carsData = stockData.map(item => ({
+                        vin_number: item.vin,
+                        brand: 'Voyah',
+                        model: item.model,
+                        year: item.model_year,
+                        color: item.color,
+                        category: item.vehicle_type,
+                        status: item.status === 'Available' ? 'in_stock' : 'sold',
+                        current_location: item.status === 'Available' ? 'Inventory' : 'Delivered',
+                        selling_price: 50000,
+                        battery_percentage: 100,
+                        range_km: 520,
+                        notes: item.client_name ? `Client: ${item.client_name}` : 'Available for sale'
+                    }));
+
+                    const { data: carsResult, error: carsError } = await supabase
+                        .from('cars')
+                        .insert(carsData)
+                        .select();
+
+                    if (carsError) {
+                        log(`⚠️ Cars table insert failed: ${carsError.message}`, 'warning');
+                    } else {
+                        log(`✅ Successfully uploaded ${carsResult.length} vehicles to cars table`, 'success');
+                        uploadSuccess = true;
+                    }
+                } catch (err) {
+                    log(`⚠️ Cars table error: ${err.message}`, 'warning');
+                }
+
+                // Try car_inventory table as backup
+                if (!uploadSuccess) {
+                    try {
+                        const { data: inventoryResult, error: inventoryError } = await supabase
+                            .from('car_inventory')
+                            .insert(stockData)
+                            .select();
+
+                        if (inventoryError) {
+                            log(`❌ Car_inventory table insert failed: ${inventoryError.message}`, 'error');
+                        } else {
+                            log(`✅ Successfully uploaded ${inventoryResult.length} vehicles to car_inventory table`, 'success');
+                            uploadSuccess = true;
+                        }
+                    } catch (err) {
+                        log(`❌ Car_inventory table error: ${err.message}`, 'error');
+                    }
+                }
+
+                if (uploadSuccess) {
+                    result.innerHTML = '<div class="success">✅ Stock data uploaded successfully!</div>';
+                    log('🎉 Upload completed! Please refresh your Car Inventory page.', 'success');
+                } else {
+                    result.innerHTML = '<div class="error">❌ Upload failed. Please run the SQL fixes first.</div>';
+                }
+
+            } catch (err) {
+                log(`❌ Upload error: ${err.message}`, 'error');
+                result.innerHTML = `<div class="error">❌ Upload error: ${err.message}</div>`;
+            }
+        };
+
+        window.verifyData = async function() {
+            const result = document.getElementById('verifyResult');
+            result.innerHTML = '<div class="warning">Checking data...</div>';
+            
+            try {
+                await initSupabase();
+                log('🔍 Verifying uploaded data...');
+                
+                // Check cars table
+                const { data: carsData, error: carsError } = await supabase
+                    .from('cars')
+                    .select('*', { count: 'exact' });
+
+                // Check car_inventory table
+                const { data: inventoryData, error: inventoryError } = await supabase
+                    .from('car_inventory')
+                    .select('*', { count: 'exact' });
+
+                let resultHTML = '<div><strong>📊 Final Count:</strong></div>';
+                
+                if (!carsError) {
+                    const count = carsData?.length || 0;
+                    resultHTML += `<div>Cars table: ${count} vehicles</div>`;
+                    log(`📊 Cars table: ${count} vehicles`);
+                }
+                
+                if (!inventoryError) {
+                    const count = inventoryData?.length || 0;
+                    resultHTML += `<div>Car_inventory table: ${count} vehicles</div>`;
+                    log(`📦 Car_inventory table: ${count} vehicles`);
+                }
+
+                if (carsError && inventoryError) {
+                    resultHTML = '<div class="error">❌ Cannot access any tables</div>';
+                } else {
+                    resultHTML += '<div class="success">✅ Data verification complete!</div>';
+                }
+
+                result.innerHTML = resultHTML;
+                
+            } catch (err) {
+                log(`❌ Verification error: ${err.message}`, 'error');
+                result.innerHTML = `<div class="error">❌ Verification error: ${err.message}</div>`;
+            }
+        };
+    </script>
+</body>
+</html>

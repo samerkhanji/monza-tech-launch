@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Garage Schedule Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #dc2626;
+        }
+        .secondary {
+            background: #6b7280;
+        }
+        .secondary:hover {
+            background: #4b5563;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗑️ Clear Garage Schedule Data</h1>
+        
+        <div class="warning">
+            <strong>⚠️ WARNING:</strong> This will completely clear ALL garage schedule data including:
+            <ul>
+                <li>All scheduled appointments</li>
+                <li>Car assignments</li>
+                <li>Mechanic schedules</li>
+                <li>Work progress tracking</li>
+                <li>Time slots and availability</li>
+            </ul>
+            This action cannot be undone.
+        </div>
+        
+        <button onclick="checkCurrentData()">📊 Check Current Data</button>
+        <button onclick="clearGarageScheduleData()">🗑️ Clear Garage Schedule Data</button>
+        <button onclick="clearAllData()" class="secondary">💥 Clear ALL Data</button>
+        <button onclick="goToApp()" class="secondary">🏠 Go to App</button>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function checkCurrentData() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            const garageSchedules = localStorage.getItem('garageSchedules');
+            const scheduleKeys = Object.keys(localStorage).filter(key => key.startsWith('garage_schedule_'));
+            
+            let html = '<h3>📊 Current Garage Schedule Data:</h3>';
+            
+            if (garageSchedules) {
+                try {
+                    const schedules = JSON.parse(garageSchedules);
+                    html += `<div class="success">
+                        <strong>✅ Garage Schedules Found:</strong> ${schedules.length} schedule(s)
+                        <br>Dates: ${schedules.map(s => s.date).join(', ')}
+                    </div>`;
+                } catch (e) {
+                    html += `<div class="warning">⚠️ Invalid garage schedules data</div>`;
+                }
+            } else {
+                html += `<div class="warning">⚠️ No garage schedules found</div>`;
+            }
+            
+            if (scheduleKeys.length > 0) {
+                html += `<div class="success">
+                    <strong>✅ Individual Schedule Files:</strong> ${scheduleKeys.length} file(s)
+                    <br>Keys: ${scheduleKeys.join(', ')}
+                </div>`;
+            } else {
+                html += `<div class="warning">⚠️ No individual schedule files found</div>`;
+            }
+            
+            status.innerHTML = html;
+        }
+        
+        function clearGarageScheduleData() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            try {
+                // Clear main garage schedules
+                localStorage.removeItem('garageSchedules');
+                
+                // Clear individual schedule files
+                const scheduleKeys = Object.keys(localStorage).filter(key => key.startsWith('garage_schedule_'));
+                scheduleKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                });
+                
+                // Clear any related data
+                localStorage.removeItem('pause_instruction_shown');
+                localStorage.removeItem('lastEfficiencyCheck');
+                
+                status.innerHTML = `
+                    <div class="success">
+                        <strong>✅ Garage Schedule Data Cleared Successfully!</strong>
+                        <br>• Removed ${scheduleKeys.length + 1} data entries
+                        <br>• All appointments and schedules deleted
+                        <br>• You can now start fresh
+                    </div>
+                `;
+                
+                // Auto-refresh after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 3000);
+                
+            } catch (error) {
+                status.innerHTML = `
+                    <div class="warning">
+                        <strong>❌ Error clearing data:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function clearAllData() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                status.innerHTML = `
+                    <div class="success">
+                        <strong>✅ ALL Data Cleared Successfully!</strong>
+                        <br>• All localStorage data removed
+                        <br>• All sessionStorage data removed
+                        <br>• Complete fresh start
+                    </div>
+                `;
+                
+                // Auto-refresh after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 3000);
+                
+            } catch (error) {
+                status.innerHTML = `
+                    <div class="warning">
+                        <strong>❌ Error clearing all data:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function goToApp() {
+            window.location.href = '/';
+        }
+        
+        // Auto-check data on page load
+        window.onload = function() {
+            checkCurrentData();
+        };
+    </script>
+</body>
+</html> 
