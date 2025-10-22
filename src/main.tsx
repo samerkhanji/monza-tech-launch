@@ -11,7 +11,7 @@ import './styles/time-scheduling-fix.css';
 import './index.css';
 import './styles/dialog-fixes.css';
 import '@/styles/pdi-professional.css';
-import App from './App-restored-complete';
+import App from './App';
 
 // Initialize comprehensive mock data (commented out temporarily)
 
