@@ -60,5 +60,4 @@ export { Alert, AlertTitle, AlertDescription }
 export default Alert
 
 // Additional exports for compatibility
-export { Alert as default }
 export const AlertComponent = Alert
