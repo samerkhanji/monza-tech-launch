@@ -38,6 +38,9 @@ monzabot_claude_chat.py
 monzabot_claude.py
 Python installation setup.html
 
+# Problematic directories
+Monzatech/
+
 # Logs
 *.log
 npm-debug.log*
