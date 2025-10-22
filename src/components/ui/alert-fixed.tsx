@@ -56,5 +56,12 @@ const AlertDescription = React.forwardRef<
 ))
 AlertDescription.displayName = "AlertDescription"
 
+// Named exports
 export { Alert, AlertTitle, AlertDescription }
+
+// Default export
 export default Alert
+
+// Ensure all possible import patterns work
+export const AlertComponent = Alert
+export { Alert as AlertFixed }
