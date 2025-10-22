@@ -21,6 +21,8 @@ export interface CarWorkflowEntry {
   history: CarMovementRecord[];
 }
 
+import { CarMovementReason } from '@/types/purposeReason';
+
 export interface CarMovementRecord {
   id: string;
   timestamp: string;
@@ -28,7 +30,7 @@ export interface CarMovementRecord {
   toLocation: string;
   fromStatus: string;
   toStatus: string;
-  reason: string;
+  reason: CarMovementReason;
   movedBy: string;
   notes?: string;
 }
@@ -89,7 +91,7 @@ export class CarWorkflowService {
     toLocation: string,
     fromStatus: string,
     toStatus: string,
-    reason: string,
+    reason: CarMovementReason,
     movedBy: string,
     notes?: string
   ): boolean {
@@ -109,6 +111,11 @@ export class CarWorkflowService {
         movedBy,
         notes
       };
+
+      // Record work type change if status changed
+      if (fromStatus !== toStatus) {
+        this.recordWorkTypeChange(carVin, carModel, fromStatus, toStatus, movedBy, notes);
+      }
 
       if (workflowIndex === -1) {
         // Create new workflow entry
@@ -169,6 +176,166 @@ export class CarWorkflowService {
     } catch (error) {
       console.error('Error recording movement:', error);
     }
+  }
+
+  // Record work type changes in repair history
+  private static recordWorkTypeChange(
+    carVin: string,
+    carModel: string,
+    fromStatus: string,
+    toStatus: string,
+    changedBy: string,
+    notes?: string
+  ): void {
+    try {
+      const workTypeChange = `${fromStatus.replace('_', ' ').toUpperCase()} → ${toStatus.replace('_', ' ').toUpperCase()}`;
+      
+      // Get car data to access parts and tools information
+      const carData = this.getCarData(carVin);
+      const partsUsed = carData?.partsUsed || [];
+      const toolsUsed = carData?.toolsUsed || [];
+      const totalPartsCost = this.calculatePartsCost(partsUsed);
+      const totalToolsCost = this.calculateToolsCost(toolsUsed);
+      
+      const workTypeHistoryEntry = {
+        id: `worktype-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        carVin: carVin,
+        carModel: carModel,
+        fromWorkType: fromStatus,
+        toWorkType: toStatus,
+        workTypeChange: workTypeChange,
+        timestamp: new Date().toISOString(),
+        changedBy: changedBy,
+        notes: notes || `Work type changed from ${fromStatus.replace('_', ' ')} to ${toStatus.replace('_', ' ')}`,
+        type: 'work_type_change',
+        partsUsed: partsUsed,
+        partsUsedInStage: partsUsed, // All parts used in this stage
+        totalPartsCost: totalPartsCost,
+        toolsUsed: toolsUsed,
+        toolsUsedInStage: toolsUsed, // All tools used in this stage
+        totalToolsCost: totalToolsCost,
+        workNotes: carData?.workNotes,
+        issueDescription: carData?.issueDescription
+      };
+
+      // Save to repair history
+      const savedHistory = localStorage.getItem('repairHistory');
+      const history = savedHistory ? JSON.parse(savedHistory) : [];
+      
+      history.unshift({
+        ...workTypeHistoryEntry,
+        date: new Date().toLocaleDateString(),
+        description: workTypeChange,
+        technician: changedBy,
+        workTypeTransition: workTypeChange,
+        fromStage: fromStatus,
+        toStage: toStatus,
+        transitionTimestamp: workTypeHistoryEntry.timestamp,
+        partsUsed: workTypeHistoryEntry.partsUsed,
+        partsUsedInStage: workTypeHistoryEntry.partsUsedInStage,
+        totalPartsCost: workTypeHistoryEntry.totalPartsCost,
+        toolsUsed: workTypeHistoryEntry.toolsUsed,
+        toolsUsedInStage: workTypeHistoryEntry.toolsUsedInStage,
+        totalToolsCost: workTypeHistoryEntry.totalToolsCost
+      });
+      
+      localStorage.setItem('repairHistory', JSON.stringify(history));
+
+      // Also save to dedicated work type history
+      const savedWorkTypeHistory = localStorage.getItem('workTypeHistory');
+      const workTypeHistory = savedWorkTypeHistory ? JSON.parse(savedWorkTypeHistory) : [];
+      workTypeHistory.unshift(workTypeHistoryEntry);
+      localStorage.setItem('workTypeHistory', JSON.stringify(workTypeHistory));
+
+      console.log(`Work type change recorded: ${carModel} (${carVin}) - ${workTypeChange} - Parts: ${partsUsed.length} - Tools: ${toolsUsed.length} - Parts Cost: $${totalPartsCost} - Tools Cost: $${totalToolsCost}`);
+    } catch (error) {
+      console.error('Error recording work type change:', error);
+    }
+  }
+
+  // Get car data from various sources
+  private static getCarData(carVin: string): any {
+    // Try to get car data from garage cars
+    const garageCars = localStorage.getItem('garageCars');
+    if (garageCars) {
+      const cars = JSON.parse(garageCars);
+      const car = cars.find((c: any) => c.carCode === carVin || c.vinNumber === carVin);
+      if (car) return car;
+    }
+
+    // Try to get from car inventory
+    const carInventory = localStorage.getItem('carInventory');
+    if (carInventory) {
+      const inventory = JSON.parse(carInventory);
+      const car = inventory.find((c: any) => c.vinNumber === carVin);
+      if (car) return car;
+    }
+
+    return null;
+  }
+
+  // Calculate parts cost
+  private static calculatePartsCost(parts: string[]): number {
+    let totalCost = 0;
+    
+    parts.forEach(part => {
+      // Simplified cost estimation based on part type
+      if (part.toLowerCase().includes('battery')) {
+        totalCost += 1500; // Battery cost
+      } else if (part.toLowerCase().includes('brake')) {
+        totalCost += 200; // Brake parts
+      } else if (part.toLowerCase().includes('filter')) {
+        totalCost += 50; // Filters
+      } else if (part.toLowerCase().includes('sensor')) {
+        totalCost += 300; // Sensors
+      } else if (part.toLowerCase().includes('motor')) {
+        totalCost += 800; // Motors
+      } else if (part.toLowerCase().includes('tire')) {
+        totalCost += 400; // Tires
+      } else if (part.toLowerCase().includes('oil')) {
+        totalCost += 80; // Oil
+      } else if (part.toLowerCase().includes('fluid')) {
+        totalCost += 60; // Fluids
+      } else {
+        totalCost += 100; // Default part cost
+      }
+    });
+    
+    return totalCost;
+  }
+
+  // Calculate tools cost
+  private static calculateToolsCost(tools: string[]): number {
+    let totalCost = 0;
+    
+    tools.forEach(tool => {
+      // Simplified cost estimation based on tool type
+      if (tool.toLowerCase().includes('diagnostic')) {
+        totalCost += 500; // Diagnostic tools
+      } else if (tool.toLowerCase().includes('lift')) {
+        totalCost += 200; // Lift usage
+      } else if (tool.toLowerCase().includes('scanner')) {
+        totalCost += 300; // Scanner tools
+      } else if (tool.toLowerCase().includes('welder')) {
+        totalCost += 150; // Welding tools
+      } else if (tool.toLowerCase().includes('tester')) {
+        totalCost += 250; // Testing equipment
+      } else if (tool.toLowerCase().includes('meter')) {
+        totalCost += 100; // Meters and gauges
+      } else if (tool.toLowerCase().includes('torque')) {
+        totalCost += 80; // Torque wrenches
+      } else if (tool.toLowerCase().includes('socket')) {
+        totalCost += 50; // Socket sets
+      } else if (tool.toLowerCase().includes('computer')) {
+        totalCost += 400; // Computer equipment
+      } else if (tool.toLowerCase().includes('crane')) {
+        totalCost += 300; // Crane usage
+      } else {
+        totalCost += 75; // Default tool cost
+      }
+    });
+    
+    return totalCost;
   }
 
   // Update car data in respective tables

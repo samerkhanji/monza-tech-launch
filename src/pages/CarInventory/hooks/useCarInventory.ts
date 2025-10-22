@@ -6,17 +6,31 @@ import { useSupabaseCarInventory } from '@/hooks/useSupabaseCarInventory';
 
 // Helper function to convert Supabase car data to Car type
 const convertSupabaseCarToCar = (supabaseCar: any): Car => {
+  // Normalize status to match app expectations
+  let normalizedStatus: 'in_stock' | 'sold' | 'reserved' = 'in_stock';
+  if (supabaseCar.status) {
+    const status = supabaseCar.status.toLowerCase();
+    if (status === 'sold' || status === 'available') {
+      normalizedStatus = 'sold';
+    } else if (status === 'reserved') {
+      normalizedStatus = 'reserved';
+    } else {
+      normalizedStatus = 'in_stock';
+    }
+  }
+
   return {
     id: supabaseCar.id,
-    vinNumber: supabaseCar.vin_number || supabaseCar.vinNumber,
+    vinNumber: supabaseCar.vin || supabaseCar.vin_number || supabaseCar.vinNumber,
     model: supabaseCar.model,
     brand: supabaseCar.brand,
     year: supabaseCar.year,
     color: supabaseCar.color,
-    category: supabaseCar.category,
-    status: supabaseCar.status,
-    currentFloor: supabaseCar.current_location || supabaseCar.currentLocation || supabaseCar.currentFloor,
-    arrivalDate: supabaseCar.arrival_date || supabaseCar.arrivalDate || new Date().toISOString(),
+    interiorColor: supabaseCar.interior_color || supabaseCar.interiorColor,
+    category: supabaseCar.vehicle_type || supabaseCar.category,
+    status: normalizedStatus,
+    currentFloor: supabaseCar.current_floor || supabaseCar.current_location || supabaseCar.currentLocation || supabaseCar.currentFloor,
+    arrivalDate: supabaseCar.delivery_date || supabaseCar.arrival_date || supabaseCar.arrivalDate || new Date().toISOString(),
     soldDate: supabaseCar.sold_date || supabaseCar.soldDate,
     reservedDate: supabaseCar.reserved_date || supabaseCar.reservedDate,
     sellingPrice: supabaseCar.selling_price || supabaseCar.sellingPrice,
@@ -36,7 +50,7 @@ const convertSupabaseCarToCar = (supabaseCar: any): Car => {
     pdiPhotos: supabaseCar.pdi_photos || supabaseCar.pdiPhotos,
     pdiDate: supabaseCar.pdi_date || supabaseCar.pdiDate,
     notes: supabaseCar.notes,
-    lastUpdated: supabaseCar.last_updated || supabaseCar.lastUpdated || new Date().toISOString(),
+    lastUpdated: supabaseCar.updated_at || supabaseCar.last_updated || supabaseCar.lastUpdated || new Date().toISOString(),
   };
 };
 
@@ -55,61 +69,34 @@ export const useCarInventory = () => {
   const [cars, setCars] = useState<Car[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize with mock data if Supabase is empty
+  // Initialize with Supabase data or localStorage fallback
   useEffect(() => {
     if (!loading && !isInitialized) {
-      if (supabaseCars.length === 0) {
-        // Initialize with mock data if database is empty
-        initializeWithMockData();
+      let convertedCars: Car[] = [];
+      
+      // First try to use Supabase data
+      if (supabaseCars && supabaseCars.length > 0) {
+        convertedCars = supabaseCars.map(convertSupabaseCarToCar);
+        // Loaded cars from Supabase (use window.enableVerboseLogs() to see details)
       } else {
-        // Use data from Supabase with proper type conversion
-        const convertedCars = supabaseCars.map(convertSupabaseCarToCar);
-        setCars(convertedCars);
+        // No mock data fallback - start with empty state
+        // No data found in Supabase, starting with empty state
       }
+      
+      setCars(convertedCars);
       setIsInitialized(true);
     }
   }, [supabaseCars, loading, isInitialized]);
 
   // Keep local state in sync with Supabase data
   useEffect(() => {
-    if (isInitialized) {
+    if (isInitialized && supabaseCars && supabaseCars.length > 0) {
       const convertedCars = supabaseCars.map(convertSupabaseCarToCar);
       setCars(convertedCars);
     }
   }, [supabaseCars, isInitialized]);
 
-  const initializeWithMockData = async () => {
-    try {
-      // Add mock data to Supabase
-      for (const car of carInventoryData) {
-        await addCar(car as any);
-      }
-      toast({
-        title: "Data Initialized",
-        description: "Car inventory has been initialized with sample data.",
-      });
-    } catch (error) {
-      console.error('Error initializing mock data:', error);
-      // Fallback to localStorage if Supabase fails
-      const savedCars = localStorage.getItem('carInventory');
-      if (savedCars) {
-        try {
-          setCars(JSON.parse(savedCars));
-        } catch (parseError) {
-          setCars(carInventoryData);
-        }
-      } else {
-        setCars(carInventoryData);
-        localStorage.setItem('carInventory', JSON.stringify(carInventoryData));
-      }
-      
-      toast({
-        title: "Using Local Storage",
-        description: "Car inventory is using local storage due to database connection issues.",
-        variant: "destructive",
-      });
-    }
-  };
+
 
   const handleStatusUpdate = async (carId: string, newStatus: 'in_stock' | 'sold' | 'reserved') => {
     try {
@@ -245,28 +232,30 @@ export const useCarInventory = () => {
     }
   };
 
-  const resetToMockData = async () => {
-    try {
-      // Clear current data
-      for (const car of supabaseCars) {
-        await deleteCar(car.id);
-      }
-      
-      // Re-initialize with mock data
-      await initializeWithMockData();
-      
-      toast({
-        title: "Data Reset",
-        description: "Car inventory has been reset to fresh mock data.",
-      });
-    } catch (error) {
-      console.error('Error resetting data:', error);
-      toast({
-        title: "Reset Failed",
-        description: "Failed to reset data. Please try again.",
-        variant: "destructive",
-      });
-    }
+  const addCarQuick = async (payload: Partial<Car>) => {
+    // Map UI car fields to Supabase 'cars' table schema
+    const supabasePayload: any = {
+      vin_number: payload.vinNumber,
+      model: payload.model,
+      brand: payload.brand,
+      year: payload.year,
+      color: payload.color,
+      interior_color: payload.interiorColor,
+      category: payload.category,
+      status: payload.status || 'in_stock',
+      arrival_date: payload.arrivalDate || new Date().toISOString(),
+      selling_price: payload.sellingPrice ?? (payload as any).price,
+      battery_percentage: payload.batteryPercentage,
+      pdi_completed: payload.pdiCompleted,
+      notes: payload.notes,
+    };
+
+    // Remove undefined to avoid DB defaults conflicts
+    Object.keys(supabasePayload).forEach((k) => {
+      if (supabasePayload[k] === undefined) delete supabasePayload[k];
+    });
+
+    return await addCar(supabasePayload);
   };
 
   const loadCars = async () => {
@@ -291,7 +280,7 @@ export const useCarInventory = () => {
     handleClientInfoSave,
     handlePdiComplete,
     handleCarUpdate,
-    loadCars,
-    resetToMockData
+    addCarQuick,
+    loadCars
   };
 };

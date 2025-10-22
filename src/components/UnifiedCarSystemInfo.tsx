@@ -42,7 +42,7 @@ export const UnifiedCarSystemInfo: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-2 text-sm">
-            <Calendar className="h-4 w-4 text-blue-600" />
+                                    <Clock className="h-4 w-4 text-blue-600" />
             <span>Schedule Data</span>
             <CheckCircle className="h-3 w-3 text-green-600" />
           </div>

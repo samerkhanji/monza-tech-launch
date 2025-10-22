@@ -9,17 +9,27 @@ interface GarageOverviewHeaderProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   isGarageManager: boolean;
+  onSyncScheduledCars?: () => void;
 }
 
 const GarageOverviewHeader: React.FC<GarageOverviewHeaderProps> = ({
   searchTerm,
   setSearchTerm,
-  isGarageManager
+  isGarageManager,
+  onSyncScheduledCars
 }) => {
   const handleRefresh = () => {
     toast({
       title: "Data Refreshed",
       description: "Garage overview has been updated with latest information"
+    });
+  };
+
+  const handleSyncScheduledCars = () => {
+    onSyncScheduledCars?.();
+    toast({
+      title: "Scheduled Cars Synced",
+      description: "Cars from garage schedule have been synced to garage overview"
     });
   };
 
@@ -53,6 +63,16 @@ const GarageOverviewHeader: React.FC<GarageOverviewHeaderProps> = ({
         <Button variant="outline" size="sm" onClick={handleRefresh}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleSyncScheduledCars}
+          className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Sync Schedule
         </Button>
         
         {isGarageManager && (

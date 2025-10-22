@@ -3,7 +3,7 @@
 /* ===================================== */
 
 /* Ensure delivery dialog has proper scrolling */
-[data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) {
+.delivery-date-dialog {
   display: flex !important;
   flex-direction: column !important;
   max-height: 95vh !important;
@@ -12,7 +12,7 @@
 }
 
 /* Fix the scrollable content area */
-[data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) .flex-1 {
+.delivery-date-dialog .flex-1 {
   overflow-y: auto !important;
   scrollbar-width: thin !important;
   scrollbar-color: #ffd700 #f8fafc !important;
@@ -20,13 +20,13 @@
 }
 
 /* Ensure calendar picker doesn't overflow */
-[data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) .flex.justify-center {
+.delivery-date-dialog .flex.justify-center {
   max-height: calc(70vh - 200px) !important;
   overflow: visible !important;
 }
 
 /* Make footer sticky and always visible */
-[data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) .border-t.border-gray-200 {
+.delivery-date-dialog .border-t.border-gray-200 {
   position: sticky !important;
   bottom: 0 !important;
   background: white !important;
@@ -36,28 +36,28 @@
 }
 
 /* Beautiful golden scrollbar for webkit browsers */
-[data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) .flex-1::-webkit-scrollbar {
+.delivery-date-dialog .flex-1::-webkit-scrollbar {
   width: 12px !important;
   height: 12px !important;
 }
 
-[data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) .flex-1::-webkit-scrollbar-track {
+.delivery-date-dialog .flex-1::-webkit-scrollbar-track {
   background: #f8fafc !important;
   border-radius: 6px !important;
 }
 
-[data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) .flex-1::-webkit-scrollbar-thumb {
+.delivery-date-dialog .flex-1::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #ffd700, #ffed4a) !important;
   border-radius: 6px !important;
   border: 2px solid #f8fafc !important;
 }
 
-[data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) .flex-1::-webkit-scrollbar-thumb:hover {
+.delivery-date-dialog .flex-1::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #ffed4a, #ffd700) !important;
 }
 
 /* Additional padding at bottom for content clearance */
-[data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) .space-y-6:last-child::after {
+.delivery-date-dialog .space-y-6:last-child::after {
   content: "" !important;
   display: block !important;
   height: 20px !important;
@@ -65,28 +65,28 @@
 
 /* Ensure buttons are always accessible on mobile */
 @media (max-width: 768px) {
-  [data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) {
+  .delivery-date-dialog {
     max-height: 100vh !important;
     height: 100vh !important;
   }
   
-  [data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) .flex-1 {
+  .delivery-date-dialog .flex-1 {
     max-height: calc(100vh - 160px) !important;
   }
   
-  [data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) .border-t.border-gray-200 {
+  .delivery-date-dialog .border-t.border-gray-200 {
     padding: 16px !important;
   }
 }
 
 /* Emergency override - force scrolling if needed */
-[data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) * {
+.delivery-date-dialog * {
   scroll-behavior: smooth !important;
 }
 
 /* Prevent calendar from breaking layout */
-[data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) .calendar-picker,
-[data-radix-dialog-content]:has(.text-xl:contains("Set Delivery Date")) [data-calendar] {
+.delivery-date-dialog .calendar-picker,
+.delivery-date-dialog [data-calendar] {
   max-width: 100% !important;
   max-height: calc(60vh - 150px) !important;
   overflow: auto !important;

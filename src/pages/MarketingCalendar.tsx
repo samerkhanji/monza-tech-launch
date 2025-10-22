@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Calendar as CalendarIcon, Users, Target, Activity, Zap, Star, Gift, Megaphone, PartyPopper } from 'lucide-react';
+import { Plus, Users, Target, Activity, Zap, Star, Gift, Megaphone, PartyPopper, Clock } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
 
 interface MarketingEvent {
@@ -123,7 +123,7 @@ const MarketingCalendar: React.FC = () => {
       case 'event': return <PartyPopper className="w-4 h-4" />;
       case 'promotion': return <Gift className="w-4 h-4" />;
       case 'advertising': return <Megaphone className="w-4 h-4" />;
-      default: return <CalendarIcon className="w-4 h-4" />;
+      default: return <Clock className="w-4 h-4" />;
     }
   };
 
@@ -173,7 +173,7 @@ const MarketingCalendar: React.FC = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CalendarIcon className="h-4 w-4" />
+              <Clock className="h-4 w-4" />
               Planned Events
             </CardTitle>
           </CardHeader>

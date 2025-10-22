@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔧 Parts Usage Data Cleaner</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            margin: 20px; 
+            background: #e8f5e8;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(76,175,80,0.2);
+            border: 2px solid #4caf50;
+        }
+        .header { 
+            background: #4caf50; 
+            color: white; 
+            padding: 20px; 
+            margin: -30px -30px 20px -30px; 
+            border-radius: 12px 12px 0 0; 
+            font-weight: bold;
+            text-align: center;
+            font-size: 18px;
+        }
+        .parts-info {
+            background: #f1f8e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .warning {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            color: #e65100;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .method {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        .code-block {
+            background: #1a1a1a;
+            color: #4caf50;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            border: 1px solid #4caf50;
+            overflow-x: auto;
+        }
+        button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        .btn-danger { background: #f44336; }
+        .btn-danger:hover { background: #d32f2f; }
+        .success { background: #4caf50; color: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .info { background: #2196f3; color: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .danger { background: #f44336; color: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            🔧 Parts Usage Data Cleaner
+            <br><small>Clear Mock Parts Usage Records</small>
+        </div>
+
+        <div class="parts-info">
+            <h4>📦 Parts Data to Clear:</h4>
+            <ul>
+                <li><strong>10 Parts Usage Records</strong> - All mock brake pad entries</li>
+                <li><strong>Tesla Model 3</strong> - VIN: WVWZZZ1JZ3W386752</li>
+                <li><strong>John Smith</strong> - Client: +1234567890</li>
+                <li><strong>Mike Johnson</strong> - Technician (all identical)</li>
+                <li><strong>Brake Pad Set Front</strong> - Part: BRK-001 ($150.00 each)</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            ⚠️ This data is stored in Supabase database table: <code>parts_usage_tracking</code>
+        </div>
+
+        <div class="method">
+            <h3>🎯 Method 1: Browser Console Database Clear</h3>
+            <p>Open Developer Tools (F12) → Console → Paste this code:</p>
+            <div class="code-block" id="consoleCode">
+// 🔧 PARTS USAGE DATA CLEANER
+(async function clearPartsUsageData() {
+    console.log('🔧 STARTING PARTS USAGE CLEARING...');
+    
+    try {
+        // Import Supabase client
+        const { supabase } = await import('/src/integrations/supabase/client.ts');
+        console.log('✅ Supabase client loaded');
+        
+        // 1. Check current parts usage data
+        const { count: beforeCount } = await supabase
+            .from('parts_usage_tracking')
+            .select('*', { count: 'exact', head: true });
+            
+        console.log(`📦 Current parts usage records: ${beforeCount}`);
+        
+        // 2. 🗑️ DELETE ALL parts usage records
+        const { error: deleteError } = await supabase
+            .from('parts_usage_tracking')
+            .delete()
+            .neq('id', 'impossible-id'); // This deletes ALL rows
+        
+        if (deleteError) {
+            console.error('❌ Delete failed:', deleteError);
+            throw deleteError;
+        }
+        
+        console.log('✅ PARTS USAGE DATABASE CLEARED!');
+        
+        // 3. Verify deletion
+        const { count: afterCount } = await supabase
+            .from('parts_usage_tracking')
+            .select('*', { count: 'exact', head: true });
+            
+        console.log(`📦 Remaining parts usage records: ${afterCount}`);
+        
+        // 4. Clear localStorage parts data
+        const partsKeys = [
+            'partsUsageHistory', 'partsUsageData', 'partsInventory', 
+            'repairHistory', 'partsTracker', 'partUsage', 'partsUsed',
+            'inventoryHistory', 'partsUsageTracking'
+        ];
+        
+        partsKeys.forEach(key => {
+            if (localStorage.getItem(key)) {
+                localStorage.removeItem(key);
+                console.log(`🧹 Cleared localStorage: ${key}`);
+            }
+        });
+        
+        // 5. Fire refresh events
+        const events = [
+            'clearPartsUsageData', 'partsUsageCleared', 'inventoryHistoryRefresh',
+            'partsDataCleared', 'repairHistoryRefresh'
+        ];
+        
+        events.forEach(eventName => {
+            window.dispatchEvent(new CustomEvent(eventName, {
+                detail: { cleared: true, timestamp: new Date().toISOString() }
+            }));
+            console.log(`📡 Event fired: ${eventName}`);
+        });
+        
+        console.log('🔧 PARTS USAGE CLEARING COMPLETE!');
+        console.log('🔄 Please refresh your Parts Usage History page now!');
+        
+        alert('🔧 PARTS USAGE CLEARING COMPLETE!\\nPlease refresh your Parts Usage History page.');
+        
+    } catch (error) {
+        console.error('💀 PARTS CLEARING FAILED:', error);
+        alert('💀 Parts clearing failed: ' + error.message);
+    }
+})();
+            </div>
+            <button onclick="copyConsoleCode()">📋 Copy Console Code</button>
+        </div>
+
+        <div class="method">
+            <h3>🗑️ Method 2: LocalStorage Clear Only</h3>
+            <p>Clear browser storage (won't affect database):</p>
+            <button onclick="clearPartsStorage()">🧹 Clear Parts Storage</button>
+        </div>
+
+        <div class="method">
+            <h3>🗃️ Method 3: Manual Database Access</h3>
+            <p>Access Supabase dashboard directly:</p>
+            <button onclick="openSupabase()">🗃️ Open Supabase Dashboard</button>
+            <div class="info">
+                <h4>📋 Manual Steps:</h4>
+                <ol>
+                    <li>Login to your Supabase dashboard</li>
+                    <li>Go to <strong>SQL Editor</strong></li>
+                    <li>Execute: <code>DELETE FROM parts_usage_tracking;</code></li>
+                    <li>Or use <strong>Table Editor</strong> → Find <code>parts_usage_tracking</code> → Delete all rows</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="parts-info">
+            <h4>🎯 Expected Result:</h4>
+            <ul>
+                <li>✅ <strong>Parts Usage Records:</strong> 0 records (empty table)</li>
+                <li>✅ <strong>No more brake pad entries</strong></li>
+                <li>✅ <strong>No more Tesla Model 3/John Smith records</strong></li>
+                <li>✅ <strong>Message:</strong> "No Parts Usage History Found"</li>
+            </ul>
+        </div>
+
+        <div id="results"></div>
+
+        <script>
+            function logResult(message, type = 'info') {
+                const results = document.getElementById('results');
+                const div = document.createElement('div');
+                div.className = type;
+                div.innerHTML = message;
+                results.appendChild(div);
+            }
+
+            function copyConsoleCode() {
+                const code = document.getElementById('consoleCode').textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    logResult('✅ Console code copied! Open F12 → Console → Paste and press Enter', 'success');
+                    logResult('💡 This will clear the Supabase database AND localStorage', 'info');
+                });
+            }
+
+            function clearPartsStorage() {
+                logResult('🧹 Clearing parts localStorage...', 'info');
+                
+                const partsKeys = [
+                    'partsUsageHistory', 'partsUsageData', 'partsInventory', 
+                    'repairHistory', 'partsTracker', 'partUsage', 'partsUsed',
+                    'inventoryHistory', 'partsUsageTracking', 'repairParts'
+                ];
+
+                let clearedCount = 0;
+                partsKeys.forEach(key => {
+                    if (localStorage.getItem(key)) {
+                        localStorage.removeItem(key);
+                        clearedCount++;
+                    }
+                });
+
+                // Fire events
+                const events = [
+                    'clearPartsUsageData', 'partsUsageCleared', 'inventoryHistoryRefresh'
+                ];
+
+                events.forEach(eventName => {
+                    window.dispatchEvent(new CustomEvent(eventName, {
+                        detail: { cleared: true }
+                    }));
+                });
+
+                logResult(`✅ Cleared ${clearedCount} localStorage keys`, 'success');
+                logResult('⚠️ Note: This only clears browser storage, not database', 'warning');
+                logResult('🔄 Refresh your Parts Usage page to test', 'info');
+            }
+
+            function openSupabase() {
+                window.open('https://supabase.com/dashboard', '_blank');
+                logResult('🗃️ Supabase dashboard opened. Find your project and navigate to the parts_usage_tracking table.', 'info');
+            }
+
+            // Auto-show status
+            window.onload = () => {
+                logResult('🔧 Ready to clear 10 mock parts usage records. Use Method 1 for complete clearing!', 'info');
+            };
+        </script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,666 @@
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PriorityPicker, PRIORITY_COLORS, PRIORITY_LABELS } from '@/components/ui/priority-picker';
+import { RecipientChips } from '@/components/ui/recipient-chips';
+import { AssigneeCombo } from '@/components/ui/assignee-combo';
+import { RequestCard } from '@/components/RequestCard';
+import { 
+  MessageSquare, 
+  Plus, 
+  AlertCircle, 
+  Clock, 
+  User, 
+  Filter,
+  Send,
+  Paperclip,
+  Hash
+} from 'lucide-react';
+
+interface Message {
+  id: string;
+  channel_id: string;
+  author_id: string;
+  body: string;
+  thread_root?: string;
+  mentions: string[];
+  attachments: any[];
+  created_at: string;
+  author_email?: string;
+  channel_name?: string;
+  reply_count?: number;
+}
+
+interface Request {
+  id: string;
+  title: string;
+  description?: string;
+  category?: string;
+  priority: 'urgent' | 'medium' | 'low';
+  status: 'open' | 'in_progress' | 'blocked' | 'done' | 'cancelled';
+  created_by: string;
+  assignee_id?: string;
+  recipients: string[];
+  sla_due_at?: string;
+  sla_breached?: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Channel {
+  id: string;
+  name: string;
+  type: string;
+  description?: string;
+}
+
+const mockUsers = [
+  { id: '1', name: 'Houssam (Owner)', role: 'Owner' },
+  { id: '2', name: 'Kareem (Assistant)', role: 'Assistant' },
+  { id: '3', name: 'Samer (Assistant)', role: 'Assistant' },
+  { id: '4', name: 'Garage Manager', role: 'Manager' },
+  { id: '5', name: 'Sales Lead', role: 'Sales' },
+];
+
+function MessageCenter() {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('messages');
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [requests, setRequests] = useState<Request[]>([]);
+  const [selectedChannel, setSelectedChannel] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [showCreateRequest, setShowCreateRequest] = useState(false);
+  const [showStartNewChat, setShowStartNewChat] = useState(false);
+  const [newMessage, setNewMessage] = useState('');
+  const [selectedUserForChat, setSelectedUserForChat] = useState('');
+
+  // New request form state
+  const [newRequest, setNewRequest] = useState({
+    title: '',
+    description: '',
+    category: '',
+    priority: 'medium' as const,
+    assignee_id: '',
+    recipients: [] as string[]
+  });
+
+  useEffect(() => {
+    loadChannels();
+    loadRequests();
+  }, []);
+
+  useEffect(() => {
+    if (selectedChannel) {
+      loadMessages(selectedChannel);
+    }
+  }, [selectedChannel]);
+
+  const loadChannels = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('channels')
+        .select('*')
+        .order('name');
+
+      if (error) {
+        console.warn('Failed to load channels, using fallback:', error);
+        // Fallback to localStorage or mock data
+        let fallbackChannels = [
+          { id: '1', name: 'General', type: 'team', description: 'General discussions' },
+          { id: '2', name: 'Garage', type: 'team', description: 'Garage operations' },
+          { id: '3', name: 'Sales', type: 'team', description: 'Sales coordination' }
+        ];
+        
+        // Load any stored direct message channels
+        try {
+          const storedChannels = localStorage.getItem('channels');
+          if (storedChannels) {
+            const parsed = JSON.parse(storedChannels);
+            fallbackChannels = [...fallbackChannels, ...parsed.filter((c: any) => c.type === 'direct')];
+          }
+        } catch (e) {
+          console.warn('Failed to load stored channels:', e);
+        }
+        
+        setChannels(fallbackChannels);
+        setSelectedChannel(fallbackChannels[0].id);
+      } else {
+        // Merge database channels with any locally stored direct message channels
+        let allChannels = data || [];
+        try {
+          const storedChannels = localStorage.getItem('channels');
+          if (storedChannels) {
+            const parsed = JSON.parse(storedChannels);
+            const directChannels = parsed.filter((c: any) => c.type === 'direct');
+            allChannels = [...allChannels, ...directChannels];
+          }
+        } catch (e) {
+          console.warn('Failed to load stored channels:', e);
+        }
+        
+        setChannels(allChannels);
+        if (allChannels?.length > 0) {
+          setSelectedChannel(allChannels[0].id);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading channels:', err);
+    }
+  };
+
+  const loadMessages = async (channelId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('view_message_threads')
+        .select('*')
+        .eq('channel_id', channelId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.warn('Failed to load messages, using fallback:', error);
+        // Fallback to localStorage
+        const stored = localStorage.getItem(`messages_${channelId}`);
+        setMessages(stored ? JSON.parse(stored) : []);
+      } else {
+        setMessages(data || []);
+      }
+    } catch (err) {
+      console.error('Error loading messages:', err);
+      setMessages([]);
+    }
+  };
+
+  const loadRequests = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('view_request_summary')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.warn('Failed to load requests, using fallback:', error);
+        // Fallback to localStorage
+        const stored = localStorage.getItem('requests');
+        setRequests(stored ? JSON.parse(stored) : []);
+      } else {
+        setRequests(data || []);
+      }
+    } catch (err) {
+      console.error('Error loading requests:', err);
+      setRequests([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedChannel) return;
+
+    const messageData = {
+      channel_id: selectedChannel,
+      author_id: user?.id || '1',
+      body: newMessage,
+      mentions: [],
+      attachments: []
+    };
+
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert(messageData);
+
+      if (error) {
+        console.warn('Failed to send message to DB, saving locally:', error);
+        // Fallback to localStorage
+        const localMessages = JSON.parse(localStorage.getItem(`messages_${selectedChannel}`) || '[]');
+        const newMsg = {
+          ...messageData,
+          id: Date.now().toString(),
+          created_at: new Date().toISOString(),
+          author_email: user?.email
+        };
+        localMessages.unshift(newMsg);
+        localStorage.setItem(`messages_${selectedChannel}`, JSON.stringify(localMessages));
+        setMessages(localMessages);
+      } else {
+        loadMessages(selectedChannel);
+      }
+
+      setNewMessage('');
+    } catch (err) {
+      console.error('Error sending message:', err);
+    }
+  };
+
+  const createRequest = async () => {
+    if (!newRequest.title.trim()) return;
+
+    const requestData = {
+      ...newRequest,
+      created_by: user?.id || '1',
+      channel_id: selectedChannel,
+      sla_due_at: newRequest.priority === 'urgent' 
+        ? new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString() 
+        : null
+    };
+
+    try {
+      const { error } = await supabase
+        .from('requests')
+        .insert(requestData);
+
+      if (error) {
+        console.warn('Failed to create request in DB, saving locally:', error);
+        // Fallback to localStorage
+        const localRequests = JSON.parse(localStorage.getItem('requests') || '[]');
+        const newReq = {
+          ...requestData,
+          id: Date.now().toString(),
+          status: 'open' as const,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        localRequests.unshift(newReq);
+        localStorage.setItem('requests', JSON.stringify(localRequests));
+        setRequests(localRequests);
+      } else {
+        loadRequests();
+      }
+
+      setNewRequest({
+        title: '',
+        description: '',
+        category: '',
+        priority: 'medium',
+        assignee_id: '',
+        recipients: []
+      });
+      setShowCreateRequest(false);
+    } catch (err) {
+      console.error('Error creating request:', err);
+    }
+  };
+
+  const startNewChat = async () => {
+    if (!selectedUserForChat) return;
+
+    const selectedUser = mockUsers.find(u => u.id === selectedUserForChat);
+    if (!selectedUser) return;
+
+    const currentUserId = user?.id || '1';
+    const currentUserName = user?.email?.split('@')[0] || 'You';
+    
+    // Create a direct message channel name
+    const channelName = `${currentUserName} & ${selectedUser.name}`;
+    const channelId = `dm_${currentUserId}_${selectedUserForChat}`;
+
+    // Check if channel already exists
+    const existingChannel = channels.find(c => c.id === channelId);
+    if (existingChannel) {
+      setSelectedChannel(channelId);
+      setShowStartNewChat(false);
+      setSelectedUserForChat('');
+      return;
+    }
+
+    const newChannel = {
+      id: channelId,
+      name: channelName,
+      type: 'direct',
+      description: `Direct message with ${selectedUser.name}`
+    };
+
+    try {
+      const { error } = await supabase
+        .from('channels')
+        .insert(newChannel);
+
+      if (error) {
+        console.warn('Failed to create channel in DB, saving locally:', error);
+        // Fallback to localStorage
+        const localChannels = JSON.parse(localStorage.getItem('channels') || '[]');
+        localChannels.push(newChannel);
+        localStorage.setItem('channels', JSON.stringify(localChannels));
+      }
+
+      // Add to current channels list
+      setChannels(prev => [...prev, newChannel]);
+      setSelectedChannel(channelId);
+      setShowStartNewChat(false);
+      setSelectedUserForChat('');
+    } catch (err) {
+      console.error('Error creating chat channel:', err);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors = {
+      open: 'bg-blue-100 text-blue-700',
+      in_progress: 'bg-yellow-100 text-yellow-700',
+      blocked: 'bg-red-100 text-red-700',
+      done: 'bg-green-100 text-green-700',
+      cancelled: 'bg-gray-100 text-gray-700'
+    };
+    return colors[status as keyof typeof colors] || colors.open;
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Message Center</h1>
+        <div className="flex gap-2">
+          {/* Start New Chat Button */}
+          <Dialog open={showStartNewChat} onOpenChange={setShowStartNewChat}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Start New Chat
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="overflow-visible z-[1000001] max-w-md">
+              <DialogHeader>
+                <DialogTitle>Start New Chat</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="user-select">Select User to Chat With</Label>
+                  <Select value={selectedUserForChat} onValueChange={setSelectedUserForChat}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Choose a user..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockUsers
+                        .filter(u => u.id !== (user?.id || '1')) // Don't show current user
+                        .map(u => (
+                          <SelectItem key={u.id} value={u.id}>
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                              <span className="font-medium">{u.name}</span>
+                              <span className="text-xs text-gray-500">({u.role})</span>
+                            </div>
+                          </SelectItem>
+                        ))
+                      }
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button variant="outline" onClick={() => {
+                    setShowStartNewChat(false);
+                    setSelectedUserForChat('');
+                  }}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={startNewChat}
+                    disabled={!selectedUserForChat}
+                  >
+                    Start Chat
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* New Request Button */}
+          <Dialog open={showCreateRequest} onOpenChange={setShowCreateRequest}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                New Request
+              </Button>
+            </DialogTrigger>
+          <DialogContent className="overflow-visible z-[1000001] max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Create New Request</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={newRequest.title}
+                  onChange={(e) => setNewRequest(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Brief description of the request"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={newRequest.description}
+                  onChange={(e) => setNewRequest(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Detailed description..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="category">Category</Label>
+                  <Select value={newRequest.category} onValueChange={(value) => setNewRequest(prev => ({ ...prev, category: value }))}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Parts">Parts</SelectItem>
+                      <SelectItem value="Sales">Sales</SelectItem>
+                      <SelectItem value="Garage">Garage</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label>Priority</Label>
+                  <PriorityPicker
+                    value={newRequest.priority}
+                    onChange={(priority) => setNewRequest(prev => ({ ...prev, priority: priority as any }))}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label>Assign To</Label>
+                <AssigneeCombo
+                  users={mockUsers}
+                  value={newRequest.assignee_id}
+                  onChange={(id) => setNewRequest(prev => ({ ...prev, assignee_id: id }))}
+                />
+              </div>
+
+              <div>
+                <Label>Recipients</Label>
+                <RecipientChips
+                  value={newRequest.recipients}
+                  onChange={(recipients) => setNewRequest(prev => ({ ...prev, recipients }))}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setShowCreateRequest(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={createRequest}>
+                  Create Request
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="messages">
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Messages
+          </TabsTrigger>
+          <TabsTrigger value="requests">
+            <AlertCircle className="w-4 h-4 mr-2" />
+            Requests ({requests.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="messages" className="space-y-4">
+          {/* Channel Selection */}
+          <div className="flex flex-wrap gap-2">
+            {channels.map(channel => {
+              const isDirect = channel.type === 'direct';
+              return (
+                <button
+                  key={channel.id}
+                  onClick={() => setSelectedChannel(channel.id)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    selectedChannel === channel.id
+                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                      : 'bg-gray-100 hover:bg-gray-200'
+                  }`}
+                >
+                  {isDirect ? (
+                    <User className="w-3 h-3 inline mr-1" />
+                  ) : (
+                    <Hash className="w-3 h-3 inline mr-1" />
+                  )}
+                  {channel.name}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Message List */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">
+                #{channels.find(c => c.id === selectedChannel)?.name || 'Messages'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {messages.map(message => (
+                <div key={message.id} className="flex gap-3 p-3 rounded-lg hover:bg-gray-50">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-sm">{message.author_email || 'User'}</span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(message.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="text-gray-700">{message.body}</p>
+                    {message.reply_count > 0 && (
+                      <button className="text-xs text-blue-600 hover:underline mt-1">
+                        {message.reply_count} replies
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {messages.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No messages yet. Start the conversation!
+                </div>
+              )}
+
+              {/* Message Input */}
+              <div className="flex gap-2 pt-4 border-t">
+                <Input
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Type a message..."
+                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                  className="flex-1"
+                />
+                <Button size="icon" variant="outline">
+                  <Paperclip className="w-4 h-4" />
+                </Button>
+                <Button onClick={sendMessage}>
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="requests" className="space-y-4">
+          {/* Request Board */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Open Requests */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  Open ({requests.filter(r => r.status === 'open').length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {requests.filter(r => r.status === 'open').map(request => (
+                  <RequestCard key={request.id} request={request} />
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* In Progress */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  In Progress ({requests.filter(r => r.status === 'in_progress').length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {requests.filter(r => r.status === 'in_progress').map(request => (
+                  <RequestCard key={request.id} request={request} />
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Done */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  Done ({requests.filter(r => r.status === 'done').length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {requests.filter(r => r.status === 'done').map(request => (
+                  <RequestCard key={request.id} request={request} />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+
+
+export default MessageCenter;

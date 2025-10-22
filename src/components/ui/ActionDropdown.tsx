@@ -4,6 +4,7 @@ interface ActionOption {
   value: string;
   label: string;
   disabled?: boolean;
+  group?: string;
 }
 
 interface ActionDropdownProps {
@@ -12,6 +13,7 @@ interface ActionDropdownProps {
   className?: string;
   disabled?: boolean;
   ariaLabel?: string;
+  id?: string;
 }
 
 const ActionDropdown: React.FC<ActionDropdownProps> = ({
@@ -19,8 +21,17 @@ const ActionDropdown: React.FC<ActionDropdownProps> = ({
   onAction,
   className = '',
   disabled = false,
-  ariaLabel = 'Actions'
+  ariaLabel = 'Actions',
+  id
 }) => {
+  // Group options by their group property
+  const groupedOptions = options.reduce((acc, option) => {
+    const group = option.group || 'main';
+    if (!acc[group]) acc[group] = [];
+    acc[group].push(option);
+    return acc;
+  }, {} as Record<string, ActionOption[]>);
+
   return (
     <div className="relative">
       <select
@@ -42,10 +53,13 @@ const ActionDropdown: React.FC<ActionDropdownProps> = ({
           backgroundRepeat: 'no-repeat',
           backgroundSize: '20px'
         }}
+        id={id}
         aria-label={ariaLabel}
       >
-        <option value="">Actions</option>
-        {options.map((option) => (
+        <option value="" disabled>Actions</option>
+        
+        {/* Main options */}
+        {groupedOptions.main?.map((option) => (
           <option 
             key={option.value} 
             value={option.value}
@@ -54,6 +68,24 @@ const ActionDropdown: React.FC<ActionDropdownProps> = ({
             {option.label}
           </option>
         ))}
+
+        {/* Other grouped options */}
+        {Object.entries(groupedOptions).map(([group, groupOptions]) => {
+          if (group === 'main') return null;
+          return (
+            <optgroup key={group} label={group}>
+              {groupOptions.map((option) => (
+                <option 
+                  key={option.value} 
+                  value={option.value}
+                  disabled={option.disabled}
+                >
+                  {option.label}
+                </option>
+              ))}
+            </optgroup>
+          );
+        })}
       </select>
     </div>
   );

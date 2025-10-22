@@ -1040,7 +1040,7 @@ const ReservedCarsDeliveryTracker: React.FC<DeliveryTrackerProps> = ({ className
 
       {/* Delivery Date Dialog */}
       <Dialog open={showDeliveryDateDialog} onOpenChange={setShowDeliveryDateDialog}>
-        <DialogContent className="max-w-5xl w-[95vw] max-h-[95vh] bg-white border border-gray-300 shadow-xl flex flex-col" style={{ zIndex: 99999 }}>
+        <DialogContent className="max-w-5xl w-[95vw] max-h-[95vh] bg-white border border-gray-300 shadow-xl flex flex-col">
           {/* Fixed Header */}
           <DialogHeader className="border-b border-gray-200 pb-4 flex-shrink-0">
             <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -1361,7 +1361,7 @@ const ReservedCarsDeliveryTracker: React.FC<DeliveryTrackerProps> = ({ className
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="clientPhone">Phone Number *</Label>
+                    <Label htmlFor="clientPhone">Phone Number</Label>
                     <Input
                       id="clientPhone"
                       value={deliveryCompletionData.clientPhone}

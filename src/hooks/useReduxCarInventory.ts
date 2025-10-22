@@ -156,23 +156,7 @@ export const useReduxCarInventory = () => {
     });
   };
 
-  const resetToMockData = async () => {
-    try {
-      await dispatch(loadCarsFromStorage());
-      
-      toast({
-        title: "Data Reset",
-        description: "Car inventory has been reset to fresh mock data.",
-      });
-    } catch (error) {
-      console.error('Error resetting data:', error);
-      toast({
-        title: "Reset Failed",
-        description: "Failed to reset data. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+
 
   const loadCars = async () => {
     try {
@@ -208,6 +192,5 @@ export const useReduxCarInventory = () => {
     handlePdiComplete,
     handleCarUpdate,
     loadCars,
-    resetToMockData,
   };
 };

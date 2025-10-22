@@ -318,7 +318,7 @@ const TimeTrackingDashboard: React.FC = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <Select value={dateRange} onValueChange={setDateRange}>
-              <SelectTrigger>
+              <SelectTrigger id="dateRange">
                 <SelectValue placeholder="Date Range" />
               </SelectTrigger>
               <SelectContent>
@@ -330,7 +330,7 @@ const TimeTrackingDashboard: React.FC = () => {
             </Select>
 
             <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-              <SelectTrigger>
+              <SelectTrigger id="employee">
                 <SelectValue placeholder="Employee" />
               </SelectTrigger>
               <SelectContent>
@@ -342,7 +342,7 @@ const TimeTrackingDashboard: React.FC = () => {
             </Select>
 
             <Select value={selectedActivity} onValueChange={(value) => setSelectedActivity(value as ActivityType | 'all')}>
-              <SelectTrigger>
+              <SelectTrigger id="activityType">
                 <SelectValue placeholder="Activity Type" />
               </SelectTrigger>
               <SelectContent>

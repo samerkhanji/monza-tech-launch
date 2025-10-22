@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tool } from '@/services/toolsEquipmentService';
+import { safeParseFloat } from '@/utils/errorHandling';
+import { toast } from '@/hooks/use-toast';
 
 interface AddToolDialogProps {
   isOpen: boolean;
@@ -28,13 +30,17 @@ const AddToolDialog: React.FC<AddToolDialogProps> = ({ isOpen, onClose, onSave }
     e.preventDefault();
     
     if (!formData.name || !formData.category || !formData.purchasePrice) {
-      alert('Please fill in required fields');
+      toast({
+        title: "Validation Error",
+        description: "Please fill in required fields",
+        variant: "destructive",
+      });
       return;
     }
 
     const toolData = {
       ...formData,
-      purchasePrice: parseFloat(formData.purchasePrice),
+      purchasePrice: safeParseFloat(formData.purchasePrice, 0),
       purchaseDate: new Date().toISOString().split('T')[0],
       supplier: '',
       usageHours: 0,

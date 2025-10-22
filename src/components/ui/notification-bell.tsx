@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BellDot, Eye, Clock, User, Car } from 'lucide-react';
+import { BellDot, Eye, Clock, User, Car, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -62,9 +62,16 @@ const NotificationBell = ({ className }: NotificationBellProps) => {
     setShowNotificationCenter(true);
   };
 
+  // Handle click outside to close dropdown
+  const handleClickOutside = () => {
+    if (isOpen) {
+      setIsOpen(false);
+    }
+  };
+
   return (
     <>
-      {/* Simple dropdown instead of Popover for debugging */}
+      {/* Simple dropdown positioned under the bell */}
       <div className="relative">
         <Button
           variant="ghost"
@@ -87,9 +94,9 @@ const NotificationBell = ({ className }: NotificationBellProps) => {
           )}
         </Button>
 
-        {/* Simple dropdown menu */}
+        {/* Simple dropdown menu positioned under the bell */}
         {isOpen && (
-          <div className="absolute right-0 top-12 w-96 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+          <div className="absolute right-0 mt-2 w-96 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
             <Card className="border-0 shadow-lg bg-white">
               <CardHeader className="pb-3">
                 <div className="notification-header">
@@ -229,14 +236,11 @@ const NotificationBell = ({ className }: NotificationBellProps) => {
           </div>
         )}
 
-        {/* Click outside to close */}
+        {/* Click outside overlay to close dropdown */}
         {isOpen && (
           <div 
             className="fixed inset-0 z-40" 
-            onClick={() => {
-              console.log('Clicked outside, closing dropdown');
-              setIsOpen(false);
-            }}
+            onClick={handleClickOutside}
           />
         )}
       </div>

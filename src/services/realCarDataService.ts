@@ -39,7 +39,7 @@ export class RealCarDataService {
     try {
       // Fetch cars with their client links
       const { data: carsData, error: carsError } = await supabase
-        .from('cars')
+        .from('car_inventory')
         .select(`
           *,
           car_client_links(
@@ -160,7 +160,7 @@ export class RealCarDataService {
   static async updateCarStatus(carId: string, newStatus: 'in_stock' | 'reserved' | 'sold', notes?: string): Promise<void> {
     try {
       const { error } = await supabase
-        .from('cars')
+        .from('car_inventory')
         .update({ 
           status: newStatus,
           notes: notes ? `${new Date().toLocaleString()}: ${notes}` : undefined,
@@ -179,7 +179,7 @@ export class RealCarDataService {
     try {
       // Update car status to available and move out of garage
       const { error } = await supabase
-        .from('cars')
+        .from('car_inventory')
         .update({ 
           status: 'in_stock',
           garage_status: null,

@@ -1,0 +1,109 @@
+/* PDI Checklist Dialog Styles - Override Global Scrollbar */
+.pdi-scroll-container {
+  scrollbar-width: thick !important;
+  scrollbar-color: #ff0000 #ffffff !important;
+}
+
+/* Force override global webkit scrollbar styles */
+.pdi-scroll-container::-webkit-scrollbar {
+  width: 20px !important;
+  height: 20px !important;
+  background-color: #ffffff !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-track {
+  background: #ffffff !important;
+  border: 2px solid #ff0000 !important;
+  border-radius: 10px !important;
+  margin: 2px !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-thumb {
+  background: #ff0000 !important;
+  border-radius: 10px !important;
+  border: 2px solid #ffffff !important;
+  min-height: 40px !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #cc0000 !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-corner {
+  background: #ffffff !important;
+}
+
+/* Additional specificity to override global styles */
+div.pdi-scroll-container::-webkit-scrollbar {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+div.pdi-scroll-container::-webkit-scrollbar-thumb {
+  background: #ff0000 !important;
+  border-radius: 10px !important;
+}
+
+div.pdi-scroll-container::-webkit-scrollbar-track {
+  background: #ffffff !important;
+  border: 2px solid #ff0000 !important;
+}
+
+/* Ensure the dialog content is properly scrollable */
+.pdi-dialog-content {
+  max-height: calc(90vh - 200px);
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin: 10px;
+  background-color: #ffffff;
+}
+
+/* Smooth scrolling behavior */
+.pdi-dialog-content {
+  scroll-behavior: smooth;
+}
+
+/* Ensure proper spacing for checklist items */
+.pdi-checklist-section {
+  margin-bottom: 1.5rem;
+}
+
+.pdi-checklist-item {
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .pdi-dialog-content {
+    max-height: calc(80vh - 150px);
+    padding: 15px;
+  }
+}
+
+/* Force scrollbar to always be visible */
+.pdi-scroll-container {
+  overflow-y: scroll !important;
+  scrollbar-gutter: stable;
+}
+
+/* Ensure content is tall enough to trigger scrolling */
+.pdi-scroll-container > div {
+  min-height: 100%;
+}
+
+/* Make scrollbar more visible */
+.pdi-scroll-container::-webkit-scrollbar {
+  width: 16px !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-thumb {
+  background: #2d3748 !important;
+  border: 2px solid #e2e8f0 !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-track {
+  background: #f7fafc !important;
+  border: 1px solid #e2e8f0 !important;
+} 

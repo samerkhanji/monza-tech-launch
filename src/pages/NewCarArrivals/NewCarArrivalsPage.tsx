@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { NewCar, createNewCar } from './types';
+import { safeParseInt, safeLocalStorageGet } from '@/utils/errorHandling';
 
 const NewCarArrivalsPage: React.FC = () => {
   const [newCars, setNewCars] = useState<NewCar[]>([]);
@@ -59,7 +60,7 @@ const NewCarArrivalsPage: React.FC = () => {
 
   const handleVinScanned = (vin: string) => {
     // Check if VIN exists in ordered cars
-    const orderedCars = JSON.parse(localStorage.getItem('orderedCars') || '[]');
+    const orderedCars = safeLocalStorageGet<any[]>('orderedCars', []);
     const existingOrder = orderedCars.find((order: any) => order.vin_number === vin);
 
     setShowVinScanner(false); // Close scanner regardless of outcome
@@ -191,7 +192,7 @@ const NewCarArrivalsPage: React.FC = () => {
     };
 
     // Save to localStorage (or your inventory system)
-    const existingInventory = JSON.parse(localStorage.getItem('carInventory') || '[]');
+    const existingInventory = safeLocalStorageGet<any[]>('carInventory', []);
     existingInventory.push(inventoryCar);
     localStorage.setItem('carInventory', JSON.stringify(existingInventory));
 
@@ -352,7 +353,7 @@ const NewCarArrivalsPage: React.FC = () => {
                 id="year"
                 type="number"
                 value={newCar.year}
-                onChange={(e) => setNewCar(prev => ({ ...prev, year: parseInt(e.target.value) }))}
+                onChange={(e) => setNewCar(prev => ({ ...prev, year: safeParseInt(e.target.value, 2024) }))}
               />
             </div>
             <div>

@@ -133,11 +133,11 @@ const CarFinancialPage: React.FC = () => {
   const { logActivity } = useAuditLog();
 
   // Add customs management access check
-  const canManageCustoms = user?.role === 'owner' || user?.name === 'Samaya' || user?.name === 'Lara';
+  const canManageCustoms = user?.role?.toUpperCase() === 'OWNER' || user?.name === 'Samaya' || user?.name === 'Lara';
 
   // Load car data from carService
   useEffect(() => {
-    if (user?.role !== 'owner') return; // Skip loading if not owner
+    if (user?.role?.toUpperCase() !== 'OWNER') return; // Skip loading if not owner
     
     const loadCarData = async () => {
       setIsLoading(true);
@@ -597,7 +597,7 @@ const CarFinancialPage: React.FC = () => {
   };
 
   // Check if user is owner after all hooks
-  const isOwner = user?.role === 'owner';
+  const isOwner = user?.role?.toUpperCase() === 'OWNER';
 
   if (!isOwner) {
     return (
@@ -780,6 +780,8 @@ const CarFinancialPage: React.FC = () => {
         </div>
 
         <select
+          id="statusFilter"
+          name="statusFilter"
           className="h-10 rounded-md border border-input bg-background px-3 py-2"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}

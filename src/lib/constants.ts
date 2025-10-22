@@ -59,7 +59,7 @@ export const STORAGE_KEYS = {
   GARAGE_SCHEDULES: 'garageSchedules',
   REPAIR_HISTORY: 'repairHistory',
   APP_REPORTS: 'appReports',
-  TUTORIAL_COMPLETED: 'tutorialCompleted'
+
 } as const;
 
 // User Roles

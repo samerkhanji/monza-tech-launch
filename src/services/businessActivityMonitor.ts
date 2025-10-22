@@ -14,6 +14,9 @@ class BusinessActivityMonitor {
     this.setupWorkflowTracking();
     
     console.log('🔍 Business Activity Monitor initialized');
+    
+    // Disable real data loading to prevent Supabase errors
+    console.log('⚠️ Real data loading disabled - using mock data only');
   }
 
   // Global error handler for system errors

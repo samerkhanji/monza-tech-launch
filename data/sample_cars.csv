@@ -1,0 +1,11 @@
+make,model,year,vin,color,price,mileage,status,condition,fuel_type,transmission
+BMW,X5,2023,WBXPC9C51EP123456,Space Gray,75000,1200,available,excellent,gasoline,automatic
+Mercedes-Benz,C-Class,2024,WDD2059421F123456,Polar White,65000,500,available,excellent,gasoline,automatic
+Audi,A4,2023,WAUZZZ8K1DA123456,Mythos Black,55000,2500,sold,excellent,gasoline,automatic
+Toyota,Camry,2023,4T1C11AK8PU123456,Pearl White,35000,8000,available,good,gasoline,automatic
+Honda,Accord,2022,1HGCV1F3XNA123456,Modern Steel,32000,15000,available,good,gasoline,automatic
+Lexus,ES350,2023,58ABK1GG4PU123456,Atomic Silver,45000,3000,in_service,excellent,gasoline,automatic
+BMW,320i,2022,WBA8E1C55NU123456,Jet Black,42000,18000,available,good,gasoline,automatic
+Mercedes-Benz,GLE,2024,4JGDA2EB8PB123456,Obsidian Black,85000,800,available,excellent,gasoline,automatic
+Audi,Q5,2023,WA1BNAFY1P2123456,Glacier White,58000,5500,reserved,excellent,gasoline,automatic
+Toyota,RAV4,2023,2T3F1RFV8PC123456,Blueprint Blue,38000,12000,available,good,gasoline,automatic

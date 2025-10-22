@@ -592,7 +592,7 @@ class MessagingService {
       
       // Check if user has permission to add members
       const currentParticipant = chat.participants.find((p: any) => p.userId === this.currentUser.id);
-      if (!currentParticipant?.canAddMembers && this.currentUser.role !== 'owner') {
+      if (!currentParticipant?.canAddMembers && this.currentUser.role?.toUpperCase() !== 'OWNER') {
         throw new Error('You do not have permission to add members to this group');
       }
 
@@ -637,7 +637,7 @@ class MessagingService {
       
       // Check if user has permission to remove members
       const currentParticipant = chat.participants.find((p: any) => p.userId === this.currentUser.id);
-      if (!currentParticipant?.canRemoveMembers && this.currentUser.role !== 'owner') {
+      if (!currentParticipant?.canRemoveMembers && this.currentUser.role?.toUpperCase() !== 'OWNER') {
         throw new Error('You do not have permission to remove members from this group');
       }
 

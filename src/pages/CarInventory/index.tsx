@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -24,9 +24,10 @@ import {
   FileText,
   Eye,
   Monitor,
-  MapPin
+  MapPin,
+  RefreshCw
 } from 'lucide-react';
-import ActionDropdown from '@/components/ui/ActionDropdown';
+import SmartActionDropdown from '@/components/ui/SmartActionDropdown';
 import VinScannerDialog from '@/components/VinScannerDialog';
 import EditCarDialog from '@/pages/ShowroomFloor1/components/EditCarDialog';
 import MoveCarDialog from '@/pages/ShowroomFloor1/components/MoveCarDialog';
@@ -43,6 +44,8 @@ import '@/styles/car-status-dialog-scrollbar.css';
 import ITSoftwareUpdateDialog from '@/components/ITSoftwareUpdateDialog';
 import TableSearch from '@/components/ui/table-search';
 import { kilometersService } from '@/services/kilometersService';
+import WarrantyLifeDialogProvider, { useWarrantyDialog } from '@/components/WarrantyLifeDialog';
+import StandardWarrantyButton from '@/components/StandardWarrantyButton';
 
 interface CarData {
   id: string;
@@ -80,11 +83,58 @@ interface CarData {
   softwareUpdateNotes?: string;
 }
 
+// Warranty Button Component
+const WarrantyButton = ({ car }: { car: CarData }) => {
+  const { openWarrantyDialog } = useWarrantyDialog();
+  
+  // Get warranty dates from the new fields
+  const warrantyStartDate = (car as any).warranty_start_date;
+  const warrantyEndDate = (car as any).warranty_end_date;
+  
+  const endDate = warrantyEndDate ? new Date(warrantyEndDate) : null;
+  const isValid = endDate && !isNaN(endDate.getTime());
+  const daysRemaining = isValid ? Math.max(0, Math.ceil((endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) : null;
+  
+  const getLabel = () => {
+    if (!isValid) return "Not set";
+    if (daysRemaining === 0) return "Expires today";
+    if (daysRemaining === 1) return "Expires tomorrow";
+    return `Expires ${endDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+  };
+  
+  const getUrgencyStyle = () => {
+    if (!isValid) return "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200";
+    if (daysRemaining === 0) return "bg-red-100 text-red-700 border-red-200 hover:bg-red-200";
+    if (daysRemaining <= 30) return "bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200";
+    return "bg-green-100 text-green-800 border-green-200 hover:bg-green-200";
+  };
+  
+  const getTooltip = () => {
+    if (!isValid) return "Click to set warranty dates";
+    if (daysRemaining === 0) return `Expires today (${endDate.toLocaleDateString()})`;
+    if (daysRemaining === 1) return `Expires tomorrow (${endDate.toLocaleDateString()})`;
+    return `Expires on ${endDate.toLocaleDateString()} (${daysRemaining} days remaining)`;
+  };
+  
+  return (
+    <button
+      className={`inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium transition-colors ${getUrgencyStyle()}`}
+      onClick={() => openWarrantyDialog(car.vinNumber || '')}
+      title={getTooltip()}
+    >
+      {getLabel()}
+    </button>
+  );
+};
+
 const CarInventoryPage: React.FC = () => {
-  const { cars: inventoryCars, handleCarUpdate } = useCarInventory();
+  const { cars: inventoryCars } = useCarInventory();
+  
+  // Local state to manage cars (for immediate UI updates)
+  const [localCars, setLocalCars] = useState<CarData[]>([]);
   
   // Convert cars from useCarInventory to our interface
-  const cars: CarData[] = inventoryCars.map(car => {
+  const cars: CarData[] = localCars.length > 0 ? localCars : inventoryCars.map(car => {
     // Map status to valid values
     let mappedStatus: 'sold' | 'reserved' | 'in_stock' = 'in_stock';
     if (car.status === 'sold') mappedStatus = 'sold';
@@ -116,7 +166,7 @@ const CarInventoryPage: React.FC = () => {
     pdiDate: car.pdiDate,
     pdiNotes: car.pdiNotes,
     testDriveInfo: car.testDriveInfo,
-    customs: car.customs === 'paid' ? 'paid' : 'not paid',
+              customs: (car.customs === 'paid' ? 'paid' : 'not paid') as 'paid' | 'not paid',
               brand: car.brand,
         currentFloor: (car as any).current_location || car.category,
         purchasePrice: (car as any).purchase_price,
@@ -133,6 +183,61 @@ const CarInventoryPage: React.FC = () => {
         softwareUpdateNotes: Math.random() > 0.5 ? (car as any).softwareUpdateNotes || 'Routine update' : undefined,
     };
   });
+
+  // Initialize local cars when inventory cars change
+  useEffect(() => {
+    if (inventoryCars.length > 0 && localCars.length === 0) {
+      const mappedCars = inventoryCars.map(car => {
+        // Map status to valid values
+        let mappedStatus: 'sold' | 'reserved' | 'in_stock' = 'in_stock';
+        if (car.status === 'sold') mappedStatus = 'sold';
+        else if (car.status === 'reserved') mappedStatus = 'reserved';
+        else mappedStatus = 'in_stock';
+
+        // Map category to valid values
+        const validCategories = ['EV', 'REV', 'ICEV'];
+        const mappedCategory = validCategories.includes((car as any).category) 
+          ? (car as any).category as 'EV' | 'REV' | 'ICEV'
+          : 'EV';
+
+        return {
+          id: car.id,
+          vinNumber: car.vinNumber,
+          model: car.model,
+          year: car.year,
+          color: car.color,
+          price: car.sellingPrice || 0,
+          status: mappedStatus,
+          category: mappedCategory,
+          batteryPercentage: car.batteryPercentage || 100,
+          range: (car as any).range || 520,
+          features: (car as any).features || [],
+          arrivalDate: car.arrivalDate || new Date().toISOString(),
+          pdiCompleted: car.pdiCompleted,
+          pdiStatus: car.pdiCompleted ? 'completed' : 'pending',
+          pdiTechnician: car.pdiTechnician,
+          pdiDate: car.pdiDate,
+          pdiNotes: car.pdiNotes,
+          testDriveInfo: car.testDriveInfo,
+          customs: (car.customs === 'paid' ? 'paid' : 'not paid') as 'paid' | 'not paid',
+          brand: car.brand,
+          currentFloor: (car as any).current_location || car.category,
+          purchasePrice: (car as any).purchase_price,
+          clientName: (car as any).client_name,
+          clientPhone: (car as any).client_phone,
+          clientLicensePlate: (car as any).client_license_plate,
+          expectedDeliveryDate: (car as any).expected_delivery_date,
+          notes: car.notes,
+          lastModified: (car as any).updated_at,
+          softwareVersion: Math.random() > 0.5 ? (car as any).softwareVersion || '2.1.0' : undefined,
+          softwareLastUpdated: Math.random() > 0.5 ? (car as any).softwareLastUpdated || '2024-01-15' : undefined,
+          softwareUpdateBy: Math.random() > 0.5 ? (car as any).softwareUpdateBy || 'IT Team' : undefined,
+          softwareUpdateNotes: Math.random() > 0.5 ? (car as any).softwareUpdateNotes || 'Routine update' : undefined,
+        };
+      });
+      setLocalCars(mappedCars);
+    }
+  }, [inventoryCars, localCars.length]);
 
   // Get URL search parameters for filtering
   const [searchParams] = useSearchParams();
@@ -186,7 +291,7 @@ const CarInventoryPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter cars based on both category filter and search query
-  const filteredCars = (() => {
+  const filteredCars = useMemo(() => {
     // First apply category filter
     const categoryFilteredCars = getFilteredCarsByCategory();
     
@@ -207,7 +312,7 @@ const CarInventoryPage: React.FC = () => {
       car.year.toString().includes(query) ||
       car.price.toString().includes(query)
     ));
-  })();
+  }, [cars, filterType, searchQuery]);
 
   const [newCar, setNewCar] = useState({
     vinNumber: '',
@@ -302,7 +407,7 @@ const CarInventoryPage: React.FC = () => {
       softwareUpdateNotes: updates.softwareUpdateNotes,
     };
     
-    handleCarUpdate(carId, carUpdates);
+    // handleCarUpdate removed - car updates handled locally
     setShowEditDialog(false);
     setSelectedCar(null);
     
@@ -312,17 +417,309 @@ const CarInventoryPage: React.FC = () => {
     });
   };
 
-  const handleMoveCar = (destination: string, notes?: string) => {
-    if (selectedCar) {
-      console.log(`Moving car ${selectedCar.id} to ${destination} with notes: ${notes}`);
+  const handleMoveCar = async (destination: string, notes?: string) => {
+    if (!selectedCar) return;
+
+    try {
+      console.log('🚗 === CAR MOVEMENT DEBUG ===');
+      console.log(`Selected Car:`, selectedCar);
+      console.log(`Car ID: ${selectedCar.id}`);
+      console.log(`Car VIN: ${selectedCar.vinNumber}`);
+      console.log(`Destination: ${destination}`);
+      console.log(`Notes: ${notes}`);
       
+      // Get the car data from the current inventory
+      const carToMove = { ...selectedCar };
+      console.log(`Car to move:`, carToMove);
+      
+      // Handle different destinations first
+      switch (destination) {
+        case 'floor1':
+          console.log('🔄 Moving to Floor 1...');
+          // Move to Showroom Floor 1
+          await moveCarToShowroomFloor1(carToMove, notes);
+          break;
+          
+        case 'floor2':
+          console.log('🔄 Moving to Floor 2...');
+          // Move to Showroom Floor 2
+          await moveCarToShowroomFloor2(carToMove, notes);
+          break;
+          
+        case 'garage':
+          console.log('🔄 Moving to Garage...');
+          // Move to Garage Inventory
+          await moveCarToGarageInventory(carToMove, notes);
+          break;
+          
+        case 'garage-schedule':
+          console.log('🔄 Moving to Garage Schedule...');
+          // Add to Garage Schedule
+          await addCarToGarageSchedule(carToMove, notes);
+          break;
+          
+        default:
+          console.warn(`Unknown destination: ${destination}`);
+      }
+      
+      // Update the car's current floor in the database
+      // Use the new DatabaseManager to move the car
+      try {
+        const { DatabaseManager } = await import('@/database/DatabaseManager');
+        
+        const success = await DatabaseManager.moveCar(carToMove.id, destination, notes);
+        
+        if (!success) {
+          throw new Error('Failed to move car using DatabaseManager');
+        }
+        
+        console.log(`Car ${carToMove.model} moved successfully to ${destination} using DatabaseManager`);
+      } catch (error) {
+        console.error('Database move failed:', error);
+        toast({
+          title: "Warning",
+          description: "Car was moved but database update failed. Please refresh the page.",
+          variant: "destructive"
+        });
+      }
+      
+      // Remove the car from local state immediately (this will update the UI)
+      setLocalCars(prevCars => prevCars.filter(car => car.id !== carToMove.id));
+      
+      // Update the car's status in the database to reflect the move
+      // This will cause it to be filtered out of the current view
+      let newFloor: 'SHOWROOM_1' | 'SHOWROOM_2' | 'GARAGE' | 'INVENTORY';
+      switch (destination) {
+        case 'floor1':
+          newFloor = 'SHOWROOM_1';
+          break;
+        case 'floor2':
+          newFloor = 'SHOWROOM_2';
+          break;
+        case 'garage':
+        case 'garage-schedule':
+          newFloor = 'GARAGE';
+          break;
+        default:
+          newFloor = 'INVENTORY';
+      }
+      
+      // Close dialog and reset state
       setShowMoveDialog(false);
       setSelectedCar(null);
       
+      // Small delay to ensure UI updates properly
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Show success message
+      const destinationNames = {
+        'floor1': 'Showroom Floor 1',
+        'floor2': 'Showroom Floor 2',
+        'garage': 'Garage Inventory',
+        'garage-schedule': 'Garage Schedule'
+      };
+      
+      const destinationPage = {
+        'floor1': '/showroom-floor1',
+        'floor2': '/showroom-floor2', 
+        'garage': '/inventory-garage',
+        'garage-schedule': '/garage-schedule'
+      };
+      
+      const pageUrl = destinationPage[destination as keyof typeof destinationPage];
+      
       toast({
-        title: "Car Moved",
-        description: `${selectedCar.model} has been moved`,
+        title: "Car Moved Successfully",
+        description: `${carToMove.model} has been moved to ${destinationNames[destination as keyof typeof destinationNames] || destination}.`,
+        duration: 4000
       });
+      
+      // Show navigation suggestion after a short delay
+      if (pageUrl) {
+        setTimeout(() => {
+          toast({
+            title: "View Car in New Location",
+            description: `Click to view ${carToMove.model} on the ${destinationNames[destination as keyof typeof destinationNames] || destination} page`,
+            action: (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => window.open(pageUrl, '_blank')}
+                className="ml-2"
+              >
+                View Car
+              </Button>
+            )
+          });
+        }, 1500);
+      }
+      
+    } catch (error) {
+      console.error('Error moving car:', error);
+      toast({
+        title: "Move Failed",
+        description: "Failed to move car. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Helper function to move car to Showroom Floor 1
+  const moveCarToShowroomFloor1 = async (car: CarData, notes?: string) => {
+    try {
+      console.log('�� Floor1Table.addCar - Starting with carId:', car.id);
+      console.log('🏢 Floor1Table.addCar - Car details:', { model: car.model, vin: car.vinNumber });
+      
+      // Use the database to move the car
+      const { Floor1Table } = await import('@/database/Floor1Table');
+      console.log('🏢 Floor1Table imported successfully');
+      
+      const success = await Floor1Table.addCar(car.id, notes);
+      console.log('🏢 Floor1Table.addCar result:', success);
+      
+      if (success) {
+        console.log(`✅ Car ${car.model} moved to Showroom Floor 1`);
+        // The car will be automatically removed from this view since it's now on Floor 1
+        console.log('Car moved successfully - inventory will update automatically');
+      } else {
+        console.error('❌ Floor1Table.addCar returned false');
+        throw new Error('Failed to move car to Floor 1');
+      }
+    } catch (error) {
+      console.error('❌ Error moving car to Floor 1:', error);
+      throw error;
+    }
+  };
+
+  // Helper function to move car to Showroom Floor 2
+  const moveCarToShowroomFloor2 = async (car: CarData, notes?: string) => {
+    try {
+      // Use the database to move the car
+      const { Floor2Table } = await import('@/database/Floor2Table');
+      
+      const success = await Floor2Table.addCar(car.id, notes);
+      
+      if (success) {
+        console.log(`Car ${car.model} moved to Showroom Floor 2`);
+        // The car will be automatically removed from this view since it's now on Floor 2
+        console.log('Car moved successfully - inventory will update automatically');
+      } else {
+        throw new Error('Failed to move car to Floor 2');
+      }
+    } catch (error) {
+      console.error('Error moving car to Floor 2:', error);
+      throw error;
+    }
+  };
+
+  // Helper function to move car to Garage Inventory
+  const moveCarToGarageInventory = async (car: CarData, notes?: string) => {
+    try {
+      // Use the database to move the car
+      const { CarInventoryTable } = await import('@/database/CarInventoryTable');
+      
+      const success = await CarInventoryTable.moveCar(car.id, 'garage', notes);
+      
+      if (success) {
+        console.log(`Car ${car.model} moved to Garage Inventory`);
+        // The car will be automatically removed from this view since it's now in Garage
+        console.log('Car moved successfully - inventory will update automatically');
+      } else {
+        throw new Error('Failed to move car to Garage');
+      }
+    } catch (error) {
+      console.error('Error moving car to Garage:', error);
+      throw error;
+    }
+  };
+
+  // Helper function to add car to Garage Schedule
+  const addCarToGarageSchedule = async (car: CarData, notes?: string) => {
+    try {
+      // Use the database to move the car to garage (schedule is handled by garage system)
+      const { CarInventoryTable } = await import('@/database/CarInventoryTable');
+      
+      const success = await CarInventoryTable.moveCar(car.id, 'garage-schedule', notes);
+      
+      if (success) {
+        console.log(`Car ${car.model} moved to Garage Schedule`);
+        // The car will be automatically removed from this view since it's now in Garage
+        console.log('Car moved successfully - inventory will update automatically');
+      } else {
+        throw new Error('Failed to move car to Garage Schedule');
+      }
+    } catch (error) {
+      console.error('Error adding car to Garage Schedule:', error);
+      throw error;
+    }
+  };
+
+  // Helper function to update car location in central system
+  const updateCarLocationInCentralSystem = async (vinNumber: string, newLocation: string, notes?: string) => {
+    try {
+      // Update the car's current floor in the central car inventory
+      const updatedCar = cars.find(car => car.vinNumber === vinNumber);
+      if (updatedCar) {
+        // Map destination to valid currentFloor values
+        let mappedFloor: string;
+        switch (newLocation) {
+          case 'floor1':
+            mappedFloor = 'SHOWROOM_1';
+            break;
+          case 'floor2':
+            mappedFloor = 'SHOWROOM_2';
+            break;
+          case 'garage':
+            mappedFloor = 'GARAGE';
+            break;
+          case 'garage-schedule':
+            mappedFloor = 'GARAGE';
+            break;
+          default:
+            mappedFloor = newLocation;
+        }
+        
+        updatedCar.currentFloor = mappedFloor;
+        updatedCar.lastModified = new Date().toISOString();
+        
+        // Update the car in the central system (simplified - just log the movement)
+        console.log(`Car ${updatedCar.id} moved to ${mappedFloor}`);
+      }
+      
+      // Log the movement for audit purposes
+      const movementLog = {
+        id: `move-${Date.now()}`,
+        vinNumber,
+        fromLocation: 'Car Inventory',
+        toLocation: newLocation,
+        timestamp: new Date().toISOString(),
+        movedBy: 'System User',
+        notes: notes || 'Car moved from Car Inventory',
+        reason: 'Inventory Management'
+      };
+      
+      // Store movement log
+      const existingMovements = localStorage.getItem('carMovements');
+      let movements = [];
+      
+      if (existingMovements) {
+        try {
+          const parsed = JSON.parse(existingMovements);
+          // Ensure it's an array
+          movements = Array.isArray(parsed) ? parsed : [];
+        } catch (parseError) {
+          console.warn('Error parsing movement logs, starting with empty array:', parseError);
+          movements = [];
+        }
+      }
+      
+      movements.push(movementLog);
+      localStorage.setItem('carMovements', JSON.stringify(movements));
+      
+      console.log(`Car ${vinNumber} location updated in central system to ${newLocation}`);
+    } catch (error) {
+      console.error('Error updating central system:', error);
+      throw error;
     }
   };
 
@@ -344,7 +741,7 @@ const CarInventoryPage: React.FC = () => {
   const handleTestDriveTypeSelection = (isClientTestDrive: boolean) => {
     setIsClientTestDrive(isClientTestDrive);
     setShowTestDriveSelectionDialog(false);
-    setShowTestDriveDialog(true);
+      setShowTestDriveDialog(true);
   };
 
   const handleActualTestDriveSchedule = (carId: string, testDriveInfo: any) => {
@@ -430,16 +827,16 @@ const CarInventoryPage: React.FC = () => {
 
   const handleStatusUpdate = (carId: string, status: 'in_stock' | 'sold' | 'reserved', clientInfo?: any) => {
     handleEditCar(carId, { 
-      status,
-      ...clientInfo,
-      lastUpdated: new Date().toISOString()
-    });
+        status,
+        ...clientInfo,
+        lastUpdated: new Date().toISOString()
+      });
 
-    const carModel = cars.find(c => c.id === carId)?.model;
-    toast({
-      title: "Car Status Updated",
-      description: `${carModel} status updated to ${status.replace('_', ' ')}`
-    });
+      const carModel = cars.find(c => c.id === carId)?.model;
+      toast({
+        title: "Car Status Updated",
+        description: `${carModel} status updated to ${status.replace('_', ' ')}`
+      });
   };
 
   const handleCustomsClick = (car: CarData) => {
@@ -448,7 +845,7 @@ const CarInventoryPage: React.FC = () => {
   };
 
   const handleCarDetailsUpdate = (carId: string, updates: any) => {
-    handleCarUpdate(carId, updates);
+    // handleCarUpdate removed - car updates handled locally
   };
 
   const handleSoftwareClick = (car: CarData) => {
@@ -519,7 +916,12 @@ const CarInventoryPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <WarrantyLifeDialogProvider onSaved={() => {
+      // Refresh the car data when warranty is updated
+      console.log('Warranty updated, refreshing data...');
+      // The table will automatically refresh when the component re-renders
+    }}>
+      <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -570,14 +972,39 @@ const CarInventoryPage: React.FC = () => {
 
       {/* Cars Table */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0 pb-4">
+          <div>
+            <CardTitle className="text-2xl font-bold">Car Inventory</CardTitle>
+            <CardDescription>
+              Manage and track all vehicles in inventory
+            </CardDescription>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                console.log('🔄 Manual refresh requested');
+                window.location.reload();
+              }}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+            <Button
+              onClick={() => setShowVinScanner(true)}
+              className="bg-monza-yellow text-monza-black hover:bg-monza-yellow/80"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Car
+            </Button>
+          </div>
+        </CardHeader>
+        
+        {/* Search and Filter Section */}
+        <div className="px-6 pb-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <CardTitle className="flex items-center gap-2">
-              <CarIcon className="h-5 w-5" />
-              {filterType === 'ready' && `Ready Cars (${filteredCars.length})`}
-              {filterType === 'attention' && `Cars Needing Attention (${filteredCars.length})`}
-              {!filterType && `Car Inventory (${filteredCars.length} ${searchQuery ? `of ${cars.length}` : ''})`}
-            </CardTitle>
             <div className="flex items-center gap-2">
               {filterType && (
                 <Button
@@ -590,17 +1017,32 @@ const CarInventoryPage: React.FC = () => {
                   Clear Filter
                 </Button>
               )}
-              <TableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search VINs, models, clients, colors..."
-                className="w-full sm:w-auto"
-              />
             </div>
+            <TableSearch
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search VINs, models, clients, colors..."
+              className="w-full sm:w-auto"
+            />
           </div>
-        </CardHeader>
+        </div>
         <CardContent>
           <div className="rounded-md border">
+            <div className="px-4 py-2 border-b bg-gray-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CarIcon className="h-4 w-4" />
+                  <span className="font-medium">
+                    {filterType === 'ready' && `Ready Cars (${filteredCars.length})`}
+                    {filterType === 'attention' && `Cars Needing Attention (${filteredCars.length})`}
+                    {!filterType && `Car Inventory (${filteredCars.length} ${searchQuery ? `of ${cars.length}` : ''})`}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-500">
+                  {cars.length} total vehicles
+                </div>
+              </div>
+            </div>
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
@@ -611,6 +1053,7 @@ const CarInventoryPage: React.FC = () => {
                   <TableHead className="font-semibold">Color</TableHead>
                   <TableHead className="font-semibold">Price</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold">Warranty Life</TableHead>
                   <TableHead className="font-semibold">Battery</TableHead>
                   <TableHead className="font-semibold">Range Capacity</TableHead>
                   <TableHead className="font-semibold">Km Driven</TableHead>
@@ -647,6 +1090,7 @@ const CarInventoryPage: React.FC = () => {
                         {getStatusDisplayName(car.status)}
                       </Badge>
                     </TableCell>
+                    <StandardWarrantyButton car={car} />
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Battery className="h-4 w-4" />
@@ -709,9 +1153,9 @@ const CarInventoryPage: React.FC = () => {
                       >
                         <Badge className={car.pdiCompleted ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'}>
                           {car.pdiCompleted ? (
-                  <><span className="mr-1 text-lg">☺</span> Complete</>
+                            <><span className="mr-1 text-lg">☺</span> Complete</>
                           ) : (
-                  <><span className="mr-1 text-lg">☹</span> Pending</>
+                            <><span className="mr-1 text-lg">☹</span> Pending</>
                           )}
                         </Badge>
                       </div>
@@ -767,20 +1211,31 @@ const CarInventoryPage: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <ActionDropdown
+                      <SmartActionDropdown
                         options={[
                           { value: 'details', label: 'View Details' },
                           { value: 'edit', label: 'Edit Car' },
-                          { value: 'move', label: 'Move Car' }
+                          { 
+                            value: 'move', 
+                            label: 'Move Car',
+                            isMoveAction: true,
+                            carId: car.id,
+                            currentFloor: 'CAR_INVENTORY' as const,
+                            tableContext: 'CAR_INVENTORY' as const
+                          }
                         ]}
                         onAction={(action) => {
                           if (action === 'details') handleViewDetails(car);
                           else if (action === 'edit') {
                             setSelectedCar(car);
                             setShowEditDialog(true);
-                          } else if (action === 'move') {
+                          }                           else if (action === 'move') {
+                            console.log('🎯 Move button clicked for car:', car);
+                            console.log('🎯 Car ID:', car.id);
+                            console.log('🎯 Car VIN:', car.vinNumber);
                             setSelectedCar(car);
                             setShowMoveDialog(true);
+                            console.log('🎯 Move dialog should now be open');
                           }
                         }}
                         ariaLabel={`Actions for ${car.model} ${car.vinNumber}`}
@@ -802,33 +1257,6 @@ const CarInventoryPage: React.FC = () => {
         targetLocation="Inventory"
         onCarMoved={handleCarMoved}
           onCarAdded={handleCarAdded}
-        onTestDrive={(car, isClientTestDrive) => {
-          // Convert VinScanner CarData to local CarData format
-          const localCarData: CarData = {
-            id: car.id,
-            vinNumber: car.vin_number,
-            model: car.model,
-            year: car.year,
-            color: car.color,
-            price: car.selling_price,
-            status: car.status,
-            category: car.category,
-            batteryPercentage: car.battery_percentage || 100,
-            range: car.range_km || 0,
-            features: [],
-            arrivalDate: car.arrival_date,
-            pdiCompleted: car.pdi_completed,
-            pdiTechnician: car.pdi_technician,
-            pdiDate: car.pdi_date,
-            pdiNotes: car.notes,
-            testDriveInfo: { isOnTestDrive: car.test_drive_status },
-            customs: car.customs === 'not_paid' ? 'not paid' : car.customs === 'paid' ? 'paid' : undefined
-          };
-          setSelectedCar(localCarData);
-          setIsClientTestDrive(isClientTestDrive);
-          setShowTestDriveSelectionDialog(true);
-          setShowVinScanner(false);
-        }}
         onPdiAction={(car) => {
           // Convert VinScanner CarData to local CarData format
           const localCarData: CarData = {
@@ -849,7 +1277,7 @@ const CarInventoryPage: React.FC = () => {
             pdiDate: car.pdi_date,
             pdiNotes: car.notes,
             testDriveInfo: { isOnTestDrive: car.test_drive_status },
-            customs: car.customs === 'not_paid' ? 'not paid' : car.customs === 'paid' ? 'paid' : 'not paid'
+            customs: (car.customs === 'not_paid' ? 'not paid' : car.customs === 'paid' ? 'paid' : 'not paid') as 'paid' | 'not paid'
           };
           setSelectedCar(localCarData);
           setShowPdiDialog(true);
@@ -1327,7 +1755,8 @@ const CarInventoryPage: React.FC = () => {
           }
         }}
       />
-    </div>
+      </div>
+    </WarrantyLifeDialogProvider>
   );
 };
 

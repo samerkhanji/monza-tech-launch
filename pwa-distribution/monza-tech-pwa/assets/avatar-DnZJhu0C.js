@@ -1,0 +1,19 @@
+import{R as A,r as o,j as i,bb as _,bp as p,bf as $,bI as m,bC as S}from"./index-BUhc98AO.js";/**
+ * @license lucide-react v0.309.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const ee=A("MessageCircle",[["path",{d:"M7.9 20A9 9 0 1 0 4 16.1L2 22Z",key:"vv11sd"}]]);/**
+ * @license lucide-react v0.309.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const te=A("MoreVertical",[["circle",{cx:"12",cy:"12",r:"1",key:"41hilf"}],["circle",{cx:"12",cy:"5",r:"1",key:"gxeob9"}],["circle",{cx:"12",cy:"19",r:"1",key:"lyex9k"}]]);var E={exports:{}},h={};/**
+ * @license React
+ * use-sync-external-store-shim.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */var l=o;function F(e,t){return e===t&&(e!==0||1/e===1/t)||e!==e&&t!==t}var V=typeof Object.is=="function"?Object.is:F,P=l.useState,T=l.useEffect,D=l.useLayoutEffect,G=l.useDebugValue;function H(e,t){var a=t(),s=P({inst:{value:a,getSnapshot:t}}),n=s[0].inst,r=s[1];return D(function(){n.value=a,n.getSnapshot=t,v(n)&&r({inst:n})},[e,a,t]),T(function(){return v(n)&&r({inst:n}),e(function(){v(n)&&r({inst:n})})},[e]),G(a),a}function v(e){var t=e.getSnapshot;e=e.value;try{var a=t();return!V(e,a)}catch{return!0}}function q(e,t){return t()}var B=typeof window>"u"||typeof window.document>"u"||typeof window.document.createElement>"u"?q:H;h.useSyncExternalStore=l.useSyncExternalStore!==void 0?l.useSyncExternalStore:B;E.exports=h;var K=E.exports;function O(){return K.useSyncExternalStore(U,()=>!0,()=>!1)}function U(){return()=>{}}var g="Avatar",[W,ae]=_(g),[Z,w]=W(g),L=o.forwardRef((e,t)=>{const{__scopeAvatar:a,...s}=e,[n,r]=o.useState("idle");return i.jsx(Z,{scope:a,imageLoadingStatus:n,onImageLoadingStatusChange:r,children:i.jsx(p.span,{...s,ref:t})})});L.displayName=g;var b="AvatarImage",I=o.forwardRef((e,t)=>{const{__scopeAvatar:a,src:s,onLoadingStatusChange:n=()=>{},...r}=e,d=w(b,a),u=z(s,r),c=$(f=>{n(f),d.onImageLoadingStatusChange(f)});return m(()=>{u!=="idle"&&c(u)},[u,c]),u==="loaded"?i.jsx(p.img,{...r,ref:t,src:s}):null});I.displayName=b;var R="AvatarFallback",N=o.forwardRef((e,t)=>{const{__scopeAvatar:a,delayMs:s,...n}=e,r=w(R,a),[d,u]=o.useState(s===void 0);return o.useEffect(()=>{if(s!==void 0){const c=window.setTimeout(()=>u(!0),s);return()=>window.clearTimeout(c)}},[s]),d&&r.imageLoadingStatus!=="loaded"?i.jsx(p.span,{...n,ref:t}):null});N.displayName=R;function x(e,t){return e?t?(e.src!==t&&(e.src=t),e.complete&&e.naturalWidth>0?"loaded":"loading"):"error":"idle"}function z(e,{referrerPolicy:t,crossOrigin:a}){const s=O(),n=o.useRef(null),r=s?(n.current||(n.current=new window.Image),n.current):null,[d,u]=o.useState(()=>x(r,e));return m(()=>{u(x(r,e))},[r,e]),m(()=>{const c=M=>()=>{u(M)};if(!r)return;const f=c("loaded"),y=c("error");return r.addEventListener("load",f),r.addEventListener("error",y),t&&(r.referrerPolicy=t),typeof a=="string"&&(r.crossOrigin=a),()=>{r.removeEventListener("load",f),r.removeEventListener("error",y)}},[r,a,t]),d}var C=L,j=I,k=N;const J=o.forwardRef(({className:e,...t},a)=>i.jsx(C,{ref:a,className:S("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",e),...t}));J.displayName=C.displayName;const Q=o.forwardRef(({className:e,...t},a)=>i.jsx(j,{ref:a,className:S("aspect-square h-full w-full",e),...t}));Q.displayName=j.displayName;const X=o.forwardRef(({className:e,...t},a)=>i.jsx(k,{ref:a,className:S("flex h-full w-full items-center justify-center rounded-full bg-muted",e),...t}));X.displayName=k.displayName;export{J as A,ee as M,X as a,te as b,Q as c};

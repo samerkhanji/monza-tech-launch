@@ -20,7 +20,7 @@ const Analytics: React.FC = () => {
   const navigate = useNavigate();
 
   // If user is not an owner, redirect to dashboard
-  if (user?.role !== 'owner' && user?.role !== 'sales') {
+  if (user?.role?.toUpperCase() !== 'OWNER' && user?.role?.toLowerCase() !== 'sales') {
     toast({
       title: "Access Denied",
       description: "Only owners and sales staff can access the marketing analytics page.",
@@ -50,6 +50,8 @@ const Analytics: React.FC = () => {
           </Button>
           
           <select
+            id="periodFilter"
+            name="periodFilter"
             className="h-10 rounded-md border border-input bg-background px-3 py-2"
             value={period}
             onChange={(e) => setPeriod(e.target.value)}

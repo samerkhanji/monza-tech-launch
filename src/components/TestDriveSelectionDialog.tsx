@@ -27,7 +27,7 @@ const TestDriveSelectionDialog: React.FC<TestDriveSelectionDialogProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-[95vw] max-h-[95vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl w-[95vw] max-h-[95vh] overflow-y-auto px-6 py-5">
         <DialogHeader className="sticky top-0 bg-white z-10 border-b pb-4">
           <DialogTitle className="flex items-center gap-2">
             <Car className="h-5 w-5 text-blue-600" />
@@ -42,10 +42,10 @@ const TestDriveSelectionDialog: React.FC<TestDriveSelectionDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4 px-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4 px-1">
           {/* Client Test Drive Card */}
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-blue-300">
-            <CardHeader className="pb-3">
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-blue-300 rounded-none">
+            <CardHeader className="pb-3 px-4">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <User className="h-5 w-5 text-blue-600" />
@@ -53,7 +53,7 @@ const TestDriveSelectionDialog: React.FC<TestDriveSelectionDialogProps> = ({
                 Client Test Drive
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 px-4 pb-4">
               <p className="text-sm text-gray-600">
                 For potential customers who want to experience the vehicle before making a purchase decision.
               </p>
@@ -83,8 +83,8 @@ const TestDriveSelectionDialog: React.FC<TestDriveSelectionDialogProps> = ({
           </Card>
 
           {/* Employee Test Drive Card */}
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-orange-300">
-            <CardHeader className="pb-3">
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-orange-300 rounded-none">
+            <CardHeader className="pb-3 px-4">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <div className="p-2 bg-orange-100 rounded-lg">
                   <Briefcase className="h-5 w-5 text-orange-600" />
@@ -92,7 +92,7 @@ const TestDriveSelectionDialog: React.FC<TestDriveSelectionDialogProps> = ({
                 Employee Test Drive
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 px-4 pb-4">
               <p className="text-sm text-gray-600">
                 For internal purposes such as post-repair testing, PDI verification, or quality control checks.
               </p>
@@ -123,7 +123,7 @@ const TestDriveSelectionDialog: React.FC<TestDriveSelectionDialogProps> = ({
           </Card>
         </div>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+        <div className="mt-6 p-4 bg-gray-50 rounded-none">
           <div className="flex items-start gap-2">
             <Car className="h-4 w-4 text-gray-500 mt-0.5" />
             <div className="text-sm text-gray-600">

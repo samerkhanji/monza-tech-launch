@@ -1,6 +1,6 @@
 import React from 'react';
 import type { OrderedCar } from '@/pages/CarOrders/types';
-import ActionDropdown from '@/components/ui/ActionDropdown';
+import PortalActionDropdown from '@/components/ui/PortalActionDropdown';
 
 interface CarOrdersTableActionsProps {
   car: OrderedCar;
@@ -18,7 +18,7 @@ const CarOrdersTableActions: React.FC<CarOrdersTableActionsProps> = ({
   onStatusUpdate,
 }) => {
   return (
-    <ActionDropdown
+    <PortalActionDropdown
       options={[
         { value: 'view', label: 'View Details' },
         { value: 'edit', label: 'Edit Order' },
@@ -35,6 +35,7 @@ const CarOrdersTableActions: React.FC<CarOrdersTableActionsProps> = ({
         else if (action === 'in_transit') onStatusUpdate('in_transit');
         else if (action === 'arrived') onStatusUpdate('arrived');
       }}
+      id={`actions-order-${car.id}`}
       ariaLabel={`Actions for order ${car.id}`}
     />
   );

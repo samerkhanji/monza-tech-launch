@@ -79,7 +79,6 @@ const WorkerScheduleView: React.FC<WorkerScheduleViewProps> = ({ scheduledCars }
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CustomCalendarIcon className="h-5 w-5" />
             Worker Schedule Overview
           </CardTitle>
         </CardHeader>
@@ -97,7 +96,6 @@ const WorkerScheduleView: React.FC<WorkerScheduleViewProps> = ({ scheduledCars }
               {Object.entries(carsByDate).map(([date, cars]) => (
                 <div key={date} className="space-y-4">
                   <div className="flex items-center gap-2 border-b pb-2">
-                    <CustomCalendarIcon className="h-4 w-4" />
                     <h3 className="font-medium">
                       {new Date(date).toLocaleDateString('en-US', { 
                         weekday: 'long', 

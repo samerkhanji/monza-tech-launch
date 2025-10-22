@@ -244,48 +244,60 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>Supplier *</Label>
+                    <Label htmlFor="supplier">Supplier *</Label>
                     <Input
+                      id="supplier"
+                      name="supplier"
                       value={globalSettings.supplier}
                       onChange={(e) => setGlobalSettings(prev => ({ ...prev, supplier: e.target.value }))}
                       placeholder="Supplier name"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Order Reference *</Label>
+                    <Label htmlFor="orderReference">Order Reference *</Label>
                     <Input
+                      id="orderReference"
+                      name="orderReference"
                       value={globalSettings.orderReference}
                       onChange={(e) => setGlobalSettings(prev => ({ ...prev, orderReference: e.target.value }))}
                       placeholder="Order reference"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Order Date</Label>
+                    <Label htmlFor="orderDate">Order Date</Label>
                     <Input
+                      id="orderDate"
+                      name="orderDate"
                       type="date"
                       value={globalSettings.orderDate}
                       onChange={(e) => setGlobalSettings(prev => ({ ...prev, orderDate: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Expected Delivery</Label>
+                    <Label htmlFor="expectedDelivery">Expected Delivery</Label>
                     <Input
+                      id="expectedDelivery"
+                      name="expectedDelivery"
                       type="date"
                       value={globalSettings.expectedDelivery}
                       onChange={(e) => setGlobalSettings(prev => ({ ...prev, expectedDelivery: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Shipping Company</Label>
+                    <Label htmlFor="shippingCompany">Shipping Company</Label>
                     <Input
+                      id="shippingCompany"
+                      name="shippingCompany"
                       value={globalSettings.shippingCompany}
                       onChange={(e) => setGlobalSettings(prev => ({ ...prev, shippingCompany: e.target.value }))}
                       placeholder="Shipping company"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Tracking Code</Label>
+                    <Label htmlFor="trackingCode">Tracking Code</Label>
                     <Input
+                      id="trackingCode"
+                      name="trackingCode"
                       value={globalSettings.trackingCode}
                       onChange={(e) => setGlobalSettings(prev => ({ ...prev, trackingCode: e.target.value }))}
                       placeholder="Tracking code"
@@ -321,6 +333,8 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
                         <TableRow key={index}>
                           <TableCell>
                             <Input
+                              id={`partName-${index}`}
+                              name={`partName-${index}`}
                               value={item.partName}
                               onChange={(e) => updateItem(index, 'partName', e.target.value)}
                               placeholder="Part name"
@@ -328,6 +342,8 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
                           </TableCell>
                           <TableCell>
                             <Input
+                              id={`partNumber-${index}`}
+                              name={`partNumber-${index}`}
                               value={item.partNumber}
                               onChange={(e) => updateItem(index, 'partNumber', e.target.value)}
                               placeholder="Part number"
@@ -335,6 +351,8 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
                           </TableCell>
                           <TableCell>
                             <Input
+                              id={`quantity-${index}`}
+                              name={`quantity-${index}`}
                               type="number"
                               min="1"
                               value={item.quantity}
@@ -343,6 +361,8 @@ const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({
                           </TableCell>
                           <TableCell>
                             <Input
+                              id={`price-${index}`}
+                              name={`price-${index}`}
                               type="number"
                               step="0.01"
                               value={item.price || ''}

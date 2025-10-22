@@ -35,13 +35,17 @@ const EmployeeManagement: React.FC = () => {
     employee.department?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Only owners can access this page
-  if (user?.role !== 'owner') {
+  // Only owners can access this page (case-insensitive check)
+  const isOwner = user?.role?.toUpperCase() === 'OWNER';
+  if (!isOwner) {
     return (
       <div className="p-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
           <p className="text-gray-600">Only owners can access employee management.</p>
+          <p className="text-sm text-gray-400 mt-2">
+            Current user: {user?.name || 'Unknown'} ({user?.role || 'No role'})
+          </p>
         </div>
       </div>
     );

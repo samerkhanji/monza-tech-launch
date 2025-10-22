@@ -3,30 +3,41 @@ import { useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Car, Eye, Plus, Battery, Fuel, Phone, User, Clock, Edit, MapPin, FileText, MoreVertical, X, CheckCircle, QrCode } from 'lucide-react';
+import { Car, Eye, Plus, Battery, Fuel, Activity, Phone, User, Clock, Edit, MapPin, FileText, MoreVertical, X, CheckCircle, QrCode } from 'lucide-react';
 import VinScannerDialog from '@/components/VinScannerDialog';
 import { toast } from '@/hooks/use-toast';
-import TestDriveDialog from '@/pages/CarInventory/components/TestDriveDialog';
-import TestDriveSelectionDialog from '@/components/TestDriveSelectionDialog';
-import TestDriveStatus from '@/pages/CarInventory/components/TestDriveStatus';
+// import TestDriveDialog from '@/pages/CarInventory/components/TestDriveDialog';
+// import TestDriveSelectionDialog from '@/components/TestDriveSelectionDialog';
+// import TestDriveStatus from '@/pages/CarInventory/components/TestDriveStatus';
 import MoveCarDialog from '@/pages/ShowroomFloor1/components/MoveCarDialog';
 import EditCarDialog from '@/pages/ShowroomFloor1/components/EditCarDialog';
 import PdiViewDialog from '@/pages/ShowroomFloor1/components/PdiViewDialog';
+import PdiChecklistDialog from '@/pages/ShowroomFloor1/components/PdiChecklistDialog';
 import ClientInfoDialog from '@/pages/ShowroomFloor1/components/ClientInfoDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCaption, TableHead, TableHeader, TableRow, TableCell, StatusBadge } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import ActionDropdown from '@/components/ui/ActionDropdown';
+import SmartActionDropdown from '@/components/ui/SmartActionDropdown';
 import { CarStatusSelectionDialog } from '@/components/CarStatusSelectionDialog';
-import { PdiButton } from '@/components/ui/PdiButton';
+// import { PdiButton } from '@/components/ui/PdiButton';
 import DeliveryDateDialog from '@/components/DeliveryDateDialog';
 
-import EnhancedCarDetailDialog from '@/components/EnhancedCarDetailDialog';
-import { testDriveService, TestDriveInfo } from '@/services/testDriveService';
-import ITSoftwareUpdateDialog from '@/components/ITSoftwareUpdateDialog';
+// import EnhancedCarDetailDialog from '@/components/EnhancedCarDetailDialog';
+import CustomsManagementDialog from '@/components/CustomsManagementDialog';
+// import { testDriveService, TestDriveInfo } from '@/services/testDriveService';
+// import ITSoftwareUpdateDialog from '@/components/ITSoftwareUpdateDialog';
 import TableSearch from '@/components/ui/table-search';
+// import WarrantyInfoColumn from '@/components/WarrantyInfoColumn';
+import { safeParseInt } from '@/utils/errorHandling';
+import { carService } from '@/services/carService';
+import EnhancedWarrantyBadge from '@/components/EnhancedWarrantyBadge';
+import WarrantyFormDialog from '@/components/WarrantyFormDialog';
+import { useWarrantyEditor } from '@/hooks/useWarrantyEditor';
+import StandardWarrantyButton from '@/components/StandardWarrantyButton';
+import WarrantyLifeDialogProvider from '@/components/WarrantyLifeDialog';
+import MoveCarFormDialog from '@/components/MoveCarFormDialog';
 
 const ShowroomFloor1Page: React.FC = () => {
   const location = useLocation();
@@ -40,6 +51,7 @@ const ShowroomFloor1Page: React.FC = () => {
   const [showVinScanner, setShowVinScanner] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [showMoveFormDialog, setShowMoveFormDialog] = useState(false);
   const [showPdiDialog, setShowPdiDialog] = useState(false);
   const [showClientInfoDialog, setShowClientInfoDialog] = useState(false);
   const [selectedCarForClientInfo, setSelectedCarForClientInfo] = useState<any>(null);
@@ -52,9 +64,14 @@ const ShowroomFloor1Page: React.FC = () => {
   const [selectedCarForDetails, setSelectedCarForDetails] = useState<any>(null);
   const [showSoftwareDialog, setShowSoftwareDialog] = useState(false);
   const [selectedCarForSoftware, setSelectedCarForSoftware] = useState<any>(null);
+  const [showCustomsDialog, setShowCustomsDialog] = useState(false);
+  const [customsCar, setCustomsCar] = useState<any>(null);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Warranty editor hook
+  const warrantyEditor = useWarrantyEditor();
 
   // Filter cars based on search query
   const filteredCars = cars.filter(car => {
@@ -104,47 +121,66 @@ const ShowroomFloor1Page: React.FC = () => {
 
   const [addCarStep, setAddCarStep] = useState(0);
 
-  useEffect(() => {
-    // Load cars from localStorage
-    const loadCars = () => {
-      const savedCars = localStorage.getItem('showroomFloor1Cars');
-      if (savedCars) {
-        try {
-          const parsedCars = JSON.parse(savedCars);
-          // Add default category for cars that don't have it
-          return parsedCars.map((car: any) => ({
-            ...car,
-            category: car.category || 'EV' // Default to EV if no category exists
-          }));
-        } catch (error) {
-          console.error('Error parsing showroom floor 1 cars from localStorage:', error);
-        }
+  const loadCarsFromDatabase = async () => {
+    try {
+      console.log('Showroom Floor 1: Loading cars using clean architecture...');
+      
+      const { getCarsByFloor } = await import('@/services/cleanMoveCarService');
+      
+      const data = await getCarsByFloor('SHOWROOM_1');
+      
+      if (data && data.length > 0) {
+        // Map the data to match our interface
+        const mappedCars = data.map((car: any) => ({
+          id: car.id,
+          vinNumber: car.vin,
+          model: car.model,
+          year: car.year,
+          color: car.color,
+          brand: car.brand,
+          category: car.vehicle_type || 'EV',
+          price: car.selling_price || 0,
+          status: car.status || 'in_stock',
+          batteryPercentage: car.battery_percentage || 100,
+          range: 520, // Default range since field doesn't exist
+          features: [],
+          arrivalDate: car.delivery_date || car.created_at,
+          pdiCompleted: car.pdi_completed || false,
+          pdiStatus: car.pdi_completed ? 'completed' : 'pending',
+          pdiTechnician: car.pdi_technician,
+          pdiDate: car.pdi_date,
+          pdiNotes: car.pdi_notes,
+          customs: 'not paid', // Default since custom_duty field doesn't exist
+          currentFloor: car.current_floor,
+          notes: car.notes,
+          lastModified: car.updated_at,
+          warranty_life: car.warranty_life || null,
+          delivery_date: car.delivery_date || null,
+          vehicle_expiry_date: car.vehicle_expiry_date || null,
+          battery_expiry_date: car.battery_expiry_date || null,
+          dms_deadline_date: car.dms_deadline_date || null
+        }));
+        
+        setCars(mappedCars);
+        console.log(`Showroom Floor 1: Loaded ${mappedCars.length} cars using clean architecture`);
+        console.log('🔍 Sample car data:', mappedCars[0]);
+      } else {
+        console.log('Showroom Floor 1: No cars found for Floor 1');
+        setCars([]);
       }
-      return [];
-    };
+    } catch (error) {
+      console.error('Error loading cars:', error);
+      setCars([]);
+    }
+  };
 
-    setCars(loadCars());
-    
-    // Listen for storage changes (for cross-tab updates)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'showroomFloor1Cars' && e.newValue) {
-        try {
-          const parsedCars = JSON.parse(e.newValue);
-          // Add default category for cars that don't have it
-          const updatedCars = parsedCars.map((car: any) => ({
-            ...car,
-            category: car.category || 'EV' // Default to EV if no category exists
-          }));
-          setCars(updatedCars);
-        } catch (error) {
-          console.error('Error parsing showroom floor 1 cars from storage event:', error);
-        }
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  useEffect(() => {
+    // Load cars when component mounts
+    loadCarsFromDatabase();
+  }, []); // Empty dependency array - only runs once
+
+  // Real-time updates are now handled by useCarsByFloor hook
+  // No need for duplicate subscription here
 
   // Handle URL parameters for VIN filtering
   useEffect(() => {
@@ -177,94 +213,34 @@ const ShowroomFloor1Page: React.FC = () => {
     }
   }, [location.search, cars]);
 
-  // Function to save cars to localStorage
+  // Function to save cars to localStorage - DISABLED for stability
   const saveCarsToStorage = (updatedCars: any[]) => {
-    localStorage.setItem('showroomFloor1Cars', JSON.stringify(updatedCars));
+    // localStorage.setItem('showroomFloor1Cars', JSON.stringify(updatedCars));
+    console.log('Cars would be saved to localStorage:', updatedCars.length);
   };
 
   const handleVinScanned = (vin: string) => {
-    const existingCar = cars.find(c => c.vinNumber === vin);
-    if (existingCar) {
-      toast({
-        title: "Car Already Exists",
-        description: `${existingCar.model} is already in Floor 1`,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Create new car from scanned VIN
-    const newScannedCar = {
-      id: `floor1-${Date.now()}`,
-      vinNumber: vin,
-      model: `Vehicle ${vin.slice(-4)}`,
-      year: new Date().getFullYear(),
-      color: 'Unknown',
-      price: 0,
-      status: 'in_stock',
-      batteryPercentage: 100,
-      range: 0,
-      features: [],
-      arrivalDate: new Date().toISOString(),
-      category: 'EV' as 'EV' | 'REV' | 'ICEV'
-    };
-
-    const updatedCars = [...cars, newScannedCar];
-    setCars(updatedCars);
-    saveCarsToStorage(updatedCars);
-    setShowVinScanner(false);
+    console.log('VIN scanned on Floor 1:', vin);
+    
+    // Refresh the floor data to show the moved car
+    loadCarsFromDatabase();
     
     toast({
-      title: "Car Added",
-      description: `Vehicle with VIN ${vin} added to Floor 1`
+      title: "VIN Scanned Successfully",
+      description: `VIN ${vin} has been processed for Floor 1.`,
     });
   };
 
-  // Handler for Universal VIN Scanner
+    // Handler for Universal VIN Scanner
   const handleUniversalVinScanned = (vinData: any, targetLocation: any) => {
-    // Refresh cars list
-    const loadCars = () => {
-      const savedCars = localStorage.getItem('showroomFloor1Cars');
-      if (savedCars) {
-        try {
-          const parsedCars = JSON.parse(savedCars);
-          // Add default category for cars that don't have it
-          return parsedCars.map((car: any) => ({
-            ...car,
-            category: car.category || 'EV' // Default to EV if no category exists
-          }));
-        } catch (error) {
-          console.error('Error parsing showroom floor 1 cars from localStorage:', error);
-        }
-      }
-      return [];
-    };
-    
-    setCars(loadCars());
+    console.log('VIN scanned:', vinData);
+    // Refresh the floor data to show the moved car
+    loadCarsFromDatabase();
   };
 
   const handleCarAdded = (carId: string) => {
-    // Refresh cars list after car is added
-    setTimeout(() => {
-      const loadCars = () => {
-        const savedCars = localStorage.getItem('showroomFloor1Cars');
-        if (savedCars) {
-          try {
-            const parsedCars = JSON.parse(savedCars);
-            // Add default category for cars that don't have it
-            return parsedCars.map((car: any) => ({
-              ...car,
-              category: car.category || 'EV' // Default to EV if no category exists
-            }));
-          } catch (error) {
-            console.error('Error parsing showroom floor 1 cars from localStorage:', error);
-          }
-        }
-        return [];
-      };
-      
-      setCars(loadCars());
-    }, 500);
+    // Don't reload cars - keep table stable
+    console.log('Car added:', carId);
   };
 
   const handleManualAdd = () => {
@@ -350,15 +326,20 @@ const ShowroomFloor1Page: React.FC = () => {
   const handleScheduleTestDrive = (carId: string, testDriveInfo: any) => {
     const car = cars.find(c => c.id === carId);
     if (!car) return;
-    
+
+    // Ensure schedule dialog is closed before opening selection
+    setShowTestDriveDialog(false);
     setSelectedCar(car);
     setShowTestDriveSelectionDialog(true);
   };
 
   const handleTestDriveTypeSelection = (isClientTestDrive: boolean) => {
     setSelectedTestDriveType(isClientTestDrive);
+    // Close selection first, then open the schedule dialog on the next frame
     setShowTestDriveSelectionDialog(false);
-    setShowTestDriveDialog(true);
+    requestAnimationFrame(() => {
+      setShowTestDriveDialog(true);
+    });
   };
 
   const handleActualTestDriveSchedule = (carId: string, testDriveInfo: any) => {
@@ -393,43 +374,24 @@ const ShowroomFloor1Page: React.FC = () => {
     const car = cars.find(c => c.id === carId);
     if (!car || !car.testDriveInfo) return;
 
-    // Convert car test drive info to TestDriveInfo format
-    const testDriveInfo: TestDriveInfo = {
-      isOnTestDrive: car.testDriveInfo.isOnTestDrive,
-      testDriveStartTime: car.testDriveInfo.testDriveStartTime,
-      testDriverName: car.testDriveInfo.testDriverName,
-      testDriverPhone: car.testDriveInfo.testDriverPhone,
-      testDriverLicense: car.testDriveInfo.testDriverLicense,
-      notes: car.testDriveInfo.notes,
-      purpose: car.testDriveInfo.purpose || 'Test drive',
-      isClientTestDrive: car.testDriveInfo.isClientTestDrive || false,
-      loggedBy: car.testDriveInfo.loggedBy || 'System',
-      loggedByName: car.testDriveInfo.loggedByName || 'System User',
-      loggedAt: car.testDriveInfo.loggedAt || new Date().toISOString(),
-      emergencyContact: car.testDriveInfo.emergencyContact,
-      emergencyContactPhone: car.testDriveInfo.emergencyContactPhone,
-      vehicleVin: car.vinNumber,
-      vehicleModel: car.model
-    };
-
-    // End the test drive and calculate duration
-    const completedTestDrive = testDriveService.endTestDrive(testDriveInfo);
-    
-    // Update car with completed test drive in history
-    const updatedCar = testDriveService.addToHistory(car, completedTestDrive);
-    
+    // TODO: Re-implement test drive service when available
+    // For now, just update the car status locally
     const updatedCars = cars.map(c => 
-      c.id === carId ? updatedCar : c
+      c.id === carId 
+        ? { 
+            ...c, 
+            testDriveInfo: { ...c.testDriveInfo, isOnTestDrive: false },
+            lastUpdated: new Date().toISOString()
+          }
+        : c
     );
     
     setCars(updatedCars);
     saveCarsToStorage(updatedCars);
 
-    const durationText = testDriveService.formatDuration(completedTestDrive.actualDuration || 0);
-    
     toast({
       title: "Test Drive Completed",
-      description: `Test drive completed in ${durationText}. Added to vehicle history.`,
+      description: `Test drive completed successfully. Vehicle is now available.`,
     });
   };
 
@@ -513,15 +475,73 @@ const ShowroomFloor1Page: React.FC = () => {
   const handleMoveCar = (destination: string, notes?: string) => {
     if (!selectedCar) return;
 
-    toast({
-      title: "Car Moved",
-      description: `${selectedCar.model} has been moved to ${destination}`
-    });
+    const nowIso = new Date().toISOString();
+    const byVinFilter = (arr: any[]) => arr.filter((c: any) => c.vinNumber !== selectedCar.vinNumber);
 
-    // Remove car from current showroom
-    const updatedCars = cars.filter(car => car.id !== selectedCar.id);
-    setCars(updatedCars);
-    saveCarsToStorage(updatedCars);
+    const removeFromCurrent = () => {
+      const updatedCars = cars.filter(car => car.id !== selectedCar.id);
+      setCars(updatedCars);
+      saveCarsToStorage(updatedCars);
+    };
+
+    if (destination === 'garage-schedule') {
+      // Only add to schedule (not inventory) until moved elsewhere
+      const existingSchedule = localStorage.getItem('garageSchedule');
+      const schedule = existingSchedule ? JSON.parse(existingSchedule) : { scheduledCars: [] };
+
+      const scheduledCar = {
+        id: Date.now().toString(),
+        vinNumber: selectedCar.vinNumber,
+        model: selectedCar.model,
+        brand: selectedCar.brand,
+        year: selectedCar.year,
+        color: selectedCar.color,
+        status: 'waiting' as const,
+        priority: 'normal' as const,
+        estimatedDuration: 120,
+        notes: notes || `Moved from Showroom Floor 1`,
+        clientName: selectedCar.clientName || '',
+        clientPhone: selectedCar.clientPhone || '',
+        arrivalTime: nowIso,
+        scheduledTime: nowIso
+      };
+
+      schedule.scheduledCars = byVinFilter(schedule.scheduledCars || []);
+      schedule.scheduledCars.push(scheduledCar);
+      localStorage.setItem('garageSchedule', JSON.stringify(schedule));
+
+      toast({ title: 'Car Added to Garage Schedule', description: `${selectedCar.model} added to schedule.` });
+      removeFromCurrent();
+    } else if (destination === 'garage') {
+      const existingGarageCars = JSON.parse(localStorage.getItem('garageCars') || '[]');
+      const garageCars = byVinFilter(existingGarageCars);
+      garageCars.push({ ...selectedCar, id: `garage-${Date.now()}`, currentFloor: 'Garage', lastModified: nowIso });
+      localStorage.setItem('garageCars', JSON.stringify(garageCars));
+      toast({ title: 'Car Moved', description: `${selectedCar.model} moved to Garage Inventory.` });
+      removeFromCurrent();
+    } else if (destination === 'inventory') {
+      const inventory = JSON.parse(localStorage.getItem('carInventory') || '[]');
+      const updated = byVinFilter(inventory);
+      updated.push({ ...selectedCar, id: `inventory-${Date.now()}`, lastModified: nowIso });
+      localStorage.setItem('carInventory', JSON.stringify(updated));
+      toast({ title: 'Car Moved', description: `${selectedCar.model} moved to Car Inventory.` });
+      removeFromCurrent();
+    } else if (destination === 'floor2') {
+      const floor2 = JSON.parse(localStorage.getItem('showroomFloor2Cars') || '[]');
+      const updated = byVinFilter(floor2);
+      updated.push({ ...selectedCar, id: `floor2-${Date.now()}`, currentFloor: 'Showroom Floor 2', lastModified: nowIso });
+      localStorage.setItem('showroomFloor2Cars', JSON.stringify(updated));
+      toast({ title: 'Car Moved', description: `${selectedCar.model} moved to Showroom Floor 2.` });
+      removeFromCurrent();
+    } else if (destination === 'new-arrivals') {
+      toast({ title: 'Not Allowed', description: 'Existing cars cannot be moved to New Arrivals.', variant: 'destructive' });
+      setShowMoveDialog(false);
+      setSelectedCar(null);
+      return;
+    } else {
+      toast({ title: 'Move Failed', description: 'Unknown destination.', variant: 'destructive' });
+    }
+
     setShowMoveDialog(false);
     setSelectedCar(null);
   };
@@ -562,6 +582,8 @@ const ShowroomFloor1Page: React.FC = () => {
         return 'bg-yellow-100 text-yellow-800';
       case 'sold':
         return 'bg-red-100 text-red-800';
+      case 'in_repair':
+        return 'bg-orange-100 text-orange-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -575,21 +597,23 @@ const ShowroomFloor1Page: React.FC = () => {
         return 'Reserved';
       case 'sold':
         return 'Sold';
+      case 'in_repair':
+        return 'In Repair';
       default:
         return status;
     }
   };
 
   const getCategoryColor = (category: string) => {
-    switch (category) {
+    switch (String(category)) {
       case 'EV':
-        return 'category-ev'; // Electric Vehicle
+        return 'category-ev';
       case 'REV':
-        return 'category-rev'; // Range Extended Vehicle
+        return 'category-rev';
       case 'ICEV':
-        return 'category-icev'; // Internal Combustion Engine Vehicle
+        return 'category-icev';
       default:
-        return 'bg-gray-400 text-white';
+        return 'category-ev';
     }
   };
 
@@ -600,8 +624,9 @@ const ShowroomFloor1Page: React.FC = () => {
   // Enhanced PDI Click Handler
   const handlePdiClick = (car: any) => {
     const isReservedOrSold = car.status === 'reserved' || car.status === 'sold';
+    const isInRepair = car.status === 'in_repair';
     const hasDeliveryDate = car.deliveryDate;
-    const isUrgent = isReservedOrSold && hasDeliveryDate && !car.pdiCompleted;
+    const isUrgent = (isReservedOrSold || isInRepair) && hasDeliveryDate && !car.pdiCompleted;
     
     if (isUrgent || !car.pdiCompleted) {
       setSelectedCar(car);
@@ -613,7 +638,7 @@ const ShowroomFloor1Page: React.FC = () => {
 
   // Delivery Date Handlers
   const handleOpenDeliveryDateDialog = (car: any) => {
-    if (car.status === 'reserved' || car.status === 'sold') {
+    if (car.status === 'reserved' || car.status === 'sold' || car.status === 'in_repair') {
       setCarForDeliveryDate(car);
       setShowDeliveryDateDialog(true);
     }
@@ -655,6 +680,58 @@ const ShowroomFloor1Page: React.FC = () => {
     setShowSoftwareDialog(true);
   };
 
+  const handleCustomsClick = (car: any) => {
+    setCustomsCar(car);
+    setShowCustomsDialog(true);
+  };
+
+  const handleCustomsUpdate = async (carId: string, customsData: any) => {
+    try {
+      // Map the customs data to the format expected by carService
+      const updateData = {
+        customsStatus: customsData.customs_status,
+        customsCost: customsData.customs_cost,
+        shippingCost: customsData.shipping_cost,
+        processedBy: customsData.processed_by,
+        paymentDate: customsData.payment_date,
+        customsDocRef: customsData.customs_doc_ref,
+        customsNotes: customsData.customs_notes,
+        shippingStatus: customsData.shipping_status,
+        currentFloor: customsData.current_location,
+        status: customsData.status,
+        conditionOnArrival: customsData.condition_on_arrival,
+      };
+
+      // Update in database using carService
+      const { data, error } = await carService.updateCar(carId, updateData);
+      
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      const updatedCars = cars.map(car =>
+        car.id === carId ? { ...car, ...customsData, lastUpdated: new Date().toISOString() } : car
+      );
+      setCars(updatedCars);
+      
+      // Also update localStorage for offline functionality
+      localStorage.setItem('showroomFloor1Cars', JSON.stringify(updatedCars));
+      
+      toast({ 
+        title: 'Customs Updated', 
+        description: 'Customs information has been updated successfully and saved to database' 
+      });
+    } catch (error) {
+      console.error('Error updating customs:', error);
+      toast({ 
+        title: 'Update Failed', 
+        description: 'Failed to update customs information. Please try again.',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const handleSoftwareUpdate = (carId: string, softwareData: any) => {
     const updatedCars = cars.map(car => 
       car.id === carId ? { 
@@ -673,7 +750,12 @@ const ShowroomFloor1Page: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto py-6">
+    <WarrantyLifeDialogProvider onSaved={() => {
+      // Refresh car data when warranty is updated
+      console.log('Warranty updated, refreshing Floor 1 data...');
+    }}>
+      <div className="container mx-auto py-6">
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div className="flex items-center gap-3">
@@ -684,8 +766,10 @@ const ShowroomFloor1Page: React.FC = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
+                {/* Action Buttons */}
         <div className="flex gap-2">
+
+ 
           <Button
             onClick={() => setShowVinScanner(true)}
             variant="outline"
@@ -715,6 +799,7 @@ const ShowroomFloor1Page: React.FC = () => {
               Cars on Display ({filteredCars.length} {searchQuery ? `of ${cars.length}` : ''})
             </CardTitle>
             <TableSearch
+              id="showroom-floor1-search"
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Search VINs, models, clients, colors..."
@@ -732,10 +817,13 @@ const ShowroomFloor1Page: React.FC = () => {
                   <TableHead>Category</TableHead>
                   <TableHead>Year</TableHead>
                   <TableHead>Color</TableHead>
+                  <TableHead>Color interior</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Warranty Life</TableHead>
                   <TableHead>Battery</TableHead>
-                  <TableHead>Range</TableHead>
+                  <TableHead>Range Capacity</TableHead>
+                  <TableHead>Km Driven</TableHead>
                   <TableHead>Test Drive</TableHead>
                   <TableHead>PDI</TableHead>
                   <TableHead>Customs</TableHead>
@@ -753,9 +841,10 @@ const ShowroomFloor1Page: React.FC = () => {
                         {car.category}
                       </Badge>
                     </TableCell>
-                    <TableCell>{car.year}</TableCell>
+                    <TableCell>{car.year || car.modelYear || 'N/A'}</TableCell>
                     <TableCell>{car.color}</TableCell>
-                    <TableCell>${car.price.toLocaleString()}</TableCell>
+                    <TableCell>{(car as any).interiorColor || (car as any).interior_color || '-'}</TableCell>
+                    <TableCell>${car.price ? car.price.toLocaleString() : '0'}</TableCell>
                     <TableCell>
                       {car.status === 'sold' || car.status === 'reserved' ? (
                         <Badge 
@@ -783,24 +872,30 @@ const ShowroomFloor1Page: React.FC = () => {
                         </Badge>
                       )}
                     </TableCell>
+                    <StandardWarrantyButton car={car} />
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Battery className="h-4 w-4" />
-                        {car.batteryPercentage}%
+                        {car.batteryPercentage || 0}%
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Fuel className="h-4 w-4" />
-                        {car.range} km
+                        {car.range || 0} km
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Activity className="h-4 w-4" />
+                        {car.mileage || car.kmDriven || 0} km
                       </div>
                     </TableCell>
                     <TableCell>
                       {car.testDriveInfo?.isOnTestDrive ? (
-                        <TestDriveStatus 
-                          testDriveInfo={car.testDriveInfo} 
-                          onEndTestDrive={() => handleTestDriveEnd(car.id)}
-                        />
+                        <Badge variant="outline" className="bg-blue-50 text-blue-600">
+                          On Test Drive
+                        </Badge>
                       ) : car.status === 'sold' || car.status === 'reserved' ? (
                         <Badge variant="outline" className="bg-gray-50 text-gray-500">
                           Not Available
@@ -823,22 +918,22 @@ const ShowroomFloor1Page: React.FC = () => {
                     <TableCell>
                       <div 
                         className="cursor-pointer"
-                        onClick={() => handleViewPdi(car)}
+                        onClick={() => handlePdiClick(car)}
                       >
-                                        <StatusBadge variant={getPdiStatusVariant(car.pdiCompleted)}>
-                  {car.pdiCompleted ? (
-                    <><span className="mr-1 text-lg">☺</span> Complete</>
-                  ) : (
-                    <><span className="mr-1 text-lg">☹</span> Pending</>
-                  )}
-                </StatusBadge>
+                        <StatusBadge variant={getPdiStatusVariant(car.pdiCompleted)}>
+                          {car.pdiCompleted ? (
+                            <><span className="mr-1 text-lg">☺</span> Complete</>
+                          ) : (
+                            <><span className="mr-1 text-lg">☹</span> Pending</>
+                          )}
+                        </StatusBadge>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge 
                         variant={car.customs === 'paid' ? 'default' : 'destructive'}
                         className="cursor-pointer hover:opacity-80 transition-opacity active:scale-95"
-                        onClick={() => handleViewDetails(car)}
+                        onClick={() => handleCustomsClick(car)}
                         title="Click to manage customs payment"
                       >
                         {car.customs === 'paid' ? (
@@ -873,24 +968,29 @@ const ShowroomFloor1Page: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <ActionDropdown
-                        options={[
-                          { value: 'details', label: 'View Details' },
-                          { value: 'edit', label: 'Edit Car' },
-                          { value: 'move', label: 'Move Car' }
-                        ]}
-                        onAction={(action) => {
-                          if (action === 'details') handleViewDetails(car);
-                          else if (action === 'edit') {
-                            setSelectedCar(car);
-                            setShowEditDialog(true);
-                          } else if (action === 'move') {
-                            setSelectedCar(car);
-                            setShowMoveDialog(true);
-                          }
-                        }}
-                        ariaLabel={`Actions for ${car.model} ${car.vinNumber}`}
-                      />
+                      <div className="flex gap-2 items-center">
+                        <SmartActionDropdown
+                          options={[
+                            { value: 'details', label: 'View Details' },
+                            { value: 'edit', label: 'Edit Car' },
+                            { value: 'move', label: 'Move Car' }
+                          ]}
+                          onAction={(action) => {
+                            if (action === 'details') handleViewDetails(car);
+                            else if (action === 'edit') {
+                              setSelectedCar(car);
+                              setShowEditDialog(true);
+                            } else if (action === 'move') {
+                              console.log('🚀 ShowroomFloor1 - Move action clicked for car:', car);
+                              setSelectedCar(car);
+                              setShowMoveFormDialog(true);
+                              console.log('📱 ShowroomFloor1 - Dialog state set to true');
+                            }
+                          }}
+                          id={`actions-${car.id}`}
+                          ariaLabel={`Actions for ${car.model} ${car.vinNumber}`}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -902,17 +1002,20 @@ const ShowroomFloor1Page: React.FC = () => {
 
       {/* Simplified Manual Add Dialog */}
       <Dialog open={showManualAddDialog} onOpenChange={setShowManualAddDialog}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[700px] w-[95vw] px-6 py-6" aria-describedby="add-car-floor1-description">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Car className="h-5 w-5" />
               Add Car to Showroom Floor 1
             </DialogTitle>
+            <p id="add-car-floor1-description" className="text-sm text-gray-600">
+              Add a new vehicle to the showroom floor 1 inventory with complete details
+            </p>
           </DialogHeader>
 
           <div className="space-y-4">
             {/* Basic Information */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="vinNumber">VIN Number *</Label>
                 <Input
@@ -941,7 +1044,7 @@ const ShowroomFloor1Page: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="year">Year *</Label>
                 <Input
@@ -950,7 +1053,7 @@ const ShowroomFloor1Page: React.FC = () => {
                   min="2020"
                   max="2030"
                   value={newCar.year}
-                  onChange={(e) => setNewCar(prev => ({ ...prev, year: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewCar(prev => ({ ...prev, year: safeParseInt(e.target.value, 2024) }))}
                   required
                 />
               </div>
@@ -966,7 +1069,7 @@ const ShowroomFloor1Page: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="category">Category *</Label>
                 <select
@@ -988,14 +1091,14 @@ const ShowroomFloor1Page: React.FC = () => {
                   type="number"
                   min="0"
                   value={newCar.price}
-                  onChange={(e) => setNewCar(prev => ({ ...prev, price: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewCar(prev => ({ ...prev, price: safeParseInt(e.target.value, 0) }))}
                   placeholder="e.g., 85000"
                   required
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="status">Status</Label>
                 <select
@@ -1018,12 +1121,12 @@ const ShowroomFloor1Page: React.FC = () => {
                   min="0"
                   max="100"
                   value={newCar.batteryPercentage}
-                  onChange={(e) => setNewCar(prev => ({ ...prev, batteryPercentage: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewCar(prev => ({ ...prev, batteryPercentage: safeParseInt(e.target.value, 85) }))}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-6">
               <div>
                 <Label htmlFor="range">Range (km)</Label>
                 <Input
@@ -1031,16 +1134,16 @@ const ShowroomFloor1Page: React.FC = () => {
                   type="number"
                   min="0"
                   value={newCar.range}
-                  onChange={(e) => setNewCar(prev => ({ ...prev, range: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewCar(prev => ({ ...prev, range: safeParseInt(e.target.value, 520) }))}
                   placeholder="e.g., 520"
                 />
               </div>
             </div>
 
             {/* Technical Specs - Hidden fields for car details */}
-            <details className="border rounded-lg p-4">
+            <details className="border rounded-none p-4">
               <summary className="font-medium cursor-pointer">Technical Specifications (Optional)</summary>
-              <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-2 gap-6 mt-4">
                 <div>
                   <Label htmlFor="horsePower">Horse Power</Label>
                   <Input
@@ -1048,8 +1151,8 @@ const ShowroomFloor1Page: React.FC = () => {
                     type="number"
                     min="0"
                     value={newCar.horsePower}
-                    onChange={(e) => setNewCar(prev => ({ ...prev, horsePower: parseInt(e.target.value) }))}
-                    placeholder="e.g., 350"
+                    onChange={(e) => setNewCar(prev => ({ ...prev, horsePower: safeParseInt(e.target.value, 0) }))}
+                    placeholder="e.g., 408"
                   />
                 </div>
                 <div>
@@ -1059,8 +1162,8 @@ const ShowroomFloor1Page: React.FC = () => {
                     type="number"
                     min="0"
                     value={newCar.torque}
-                    onChange={(e) => setNewCar(prev => ({ ...prev, torque: parseInt(e.target.value) }))}
-                    placeholder="e.g., 500"
+                    onChange={(e) => setNewCar(prev => ({ ...prev, torque: safeParseInt(e.target.value, 0) }))}
+                    placeholder="e.g., 700"
                   />
                 </div>
                 <div>
@@ -1079,8 +1182,8 @@ const ShowroomFloor1Page: React.FC = () => {
                     type="number"
                     min="0"
                     value={newCar.topSpeed}
-                    onChange={(e) => setNewCar(prev => ({ ...prev, topSpeed: parseInt(e.target.value) }))}
-                    placeholder="e.g., 250"
+                    onChange={(e) => setNewCar(prev => ({ ...prev, topSpeed: safeParseInt(e.target.value, 0) }))}
+                    placeholder="e.g., 200"
                   />
                 </div>
                 <div>
@@ -1106,7 +1209,7 @@ const ShowroomFloor1Page: React.FC = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-4 border-t">
+          <div className="flex justify-end gap-3 pt-6 border-t mt-4">
             <Button variant="outline" onClick={() => setShowManualAddDialog(false)}>
               Cancel
             </Button>
@@ -1154,8 +1257,8 @@ const ShowroomFloor1Page: React.FC = () => {
         />
       )}
 
-      {/* Test Drive Selection Dialog */}
-      {showTestDriveSelectionDialog && selectedCar && (
+      {/* Test Drive Selection Dialog - Temporarily disabled */}
+      {/* {showTestDriveSelectionDialog && selectedCar && (
         <TestDriveSelectionDialog
           isOpen={showTestDriveSelectionDialog}
           onClose={() => {
@@ -1166,10 +1269,10 @@ const ShowroomFloor1Page: React.FC = () => {
           carModel={selectedCar.model}
           carVin={selectedCar.vinNumber}
         />
-      )}
+      )} */}
 
-      {/* Test Drive Dialog */}
-      <TestDriveDialog
+      {/* Test Drive Dialog - Temporarily disabled */}
+      {/* <TestDriveDialog
         isOpen={showTestDriveDialog}
         onClose={() => {
           setShowTestDriveDialog(false);
@@ -1178,7 +1281,7 @@ const ShowroomFloor1Page: React.FC = () => {
         car={selectedCar}
         onScheduleTestDrive={handleActualTestDriveSchedule}
         isClientTestDrive={selectedTestDriveType}
-      />
+      /> */}
 
       {/* Move Car Dialog */}
       <MoveCarDialog
@@ -1230,8 +1333,8 @@ const ShowroomFloor1Page: React.FC = () => {
         />
       )}
 
-      {/* Enhanced Car Details Dialog */}
-      <EnhancedCarDetailDialog
+      {/* Enhanced Car Details Dialog - Temporarily disabled */}
+      {/* <EnhancedCarDetailDialog
         isOpen={showEnhancedDetailsDialog}
         onClose={() => {
           setShowEnhancedDetailsDialog(false);
@@ -1239,10 +1342,10 @@ const ShowroomFloor1Page: React.FC = () => {
         }}
         car={selectedCarForDetails}
         onCarUpdate={handleCarUpdate}
-      />
+      /> */}
 
-      {/* IT Software Update Dialog */}
-      <ITSoftwareUpdateDialog
+      {/* IT Software Update Dialog - Temporarily disabled */}
+      {/* <ITSoftwareUpdateDialog
         isOpen={showSoftwareDialog}
         onClose={() => {
           setShowSoftwareDialog(false);
@@ -1264,8 +1367,80 @@ const ShowroomFloor1Page: React.FC = () => {
             handleSoftwareUpdate(carId, updateData);
           }
         }}
+      /> */}
+
+      {/* Customs Management Dialog */}
+      {customsCar && (
+        <CustomsManagementDialog
+          open={showCustomsDialog}
+          onOpenChange={setShowCustomsDialog}
+          car={customsCar}
+          onCustomsUpdate={handleCustomsUpdate}
+        />
+      )}
+
+      {/* Delivery Date Dialog */}
+      <DeliveryDateDialog
+        open={showDeliveryDateDialog}
+        onOpenChange={setShowDeliveryDateDialog}
+        car={carForDeliveryDate}
+        onSave={(carId: string, deliveryData: { deliveryDate: string; deliveryNotes: string; }) => {
+          const updatedCars = cars.map(car => 
+            car.id === carId 
+              ? { ...car, deliveryDate: deliveryData.deliveryDate, deliveryNotes: deliveryData.deliveryNotes, lastUpdated: new Date().toISOString() }
+              : car
+          );
+          setCars(updatedCars);
+          saveCarsToStorage(updatedCars);
+          setShowDeliveryDateDialog(false);
+          toast({
+            title: "Delivery Date Updated",
+            description: `Delivery date has been set successfully.`,
+          });
+        }}
+      />
+
+      {/* PDI Checklist Dialog */}
+      <PdiChecklistDialog
+        isOpen={showFullPdiDialog}
+        onClose={() => setShowFullPdiDialog(false)}
+        car={selectedCar}
+        onSave={(carId: string, pdiCompleted: boolean) => {
+          console.log('PDI Checklist saved:', carId, pdiCompleted);
+          setShowFullPdiDialog(false);
+          toast({
+            title: "PDI Checklist Saved",
+            description: `PDI checklist has been ${pdiCompleted ? 'completed' : 'saved'} successfully.`,
+          });
+        }}
+      />
+
+
+      {/* Warranty Form Dialog */}
+      <WarrantyFormDialog
+        isOpen={warrantyEditor.isWarrantyDialogOpen}
+        onClose={warrantyEditor.closeWarrantyDialog}
+        carId={warrantyEditor.selectedCarId || ''}
+        tableName={warrantyEditor.selectedTableName || 'cars'}
+        currentWarranty={warrantyEditor.selectedCarWarranty || undefined}
+        onSave={warrantyEditor.handleWarrantySave}
+      />
+
+      {/* Move Car Form Dialog */}
+      <MoveCarFormDialog
+        isOpen={showMoveFormDialog}
+        onClose={() => setShowMoveFormDialog(false)}
+        car={selectedCar || { id: '', vinNumber: '', model: '' }}
+        currentLocation="SHOWROOM_1"
+        onMoveComplete={() => {
+          setShowMoveFormDialog(false);
+          setSelectedCar(null);
+          // Refresh car data
+          loadCarsFromDatabase();
+        }}
       />
     </div>
+    </WarrantyLifeDialogProvider>
   );
 };
 

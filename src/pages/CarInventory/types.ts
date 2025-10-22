@@ -27,6 +27,8 @@ export interface RepairHistoryRecord {
   workOrderNumber?: string;
 }
 
+import { TestDrivePurpose } from '@/types/purposeReason';
+
 export interface TestDriveInfo {
   isOnTestDrive: boolean;
   testDriveStartTime?: string;
@@ -37,7 +39,7 @@ export interface TestDriveInfo {
   testDriverLicense?: string;
   notes?: string;
   isClientTestDrive?: boolean; // To distinguish between client and employee test drives
-  purpose?: string; // Purpose of the test drive
+  purpose?: TestDrivePurpose; // Purpose of the test drive
   // Activity tracking fields
   loggedBy?: string; // Email of the person who logged the test drive
   loggedByName?: string; // Full name of the person who logged it
@@ -63,6 +65,7 @@ export interface Car {
   model: string;
   year: number;
   color: string;
+  interiorColor?: string;
   arrivalDate: string;
   soldDate?: string;
   status: 'in_stock' | 'sold' | 'reserved';
@@ -165,6 +168,17 @@ export interface Car {
     unit: 'months' | 'years';
     terms?: string;
   };
+  // Warranty tracking fields
+  warrantyStartDate?: string;
+  warrantyEndDate?: string;
+  warrantyMonthsRemaining?: number;
+  warrantyDaysRemaining?: number;
+  warrantyStatus?: 'active' | 'expiring_soon' | 'expired';
+  lastWarrantyUpdate?: string;
+  // New warranty fields for database schema
+  warranty_start_date?: string;
+  warranty_end_date?: string;
+  warranty_notes?: string;
   compatibleModels?: string[];
   installationNotes?: string;
   safetyInstructions?: string;

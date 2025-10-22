@@ -30,7 +30,7 @@ const EmployeeProfileForm: React.FC<EmployeeProfileFormProps> = ({ currentUser }
     email: currentUser?.email || '',
     phone: currentUser?.phone || '',
     // Only include department for non-owners
-    ...(currentUser?.role !== 'owner' && { department: currentUser?.department || '' }),
+    ...(currentUser?.role?.toUpperCase() !== 'OWNER' && { department: currentUser?.department || '' }),
     notes: currentUser?.notes || ''
   });
 
@@ -97,7 +97,7 @@ const EmployeeProfileForm: React.FC<EmployeeProfileFormProps> = ({ currentUser }
           />
         </div>
 
-        {currentUser?.role !== 'owner' && (
+        {currentUser?.role?.toUpperCase() !== 'OWNER' && (
           <div className="space-y-2">
             <Label htmlFor="department">Department</Label>
             <Input

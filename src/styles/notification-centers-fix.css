@@ -1,0 +1,141 @@
+/* ====================================================================
+   NOTIFICATION CENTERS TRANSPARENCY FIX
+   ====================================================================
+   Comprehensive fix for all notification centers to ensure proper
+   opacity and no transparent backgrounds showing through.
+   ==================================================================== */
+
+/* TopRightNotificationCenters - Sheet components */
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+}
+
+/* Sheet Content - Force solid backgrounds */
+[role="dialog"][data-state="open"] {
+  background-color: #ffffff !important;
+  backdrop-filter: none !important;
+  opacity: 1 !important;
+  z-index: 9999 !important;
+}
+
+/* Sheet overlay */
+[data-radix-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+  z-index: 9998 !important;
+}
+
+/* All Sheet Content areas */
+.sheet-content-fix {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  border: 2px solid #d1d5db !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 10px 20px -5px rgba(0, 0, 0, 0.3) !important;
+  opacity: 1 !important;
+  z-index: 9999 !important;
+}
+
+/* Notification ScrollArea fix */
+.notification-scroll-area {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+/* Dialog Content - MessageCenter, UnifiedMessageCenter */
+.dialog-content-notification-fix {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  border: 2px solid #d1d5db !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  opacity: 1 !important;
+  z-index: 9999 !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+}
+
+/* AutomatedNotificationCenter Dialog fix */
+.automated-notification-dialog {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  border: 3px solid #000000 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  opacity: 1 !important;
+  z-index: 99999 !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+}
+
+/* Tab content areas */
+.notification-tabs-content {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+/* Card components in notifications */
+.notification-card-fix {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+/* Force all notification popups to be solid */
+[data-radix-portal] div[role="dialog"],
+[data-radix-portal] div[data-state="open"],
+.notification-center-dialog,
+.message-center-dialog,
+.unified-message-center-dialog {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+  z-index: 9999 !important;
+}
+
+/* Specific targeting for Sheet components */
+div[data-radix-dialog-content][role="dialog"] {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  border: 2px solid #9ca3af !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  opacity: 1 !important;
+  z-index: 9999 !important;
+}
+
+/* ScrollArea viewport fix */
+[data-radix-scroll-area-viewport] {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+/* Additional safety net for any transparent elements */
+.notification-system *,
+.message-center *,
+.unified-message-center *,
+.automated-notification-center *,
+.top-right-notification-centers * {
+  backdrop-filter: none !important;
+  filter: none !important;
+}
+
+/* Button hover states in notifications */
+.notification-button:hover {
+  background-color: #f3f4f6 !important;
+}
+
+/* Ensure notification headers are solid */
+.notification-header {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Final catch-all for notification dialogs */
+.notification-dialog-final-fix,
+.notification-dialog-final-fix * {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+}

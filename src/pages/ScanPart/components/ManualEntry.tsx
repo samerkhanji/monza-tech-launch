@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { QrCode, Camera } from 'lucide-react';
 import PartNumberScannerDialog from '@/components/PartNumberScannerDialog';
+import { safeParseInt } from '@/utils/errorHandling';
 
 interface ManualEntryProps {
   manualPartId: string;
@@ -84,7 +85,7 @@ const ManualEntry: React.FC<ManualEntryProps> = ({
             type="number"
             min="1"
             value={quantity}
-            onChange={(e) => onQuantityChange(parseInt(e.target.value) || 1)}
+            onChange={(e) => onQuantityChange(safeParseInt(e.target.value, 1))}
             className="mt-1"
             required
           />

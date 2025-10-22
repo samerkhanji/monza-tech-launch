@@ -8,6 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import CameraScanner from './components/CameraScanner';
 import ManualEntry from './components/ManualEntry';
+import { inventoryService } from '@/services/inventoryService';
 
 interface PartCheckout {
   id: string;
@@ -53,70 +54,30 @@ const ScanPartPage: React.FC = () => {
   };
   
   const processPartCheckout = (partId: string) => {
-    // Look up the part in inventory
-    const savedInventory = localStorage.getItem('inventory');
-    if (!savedInventory) {
-      toast({
-        title: "Error",
-        description: "Part inventory not found.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     try {
-      const inventory = JSON.parse(savedInventory);
-      const part = inventory.find((i: any) => i.partNumber === partId || i.id === partId);
-      
-      if (!part) {
-        toast({
-          title: "Part not found",
-          description: `No part with ID or number ${partId} found in inventory.`,
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      if (part.quantity < quantity) {
-        toast({
-          title: "Insufficient quantity",
-          description: `Only ${part.quantity} of this part available in inventory.`,
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Update inventory
-      const updatedInventory = inventory.map((item: any) => {
-        if (item.id === part.id) {
-          return { ...item, quantity: item.quantity - quantity };
-        }
-        return item;
-      });
-      
-      localStorage.setItem('inventory', JSON.stringify(updatedInventory));
-      
-      // Create checkout record
-      const checkout: PartCheckout = {
-        id: Date.now().toString(),
-        partId: part.id,
-        partName: part.partName,
-        partNumber: part.partNumber,
-        quantity: quantity,
+      // Use the inventory service to process the part checkout
+      const success = inventoryService.usePart(partId, quantity, {
         carVIN: carVIN,
         employee: user?.name || 'Unknown',
-        timestamp: new Date().toISOString(),
-      };
+        type: 'scan',
+        context: 'part_scan'
+      });
       
-      // Save checkout history
-      const savedHistory = localStorage.getItem('inventoryHistory');
-      const history = savedHistory ? JSON.parse(savedHistory) : [];
-      history.push(checkout);
-      localStorage.setItem('inventoryHistory', JSON.stringify(history));
+      if (!success) {
+        toast({
+          title: "Part Checkout Failed",
+          description: "Failed to process part checkout. Check if part exists and has sufficient quantity.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Get part details for confirmation
+      const part = inventoryService.findPart(partId);
       
       toast({
         title: "Part checked out",
-        description: `${quantity} x ${part.partName} has been checked out for car ${carVIN}.`,
+        description: `${quantity} x ${part?.partName || partId} has been checked out for car ${carVIN}. Inventory updated.`,
       });
       
       // Reset form

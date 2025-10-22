@@ -10,6 +10,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { InventoryItem, VehicleType } from '@/types/inventory';
+import { safeParseInt } from '@/utils/errorHandling';
 
 interface EditAccessoryDialogProps {
   isOpen: boolean;
@@ -172,7 +173,7 @@ const EditAccessoryDialog: React.FC<EditAccessoryDialogProps> = ({
                 type="number"
                 min="1"
                 value={formData.quantity}
-                onChange={(e) => handleInputChange('quantity', parseInt(e.target.value))}
+                onChange={(e) => handleInputChange('quantity', safeParseInt(e.target.value, 0))}
                 required
               />
             </div>

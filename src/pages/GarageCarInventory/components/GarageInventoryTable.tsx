@@ -11,6 +11,8 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import PortalActionDropdown from '@/components/ui/PortalActionDropdown';
+import EnhancedCarDetailDialog from '@/components/EnhancedCarDetailDialog';
 import { 
   Eye, 
   Edit, 
@@ -21,14 +23,23 @@ import {
   Briefcase, 
   Battery,
   Fuel,
+  Activity,
   Clock,
   CheckCircle,
   X,
   Zap,
   Settings,
-  Car
+  Car,
+  Download
 } from 'lucide-react';
-import SimpleTestDriveDialog from '@/components/SimpleTestDriveDialog';
+import TestDriveDialog from '@/pages/CarInventory/components/TestDriveDialog';
+import TestDriveSelectionDialog from '@/components/TestDriveSelectionDialog';
+import WarrantyInfoColumn from '@/components/WarrantyInfoColumn';
+import StandardWarrantyButton from '@/components/StandardWarrantyButton';
+import SoftwareModelColumn from '@/components/SoftwareModelColumn';
+import { useToast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
+import CustomsManagementDialog from '@/components/CustomsManagementDialog';
 
 interface TestDriveInfo {
   isOnTestDrive?: boolean;
@@ -80,6 +91,16 @@ interface CarData {
   entryDate?: string;
   garageEntryDate?: string;
   damages?: Damage[];
+  softwareModel?: string;
+  softwareVersion?: string;
+  softwareLastUpdated?: string;
+  // Warranty tracking fields
+  warrantyStartDate?: string;
+  warrantyEndDate?: string;
+  warrantyMonthsRemaining?: number;
+  warrantyDaysRemaining?: number;
+  warrantyStatus?: 'active' | 'expiring_soon' | 'expired';
+  lastWarrantyUpdate?: string;
   [key: string]: unknown;
 }
 
@@ -91,6 +112,7 @@ interface GarageInventoryTableProps {
   onStatusClick?: (car: CarData) => void;
   onTestDriveSchedule?: (carId: string, testDriveInfo: unknown) => void;
   onTestDriveEnd?: (carId: string) => void;
+  onCarUpdate?: (carId: string, updates: Record<string, unknown>) => void;
 }
 
 const MobileGarageCarCard = memo(({ 
@@ -111,16 +133,18 @@ const MobileGarageCarCard = memo(({
   onTestDriveEnd?: (carId: string) => void;
 }) => {
   const [selectedCar, setSelectedCar] = useState<CarData | null>(null);
+  const [showDetailsDialogState, setShowDetailsDialogState] = useState<boolean>(false);
   const [showTestDriveDialog, setShowTestDriveDialog] = useState(false);
+  const [showTestDriveSelectionDialog, setShowTestDriveSelectionDialog] = useState(false);
   const [isClientTestDrive, setIsClientTestDrive] = useState(false);
 
   const statusColorClass = useMemo(() => {
     switch (car.garageStatus || car.status) {
-      case 'stored': return 'bg-blue-100 text-blue-800';
-      case 'in_repair': return 'bg-yellow-100 text-yellow-800';
-      case 'ready_for_pickup': return 'bg-green-100 text-green-800';
-      case 'awaiting_parts': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'stored': return 'bg-green-100 text-green-800 border-green-200';
+      case 'in_repair': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'ready_for_pickup': return 'bg-green-100 text-green-800 border-green-200';
+      case 'awaiting_parts': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   }, [car.garageStatus, car.status]);
 
@@ -132,6 +156,16 @@ const MobileGarageCarCard = memo(({
       default: return 'bg-gray-400 text-white';
     }
   }, [car.category]);
+
+  const getGarageStatusDisplayName = useCallback((garageStatus: string) => {
+    switch (garageStatus) {
+      case 'stored': return 'Stored';
+      case 'in_repair': return 'In Repair';
+      case 'ready_for_pickup': return 'Ready for Pickup';
+      case 'awaiting_parts': return 'Awaiting Parts';
+      default: return garageStatus;
+    }
+  }, []);
 
   const handleStartTestDrive = (carId: string, testDriveInfo: any) => {
     if (onTestDriveSchedule) {
@@ -145,6 +179,15 @@ const MobileGarageCarCard = memo(({
       onTestDriveEnd(carId);
     }
     setShowTestDriveDialog(false);
+  };
+
+  const handleTestDriveTypeSelection = (isClientTestDrive: boolean) => {
+    setIsClientTestDrive(isClientTestDrive);
+    // Close selection first, then open the schedule dialog on the next frame
+    setShowTestDriveSelectionDialog(false);
+    requestAnimationFrame(() => {
+      setShowTestDriveDialog(true);
+    });
   };
 
   return (
@@ -217,39 +260,26 @@ const MobileGarageCarCard = memo(({
             }}
             aria-label={`Manage status for ${car.model || car.carModel}`}
           >
-            {car.garageStatus || car.status || 'stored'}
+            {getGarageStatusDisplayName(car.garageStatus || car.status || 'stored')}
           </Badge>
 
-                              {(car.testDriveInfo as TestDriveInfo)?.isOnTestDrive ? (
-                      <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                        <Clock className="mr-1 h-3 w-3" />
-                        Test Drive Active
-                      </Badge>
-                    ) : (
+          {(car.testDriveInfo as TestDriveInfo)?.isOnTestDrive ? (
+            <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+              <Clock className="mr-1 h-3 w-3" />
+              Test Drive Active
+            </Badge>
+          ) : (
             <div className="flex gap-1 flex-wrap">
               <Button 
                 size="sm"
-                className="bg-orange-500 hover:bg-orange-600 text-white text-xs px-2 py-1 h-7"
+                className="bg-monza-yellow hover:bg-monza-yellow/90 text-monza-black text-xs px-2 py-1 h-7"
                 onClick={useCallback(() => {
                   setSelectedCar(car);
-                  setIsClientTestDrive(false);
-                  setShowTestDriveDialog(true);
+                  setShowTestDriveSelectionDialog(true);
                 }, [car])}
               >
                 <Briefcase className="h-3 w-3 mr-1" />
-                Employee
-              </Button>
-              <Button 
-                size="sm"
-                className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 h-7"
-                onClick={useCallback(() => {
-                  setSelectedCar(car);
-                  setIsClientTestDrive(true);
-                  setShowTestDriveDialog(true);
-                }, [car])}
-              >
-                <User className="h-3 w-3 mr-1" />
-                Client
+                Test Drive
               </Button>
             </div>
           )}
@@ -257,46 +287,52 @@ const MobileGarageCarCard = memo(({
 
         {/* Actions */}
         <div className="flex gap-2 pt-2 border-t">
-                      <select
-              onChange={(e) => {
-                const action = e.target.value;
-                try {
-                  if (action === 'view' && car.id) onCarClick(car);
-                  else if (action === 'edit' && onEditCar && car.id) onEditCar(car);
-                  else if (action === 'move' && onMoveCar && car.id) onMoveCar(car);
-                } catch (error) {
-                  console.error('Error performing mobile action:', error);
-                }
-                e.target.value = '';
-              }}
-            className="flex-1 h-9 px-3 border-2 border-gray-300 rounded-lg bg-white cursor-pointer text-sm font-medium hover:bg-gray-50 hover:border-monza-yellow focus:ring-2 focus:ring-monza-yellow focus:border-monza-yellow transition-all duration-200 shadow-sm"
-            style={{ 
-              appearance: 'none',
-              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23374151' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-              backgroundPosition: 'right 8px center',
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: '20px'
+          <PortalActionDropdown
+            options={[
+              { value: 'view', label: 'View Details' },
+              ...(onEditCar ? [{ value: 'edit', label: 'Edit Car' }] : []),
+              ...(onMoveCar ? [{ value: 'move', label: 'Move Car' }] : [])
+            ]}
+            onAction={(action) => {
+              try {
+                if (action === 'view' && car.id) onCarClick(car);
+                else if (action === 'edit' && onEditCar && car.id) onEditCar(car);
+                else if (action === 'move' && onMoveCar && car.id) onMoveCar(car);
+              } catch (error) {
+                console.error('Error performing mobile action:', error);
+              }
             }}
-          >
-            <option value="">Actions</option>
-            <option value="view">View Details</option>
-            {onEditCar && <option value="edit">Edit Car</option>}
-            {onMoveCar && <option value="move">Move Car</option>}
-          </select>
+            className="flex-1"
+            id={`mobile-actions-${car.id}`}
+            ariaLabel={`Actions for ${car.model || car.carModel} ${car.vinNumber || car.vin}`}
+          />
         </div>
       </div>
 
+      {/* Test Drive Selection Dialog */}
+      {showTestDriveSelectionDialog && selectedCar && (
+        <TestDriveSelectionDialog
+          isOpen={showTestDriveSelectionDialog}
+          onClose={() => {
+            setShowTestDriveSelectionDialog(false);
+            setSelectedCar(null);
+          }}
+          onSelectTestDriveType={handleTestDriveTypeSelection}
+          carModel={selectedCar.model || selectedCar.carModel}
+          carVin={selectedCar.vinNumber || selectedCar.vin}
+        />
+      )}
+
       {/* Test Drive Dialog */}
       {selectedCar && (
-        <SimpleTestDriveDialog
+        <TestDriveDialog
           isOpen={showTestDriveDialog}
           onClose={() => {
             setShowTestDriveDialog(false);
             setSelectedCar(null);
           }}
-          car={selectedCar}
-          onStartTestDrive={handleStartTestDrive}
-          onEndTestDrive={handleTestDriveEnd}
+          car={selectedCar as any}
+          onScheduleTestDrive={handleStartTestDrive}
           isClientTestDrive={isClientTestDrive}
         />
       )}
@@ -313,11 +349,17 @@ const GarageInventoryTable: React.FC<GarageInventoryTableProps> = memo(({
   onMoveCar,
   onStatusClick,
   onTestDriveSchedule,
-  onTestDriveEnd
+  onTestDriveEnd,
+  onCarUpdate
 }) => {
   const [selectedCar, setSelectedCar] = useState<CarData | null>(null);
+  const [showDetailsDialogState, setShowDetailsDialogState] = useState(false);
   const [showTestDriveDialog, setShowTestDriveDialog] = useState(false);
+  const [showTestDriveSelectionDialog, setShowTestDriveSelectionDialog] = useState(false);
   const [isClientTestDrive, setIsClientTestDrive] = useState(false);
+  const { toast } = useToast();
+  const [showCustomsDialog, setShowCustomsDialog] = useState(false);
+  const [customsCar, setCustomsCar] = useState<CarData | null>(null);
   
   const handleStartTestDrive = (carId: string, testDriveInfo: TestDriveInfo) => {
     if (onTestDriveSchedule) {
@@ -333,23 +375,52 @@ const GarageInventoryTable: React.FC<GarageInventoryTableProps> = memo(({
     setShowTestDriveDialog(false);
   };
 
+  const handleTestDriveTypeSelection = (isClientTestDrive: boolean) => {
+    setIsClientTestDrive(isClientTestDrive);
+    setShowTestDriveSelectionDialog(false);
+    setShowTestDriveDialog(true);
+  };
+
   const getStatusColor = useCallback((status: string) => {
     switch (status) {
-      case 'stored': return 'bg-blue-100 text-blue-800';
-      case 'in_repair': return 'bg-yellow-100 text-yellow-800';
-      case 'ready_for_pickup': return 'bg-green-100 text-green-800';
-      case 'awaiting_parts': return 'bg-red-100 text-red-800';
-      case 'completed': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'available':
+      case 'in_stock':
+      case 'stored':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'sold':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'reserved':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'maintenance':
+      case 'in_repair':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'ready_for_pickup':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'awaiting_parts':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'completed':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   }, []);
 
   const getCategoryColor = useCallback((category: string) => {
-    switch (category) {
+    switch (String(category)) {
       case 'EV': return 'category-ev';
       case 'REV': return 'category-rev';
       case 'ICEV': return 'category-icev';
-      default: return 'bg-gray-400 text-white';
+      default: return 'category-ev';
+    }
+  }, []);
+
+  const getGarageStatusDisplayName = useCallback((garageStatus: string) => {
+    switch (garageStatus) {
+      case 'stored': return 'Stored';
+      case 'in_repair': return 'In Repair';
+      case 'ready_for_pickup': return 'Ready for Pickup';
+      case 'awaiting_parts': return 'Awaiting Parts';
+      default: return garageStatus;
     }
   }, []);
 
@@ -374,18 +445,20 @@ const GarageInventoryTable: React.FC<GarageInventoryTableProps> = memo(({
             <TableRow className="bg-gray-50">
               <TableHead className="font-semibold">VIN</TableHead>
               <TableHead className="font-semibold">Model</TableHead>
-              <TableHead className="font-semibold">Customer</TableHead>
               <TableHead className="font-semibold">Category</TableHead>
-              <TableHead className="font-semibold">Location</TableHead>
-              <TableHead className="font-semibold">Horsepower</TableHead>
-              <TableHead className="font-semibold">Torque</TableHead>
-              <TableHead className="font-semibold">0-100 km/h</TableHead>
-              <TableHead className="font-semibold">Top Speed</TableHead>
-              <TableHead className="font-semibold">Battery</TableHead>
+              <TableHead className="font-semibold">Year</TableHead>
+              <TableHead className="font-semibold">Color</TableHead>
+              <TableHead className="font-semibold">Color interior</TableHead>
+              <TableHead className="font-semibold">Price</TableHead>
               <TableHead className="font-semibold">Status</TableHead>
+              <TableHead className="font-semibold">Warranty Life</TableHead>
+              <TableHead className="font-semibold">Battery</TableHead>
+              <TableHead className="font-semibold">Range Capacity</TableHead>
+              <TableHead className="font-semibold">Km Driven</TableHead>
               <TableHead className="font-semibold">Test Drive</TableHead>
-              <TableHead className="font-semibold">Entry Date</TableHead>
-              <TableHead className="font-semibold">Work Type</TableHead>
+              <TableHead className="font-semibold">PDI</TableHead>
+              <TableHead className="font-semibold">Customs</TableHead>
+              <TableHead className="font-semibold">Software Model</TableHead>
               <TableHead className="font-semibold">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -395,145 +468,108 @@ const GarageInventoryTable: React.FC<GarageInventoryTableProps> = memo(({
                 <TableRow key={car.id} className="hover:bg-gray-50 transition-colors">
                   <TableCell className="font-mono text-sm">{car.vinNumber || car.vin}</TableCell>
                   <TableCell className="font-medium">{car.model || car.carModel}</TableCell>
-                  <TableCell>{car.customerName || car.clientName || 'N/A'}</TableCell>
                   <TableCell>
                     <Badge className={getCategoryColor(car.category || 'EV')}>
                       {car.category || 'EV'}
                     </Badge>
                   </TableCell>
+                  <TableCell>{(car as any).year || (car as any).modelYear || 'N/A'}</TableCell>
+                  <TableCell>{(car as any).color || 'N/A'}</TableCell>
+                  <TableCell>{(car as any).interiorColor || (car as any).interior_color || '-'}</TableCell>
+                  <TableCell>${(car as any).price ? (car as any).price.toLocaleString() : '0'}</TableCell>
+                  <TableCell>
+                    <Badge 
+                      className={`cursor-pointer hover:opacity-80 transition-opacity ${getStatusColor(car.status || 'in_stock')}`}
+                      onClick={() => onStatusClick && onStatusClick(car)}
+                    >
+                      {getGarageStatusDisplayName(car.status || 'in_stock')}
+                    </Badge>
+                  </TableCell>
+                  <StandardWarrantyButton car={car} />
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4 text-gray-500" />
-                      {car.garageLocation || 'Bay 1'}
+                      <Battery className="h-4 w-4" />
+                      {car.batteryPercentage || 0}%
                     </div>
                   </TableCell>
                   <TableCell>
-                    {car.horsePower ? `${car.horsePower} HP` : '350 HP'}
+                    <div className="flex items-center gap-1">
+                      <Fuel className="h-4 w-4" />
+                      {(car as any).range || 0} km
+                    </div>
                   </TableCell>
                   <TableCell>
-                    {car.torque ? `${car.torque} Nm` : '500 Nm'}
-                  </TableCell>
-                  <TableCell>
-                    {car.acceleration ? `${car.acceleration}s` : '4.5s'}
-                  </TableCell>
-                  <TableCell>
-                    {car.topSpeed ? `${car.topSpeed} km/h` : '250 km/h'}
-                  </TableCell>
-                  <TableCell>
-                    {car.batteryPercentage ? (
-                      <div className="flex items-center gap-1">
-                        <Battery className="h-4 w-4" />
-                        {String(car.batteryPercentage)}%
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">N/A</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      className={`${getStatusColor(car.garageStatus || car.status || 'stored')} cursor-pointer hover:opacity-80 transition-all hover:scale-105 active:scale-95`}
-                      onClick={() => onStatusClick && onStatusClick(car)}
-                      title="Click to manage status"
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          onStatusClick && onStatusClick(car);
-                        }
-                      }}
-                      aria-label={`Manage status for ${car.model || car.carModel}`}
-                    >
-                      {car.garageStatus || car.status || 'stored'}
-                    </Badge>
+                    <div className="flex items-center gap-1">
+                      <Activity className="h-4 w-4" />
+                      {(car as any).mileage || (car as any).kmDriven || 0} km
+                    </div>
                   </TableCell>
                   <TableCell>
                     {(car.testDriveInfo as TestDriveInfo)?.isOnTestDrive ? (
                       <Badge className="bg-blue-100 text-blue-800 border-blue-200">
                         <Clock className="mr-1 h-3 w-3" />
-                        Test Drive Active
+                        On Test Drive
                       </Badge>
                     ) : (
-                      <div className="flex gap-1 flex-wrap">
-                        <Button 
-                          size="sm"
-                          className="bg-orange-500 hover:bg-orange-600 text-white text-xs px-2 py-1 h-7"
-                          onClick={useCallback(() => {
-                            setSelectedCar(car);
-                            setIsClientTestDrive(false);
-                            setShowTestDriveDialog(true);
-                          }, [car])}
-                          title="Employee Test Drive"
-                        >
-                          <Briefcase className="h-3 w-3 mr-1" />
-                          Employee
-                        </Button>
-                        <Button 
-                          size="sm"
-                          className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 h-7"
-                          onClick={useCallback(() => {
-                            setSelectedCar(car);
-                            setIsClientTestDrive(true);
-                            setShowTestDriveDialog(true);
-                          }, [car])}
-                          title="Client Test Drive"
-                        >
-                          <User className="h-3 w-3 mr-1" />
-                          Client
-                        </Button>
-                      </div>
+                      <Badge 
+                        variant="outline" 
+                        className="cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                        onClick={() => onTestDriveSchedule && onTestDriveSchedule(car.id, { carModel: car.model, carVin: car.vinNumber })}
+                      >
+                        Available
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell>
-                    {car.entryDate ? new Date(String(car.entryDate)).toLocaleDateString() : 
-                     car.garageEntryDate ? new Date(String(car.garageEntryDate)).toLocaleDateString() : 'N/A'}
+                    <Badge 
+                      variant={car.pdiCompleted ? 'default' : 'destructive'}
+                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                    >
+                      {car.pdiCompleted ? 'Complete' : 'Pending'}
+                    </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
-                      {getWorkTypeIcon(car.workType as string)}
-                      <span className="capitalize">
-                        {(car.workType as string)?.replace('_', ' ') || 'General Maintenance'}
-                      </span>
-                    </div>
+                    <Badge 
+                      variant={car.customs === 'paid' ? 'default' : 'destructive'}
+                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                      title="Click to manage customs"
+                      onClick={() => { setCustomsCar(car); setShowCustomsDialog(true); }}
+                    >
+                      {car.customs === 'paid' ? 'Paid' : 'Not Paid'}
+                    </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-1">
-                      <div className="relative">
-                        <select
-                          onChange={(e) => {
-                            const action = e.target.value;
-                            try {
-                              if (action === 'view' && car.id) onCarClick(car);
-                              else if (action === 'edit' && onEditCar && car.id) onEditCar(car);
-                              else if (action === 'move' && onMoveCar && car.id) onMoveCar(car);
-                            } catch (error) {
-                              console.error('Error performing action:', error);
-                            }
-                            e.target.value = '';
-                          }}
-                          className="w-28 h-9 px-3 border-2 border-gray-300 rounded-lg bg-white cursor-pointer text-sm font-medium hover:bg-gray-50 hover:border-monza-yellow focus:ring-2 focus:ring-monza-yellow focus:border-monza-yellow transition-all duration-200 shadow-sm"
-                          style={{ 
-                            appearance: 'none',
-                            backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23374151' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                            backgroundPosition: 'right 8px center',
-                            backgroundRepeat: 'no-repeat',
-                            backgroundSize: '20px'
-                          }}
-                          aria-label={`Actions for ${car.model || car.carModel} ${car.vinNumber || car.vin}`}
-                        >
-                          <option value="">Actions</option>
-                          <option value="view">View Details</option>
-                          {onEditCar && <option value="edit">Edit Car</option>}
-                          {onMoveCar && <option value="move">Move Car</option>}
-                        </select>
-                      </div>
-                    </div>
+                    <SoftwareModelColumn
+                      softwareVersion={(car as any).softwareVersion}
+                      softwareLastUpdated={(car as any).softwareLastUpdated}
+                      softwareUpdateBy={(car as any).softwareUpdateBy}
+                      softwareUpdateNotes={(car as any).softwareUpdateNotes}
+                      compact={true}
+                      editable={true}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <PortalActionDropdown
+                      variant="dots"
+                      options={[
+                        { value: 'view', label: 'View Details', icon: <Eye className="h-4 w-4" /> },
+                        { value: 'edit', label: 'Edit Car', icon: <Edit className="h-4 w-4" /> },
+                        { value: 'move', label: 'Move Car', icon: <MapPin className="h-4 w-4" /> }
+                      ]}
+                      onAction={(action) => {
+                        if (action === 'view') { setSelectedCar(car); setShowDetailsDialogState(true); }
+                        else if (action === 'edit' && onEditCar) onEditCar(car);
+                        else if (action === 'move' && onMoveCar) onMoveCar(car);
+                      }}
+                      id={`garage-actions-${car.id}`}
+                      ariaLabel={`Actions for ${car.model || car.carModel} ${car.vinNumber || car.vin}`}
+                    />
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={15} className="text-center py-6 text-muted-foreground">
+                <TableCell colSpan={16} className="text-center py-6 text-muted-foreground">
                   No vehicles in garage inventory
                 </TableCell>
               </TableRow>
@@ -558,17 +594,53 @@ const GarageInventoryTable: React.FC<GarageInventoryTableProps> = memo(({
         ))}
       </div>
 
+      {/* View Details Dialog (car inventory style) */}
+      <EnhancedCarDetailDialog
+        isOpen={showDetailsDialogState}
+        onClose={() => { setShowDetailsDialogState(false); setSelectedCar(null); }}
+        car={selectedCar as any}
+        onCarUpdate={(carId, updates) => {
+          try { onCarUpdate && onCarUpdate(carId, updates as any); } catch {}
+        }}
+      />
+
+      {/* Customs Management Dialog */}
+      {customsCar && (
+        <CustomsManagementDialog
+          open={showCustomsDialog}
+          onOpenChange={setShowCustomsDialog}
+          car={customsCar as any}
+          onCustomsUpdate={(carId, data) => {
+            try { onCarUpdate && onCarUpdate(carId, data as any); } catch {}
+          }}
+        />
+      )}
+
+
+      {/* Test Drive Selection Dialog */}
+      {showTestDriveSelectionDialog && selectedCar && (
+        <TestDriveSelectionDialog
+          isOpen={showTestDriveSelectionDialog}
+          onClose={() => {
+            setShowTestDriveSelectionDialog(false);
+            setSelectedCar(null);
+          }}
+          onSelectTestDriveType={handleTestDriveTypeSelection}
+          carModel={selectedCar.model || selectedCar.carModel}
+          carVin={selectedCar.vinNumber || selectedCar.vin}
+        />
+      )}
+
       {/* Test Drive Dialog */}
       {selectedCar && (
-        <SimpleTestDriveDialog
+        <TestDriveDialog
           isOpen={showTestDriveDialog}
           onClose={() => {
             setShowTestDriveDialog(false);
             setSelectedCar(null);
           }}
-          car={selectedCar}
-          onStartTestDrive={handleStartTestDrive}
-          onEndTestDrive={handleTestDriveEnd}
+          car={selectedCar as any}
+          onScheduleTestDrive={handleStartTestDrive}
           isClientTestDrive={isClientTestDrive}
         />
       )}

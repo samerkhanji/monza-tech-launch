@@ -226,36 +226,50 @@ class AutomatedNotificationService {
 
   private checkLowStockLevels(): void {
     try {
-      // Check car inventory
-      const carInventory = JSON.parse(localStorage.getItem('carInventory') || '[]');
-      const availableCars = carInventory.filter((car: any) => car.status === 'available');
+      // Skip checking if no data sources are available
+      const carInventoryData = localStorage.getItem('carInventory');
+      const partInventoryData = localStorage.getItem('partInventory');
       
-      if (availableCars.length <= LOW_STOCK_THRESHOLDS.CARS) {
-        this.notifyLowStock({
-          type: 'car',
-          itemId: 'available_cars',
-          currentStock: availableCars.length,
-          threshold: LOW_STOCK_THRESHOLDS.CARS,
-          location: 'Showroom'
-        });
+      // If no mock data and no Supabase connection, skip checking
+      if (!carInventoryData && !partInventoryData) {
+        // console.log('📋 No inventory data available for stock monitoring');
+        return;
       }
 
-      // Check part inventory
-      const partInventory = JSON.parse(localStorage.getItem('partInventory') || '[]');
-      
-      partInventory.forEach((part: any) => {
-        const threshold = part.isCritical ? LOW_STOCK_THRESHOLDS.CRITICAL_PARTS : LOW_STOCK_THRESHOLDS.PARTS;
+      // Check car inventory only if data exists
+      if (carInventoryData) {
+        const carInventory = JSON.parse(carInventoryData);
+        const availableCars = carInventory.filter((car: any) => car.status === 'available');
         
-        if (part.quantity <= threshold) {
+        if (availableCars.length <= LOW_STOCK_THRESHOLDS.CARS) {
           this.notifyLowStock({
-            type: 'part',
-            itemId: part.partNumber,
-            currentStock: part.quantity,
-            threshold: threshold,
-            location: part.location || 'Inventory'
+            type: 'car',
+            itemId: 'available_cars',
+            currentStock: availableCars.length,
+            threshold: LOW_STOCK_THRESHOLDS.CARS,
+            location: 'Showroom'
           });
         }
-      });
+      }
+
+      // Check part inventory only if data exists
+      if (partInventoryData) {
+        const partInventory = JSON.parse(partInventoryData);
+        
+        partInventory.forEach((part: any) => {
+          const threshold = part.isCritical ? LOW_STOCK_THRESHOLDS.CRITICAL_PARTS : LOW_STOCK_THRESHOLDS.PARTS;
+          
+          if (part.quantity <= threshold) {
+            this.notifyLowStock({
+              type: 'part',
+              itemId: part.partNumber,
+              currentStock: part.quantity,
+              threshold: threshold,
+              location: part.location || 'Inventory'
+            });
+          }
+        });
+      }
     } catch (error) {
       console.error('Error checking low stock levels:', error);
     }

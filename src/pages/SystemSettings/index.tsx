@@ -25,6 +25,8 @@ import {
   Wifi
 } from 'lucide-react';
 import { NetworkAccessManager } from '@/components/NetworkAccessManager';
+import OwnerTrustedDevicesManager from '@/components/OwnerTrustedDevicesManager';
+import { safeParseInt } from '@/utils/errorHandling';
 
 interface SystemSettings {
   general: {
@@ -106,14 +108,18 @@ const SystemSettingsPage: React.FC = () => {
     api: 'healthy'
   });
 
-  // Restrict access to owners only
-  if (!user || user.role !== 'owner') {
+  // Restrict access to owners only (case-insensitive check)
+  const isOwner = user?.role?.toUpperCase() === 'OWNER';
+  if (!user || !isOwner) {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center py-12">
           <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-600 mb-2">Access Restricted</h2>
           <p className="text-gray-500">System settings are only available to system owners.</p>
+          <p className="text-sm text-gray-400 mt-2">
+            Current user: {user?.name || 'Unknown'} ({user?.role || 'No role'})
+          </p>
         </div>
       </div>
     );
@@ -217,13 +223,13 @@ const SystemSettingsPage: React.FC = () => {
       </Card>
 
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="backup">Backup</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="network-access">Network Access</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-6 h-auto p-1">
+          <TabsTrigger value="general" className="text-xs px-2 py-2">General</TabsTrigger>
+          <TabsTrigger value="security" className="text-xs px-2 py-2">Security</TabsTrigger>
+          <TabsTrigger value="notifications" className="text-xs px-2 py-2">Notifications</TabsTrigger>
+          <TabsTrigger value="backup" className="text-xs px-2 py-2">Backup</TabsTrigger>
+          <TabsTrigger value="performance" className="text-xs px-2 py-2">Performance</TabsTrigger>
+          <TabsTrigger value="network-access" className="text-xs px-1 py-2">Network Access</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-4">
@@ -301,8 +307,11 @@ const SystemSettingsPage: React.FC = () => {
                   <Input
                     id="sessionTimeout"
                     type="number"
+                    min="5"
+                    max="60"
                     value={settings.security.sessionTimeout}
-                    onChange={(e) => updateSettings('security', 'sessionTimeout', parseInt(e.target.value))}
+                    onChange={(e) => updateSettings('security', 'sessionTimeout', safeParseInt(e.target.value, 30))}
+                    className="w-full"
                   />
                 </div>
                 <div className="space-y-2">
@@ -310,8 +319,11 @@ const SystemSettingsPage: React.FC = () => {
                   <Input
                     id="passwordMinLength"
                     type="number"
+                    min="6"
+                    max="20"
                     value={settings.security.passwordMinLength}
-                    onChange={(e) => updateSettings('security', 'passwordMinLength', parseInt(e.target.value))}
+                    onChange={(e) => updateSettings('security', 'passwordMinLength', safeParseInt(e.target.value, 8))}
+                    className="w-full"
                   />
                 </div>
                 <div className="space-y-2">
@@ -319,8 +331,11 @@ const SystemSettingsPage: React.FC = () => {
                   <Input
                     id="auditLogRetention"
                     type="number"
+                    min="7"
+                    max="365"
                     value={settings.security.auditLogRetention}
-                    onChange={(e) => updateSettings('security', 'auditLogRetention', parseInt(e.target.value))}
+                    onChange={(e) => updateSettings('security', 'auditLogRetention', safeParseInt(e.target.value, 30))}
+                    className="w-full"
                   />
                 </div>
               </div>
@@ -422,8 +437,11 @@ const SystemSettingsPage: React.FC = () => {
                   <Input
                     id="backupRetention"
                     type="number"
+                    min="1"
+                    max="365"
                     value={settings.backup.backupRetention}
-                    onChange={(e) => updateSettings('backup', 'backupRetention', parseInt(e.target.value))}
+                    onChange={(e) => updateSettings('backup', 'backupRetention', safeParseInt(e.target.value, 30))}
+                    className="w-full"
                   />
                 </div>
               </div>
@@ -469,8 +487,11 @@ const SystemSettingsPage: React.FC = () => {
                   <Input
                     id="maxConcurrentUsers"
                     type="number"
+                    min="1"
+                    max="100"
                     value={settings.performance.maxConcurrentUsers}
-                    onChange={(e) => updateSettings('performance', 'maxConcurrentUsers', parseInt(e.target.value))}
+                    onChange={(e) => updateSettings('performance', 'maxConcurrentUsers', safeParseInt(e.target.value, 10))}
+                    className="w-full"
                   />
                 </div>
               </div>
@@ -514,6 +535,7 @@ const SystemSettingsPage: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <NetworkAccessManager />
+              <OwnerTrustedDevicesManager />
             </CardContent>
           </Card>
         </TabsContent>

@@ -49,6 +49,7 @@
 [data-radix-dialog-overlay] {
   overflow: visible !important;
   position: fixed !important;
+  background: rgba(0,0,0,0.3) !important;
 }
 
 /* Ensure popover triggers work properly */

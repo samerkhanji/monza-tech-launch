@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CalendarDays, FileText, User, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { FileText, User, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { dateUtils } from '@/lib/utils';
 import { InventoryItem } from '@/types/inventory';
 

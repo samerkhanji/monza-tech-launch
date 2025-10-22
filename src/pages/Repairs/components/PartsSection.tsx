@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera, Plus, Search, Trash2, Check, X } from 'lucide-react';
+import { Camera, Plus, Search, Trash2, Check, X, Bot } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import PartNumberScannerDialog from '@/components/PartNumberScannerDialog';
 import { workflowTrackingService } from '@/services/workflowTrackingService';
 import { useAuth } from '@/contexts/AuthContext';
+import { inventoryService } from '@/services/inventoryService';
 
 interface UsedPart {
   id: string;
@@ -81,12 +82,11 @@ const PartsSection: React.FC = () => {
   };
 
   const getInventoryFromStorage = () => {
-    const savedInventory = localStorage.getItem('inventory');
-    return savedInventory ? JSON.parse(savedInventory) : [];
+    return inventoryService.getInventory();
   };
 
   const updateInventoryInStorage = (inventory: any[]) => {
-    localStorage.setItem('inventory', JSON.stringify(inventory));
+    inventoryService.saveInventory(inventory);
   };
 
   const savePartUsageRecord = (part: UsedPart, carCode: string, customerName: string, repairId: string) => {
@@ -172,40 +172,29 @@ const PartsSection: React.FC = () => {
       totalCost: 0
     });
 
-    // Update inventory (reduce stock)
-    const inventory = getInventoryFromStorage();
-    const updatedInventory = inventory.map((item: any) => {
-      if (item.partNumber === pendingPart.partNumber) {
-        return { ...item, quantity: item.quantity - quantity };
-      }
-      return item;
+    // Use inventory service to decrease inventory
+    const success = inventoryService.usePart(pendingPart.partNumber, quantity, {
+      carVIN: currentCarCode,
+      employee: user?.name || 'Unknown',
+      type: 'manual_add',
+      context: 'repair'
     });
-    updateInventoryInStorage(updatedInventory);
 
-    // Record in inventory history
-    const historyEntry = {
-      id: Date.now().toString(),
-      partId: pendingPart.id,
-      partName: pendingPart.partName,
-      partNumber: pendingPart.partNumber,
-      quantity: quantity,
-      carVIN: 'REPAIR-IN-PROGRESS',
-      employee: 'Current User',
-      timestamp: new Date().toISOString(),
-      type: 'repair_usage'
-    };
-
-    const savedHistory = localStorage.getItem('inventoryHistory');
-    const history = savedHistory ? JSON.parse(savedHistory) : [];
-    history.push(historyEntry);
-    localStorage.setItem('inventoryHistory', JSON.stringify(history));
+    if (!success) {
+      toast({
+        title: "Inventory Update Failed",
+        description: "Failed to update inventory for this part",
+        variant: "destructive"
+      });
+      return;
+    }
 
     // Save part usage record for invoice tracking
     savePartUsageRecord(pendingPart, currentCarCode, currentCustomerName, currentRepairId);
 
     toast({
       title: "Part added to repair",
-      description: `${quantity} x ${pendingPart.partName} (${pendingPart.partNumber}) added. Stock reduced by ${quantity}.`,
+      description: `${quantity} x ${pendingPart.partName} (${pendingPart.partNumber}) added. Inventory updated.`,
     });
 
     // Reset form
@@ -220,26 +209,170 @@ const PartsSection: React.FC = () => {
     setQuantity(1);
   };
 
-  const removePart = (partNumber: string) => {
+  // AI Recommendation System
+  const getAIRecommendations = () => {
+    const currentCarModel = sessionStorage.getItem('currentCarModel') || '';
+    const currentRepairType = sessionStorage.getItem('currentRepairType') || 'general';
+    
+    const recommendations = {
+      electrical: {
+        parts: ['Battery', 'Alternator', 'Starter Motor', 'Fuses', 'Wiring Harness'],
+        tools: ['Multimeter', 'Battery Tester', 'Wire Crimper', 'Soldering Iron'],
+        expectedTime: '2-4 hours',
+        notes: 'Electrical diagnostics and repair work'
+      },
+      mechanic: {
+        parts: ['Oil Filter', 'Air Filter', 'Brake Pads', 'Spark Plugs', 'Timing Belt'],
+        tools: ['Socket Set', 'Wrench Set', 'Jack Stands', 'Torque Wrench'],
+        expectedTime: '3-6 hours',
+        notes: 'Mechanical maintenance and repair'
+      },
+      body_work: {
+        parts: ['Body Panels', 'Bumper', 'Paint', 'Filler', 'Primer'],
+        tools: ['Welder', 'Grinder', 'Paint Gun', 'Sanding Tools'],
+        expectedTime: '4-8 hours',
+        notes: 'Body repair and paint work'
+      },
+      painter: {
+        parts: ['Paint', 'Clear Coat', 'Primer', 'Filler', 'Sandpaper'],
+        tools: ['Paint Gun', 'Compressor', 'Sanding Tools', 'Masking Tape'],
+        expectedTime: '2-5 hours',
+        notes: 'Paint and finish work'
+      },
+      detailer: {
+        parts: ['Wax', 'Polish', 'Interior Cleaner', 'Glass Cleaner'],
+        tools: ['Buffer', 'Vacuum', 'Steam Cleaner', 'Microfiber Cloths'],
+        expectedTime: '1-3 hours',
+        notes: 'Interior and exterior detailing'
+      }
+    };
+
+    const defaultRec = recommendations.mechanic;
+    const rec = recommendations[currentRepairType as keyof typeof recommendations] || defaultRec;
+    
+    return {
+      expectedTime: rec.expectedTime,
+      parts: rec.parts,
+      tools: rec.tools,
+      notes: rec.notes
+    };
+  };
+
+  const addAIRecommendedPart = async (partName: string) => {
+    // Find the part in inventory by name
+    const inventory = getInventoryFromStorage();
+    const part = inventory.find((item: any) => 
+      item.partName.toLowerCase().includes(partName.toLowerCase()) ||
+      item.partNumber.toLowerCase().includes(partName.toLowerCase())
+    );
+
+    if (!part) {
+      toast({
+        title: "Part not found",
+        description: `No part matching "${partName}" found in inventory`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if part already exists in used parts
+    const existingPartIndex = usedParts.findIndex(p => p.partNumber === part.partNumber);
+    
+    if (existingPartIndex >= 0) {
+      toast({
+        title: "Part already added",
+        description: `${part.partName} is already in the repair list`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Get current repair context
+    const currentRepairId = sessionStorage.getItem('currentRepairId') || 'TEMP-REPAIR-' + Date.now();
+    const currentCarCode = sessionStorage.getItem('currentCarCode') || 'UNKNOWN-CAR';
+    const currentCustomerName = sessionStorage.getItem('currentCustomerName') || 'Unknown Customer';
+
+    // Use inventory service to decrease inventory
+    const success = inventoryService.usePart(part.partNumber, 1, {
+      carVIN: currentCarCode,
+      employee: user?.name || 'Unknown',
+      type: 'ai_recommendation',
+      context: 'repair'
+    });
+
+    if (!success) {
+      toast({
+        title: "Inventory Update Failed",
+        description: "Failed to update inventory for AI recommended part",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Add to used parts
+    const newPart: UsedPart = {
+      id: part.id,
+      partNumber: part.partNumber,
+      partName: part.partName,
+      quantity: 1,
+      availableStock: part.quantity - 1
+    };
+    setUsedParts([...usedParts, newPart]);
+
+    // Track part usage in Supabase
+    await workflowTrackingService.trackPartUsage({
+      partNumber: part.partNumber,
+      partName: part.partName,
+      quantity: 1,
+      carVin: currentCarCode,
+      carModel: sessionStorage.getItem('currentCarModel') || '',
+      clientName: currentCustomerName,
+      clientPhone: sessionStorage.getItem('currentClientPhone') || '',
+      clientLicensePlate: sessionStorage.getItem('currentClientLicense') || '',
+      repairId: currentRepairId,
+      technician: user?.name || 'Unknown Technician',
+      costPerUnit: 0,
+      totalCost: 0
+    });
+
+    // Save part usage record
+    savePartUsageRecord(newPart, currentCarCode, currentCustomerName, currentRepairId);
+
+    toast({
+      title: "AI Recommended Part Added",
+      description: `${part.partName} (${part.partNumber}) added from AI recommendations. Inventory updated.`,
+    });
+  };
+
+  const refundPart = (partNumber: string) => {
     const partToRemove = usedParts.find(part => part.partNumber === partNumber);
     if (!partToRemove) return;
 
-    // Return stock to inventory
-    const inventory = getInventoryFromStorage();
-    const updatedInventory = inventory.map((item: any) => {
-      if (item.partNumber === partNumber) {
-        return { ...item, quantity: item.quantity + partToRemove.quantity };
-      }
-      return item;
+    // Get current repair context
+    const currentCarCode = sessionStorage.getItem('currentCarCode') || 'UNKNOWN-CAR';
+
+    // Refund part to inventory using the service
+    const success = inventoryService.returnPart(partNumber, partToRemove.quantity, {
+      carVIN: currentCarCode,
+      employee: user?.name || 'Unknown',
+      context: 'repair_refund'
     });
-    updateInventoryInStorage(updatedInventory);
+
+    if (!success) {
+      toast({
+        title: "Refund Failed",
+        description: "Failed to refund part to inventory",
+        variant: "destructive"
+      });
+      return;
+    }
 
     // Remove from used parts
     setUsedParts(usedParts.filter(part => part.partNumber !== partNumber));
 
     toast({
-      title: "Part removed",
-      description: `${partToRemove.partName} (${partToRemove.partNumber}) removed from repair. Stock restored.`,
+      title: "Part refunded",
+      description: `${partToRemove.partName} (${partToRemove.partNumber}) refunded and returned to inventory.`,
     });
   };
 
@@ -320,6 +453,47 @@ const PartsSection: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* AI Recommendations */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Bot className="h-4 w-4 text-blue-600" />
+            AI Recommended Parts
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {(() => {
+            const aiRecs = getAIRecommendations();
+            return (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Based on repair type: <span className="font-medium">{aiRecs.notes}</span>
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {aiRecs.parts.map((partName) => (
+                    <div key={partName} className="flex items-center justify-between p-2 border rounded-lg bg-blue-50">
+                      <div>
+                        <p className="font-medium text-sm">{partName}</p>
+                        <p className="text-xs text-muted-foreground">AI Recommended</p>
+                      </div>
+                      <Button
+                        onClick={() => addAIRecommendedPart(partName)}
+                        size="sm"
+                        variant="outline"
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </CardContent>
+      </Card>
+
       {/* Used parts list */}
       <Card>
         <CardHeader>
@@ -339,9 +513,11 @@ const PartsSection: React.FC = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => removePart(part.partNumber)}
+                    onClick={() => refundPart(part.partNumber)}
+                    title="Refund Part"
                   >
                     <Trash2 className="h-4 w-4" />
+                    <span className="ml-1 text-xs">Refund</span>
                   </Button>
                 </div>
               ))}

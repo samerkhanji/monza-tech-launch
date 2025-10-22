@@ -153,145 +153,79 @@ interface PdiChecklistPdfProps {
     };
   };
   onSave?: (carId: string, pdiData: any) => void;
+  showInlineActions?: boolean;
 }
 
-const PdiChecklistPdf: React.FC<PdiChecklistPdfProps> = ({ car, onSave }) => {
+const PdiChecklistPdf: React.FC<PdiChecklistPdfProps> = ({ car, onSave, showInlineActions = true }) => {
   const printRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Global CSS for date inputs
+  // PDI-pro override styles (wins by order + !important) and helper showPicker handler
   React.useEffect(() => {
     const style = document.createElement('style');
+    style.id = 'pdi-pro-override';
     style.textContent = `
-      input[type="date"] {
-        position: relative !important;
-        appearance: none !important;
-        -webkit-appearance: none !important;
-        -moz-appearance: none !important;
-        cursor: pointer !important;
-        background-color: white !important;
-        color: black !important;
-        border: 1px solid #d1d5db !important;
-        border-radius: 4px !important;
-        padding: 6px 8px !important;
-        font-size: 14px !important;
-        z-index: 10 !important;
-        width: 100% !important;
-      }
-      
-      input[type="date"]:hover {
-        border-color: #9ca3af !important;
-      }
-      
-      input[type="date"]:focus {
-        border-color: #3b82f6 !important;
-        outline: none !important;
-        box-shadow: 0 0 0 1px #3b82f6 !important;
-      }
+  /* PDI-only resets (wins by order + !important) */
+  #pdi-pro input[type="date"],
+  #pdi-pro input[type="datetime-local"]{
+    background:#fff !important;
+    color:#000 !important;
+    height:32px !important;
+    border:1px solid #d1d5db !important;
+    border-radius:6px !important;
+    padding:0 0.5rem 0 0.5rem !important;
+    -webkit-appearance:auto !important;
+            appearance:auto !important;
+  }
 
-      /* PDI Form specific - Hide calendar icons completely */
-      .pdi-date-input::-webkit-calendar-picker-indicator {
-        display: none !important;
-        opacity: 0 !important;
-        background: transparent !important;
-        background-image: none !important;
-        background-color: transparent !important;
-        color: transparent !important;
-        cursor: pointer !important;
-        position: absolute !important;
-        right: 0 !important;
-        top: 0 !important;
-        width: 0 !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        outline: none !important;
-        z-index: -1 !important;
-        visibility: hidden !important;
-      }
-      
-      .pdi-date-input::-webkit-inner-spin-button,
-      .pdi-date-input::-webkit-outer-spin-button {
-        display: none !important;
-        -webkit-appearance: none !important;
-        margin: 0 !important;
-        visibility: hidden !important;
-      }
-      
-      .pdi-date-input::-moz-calendar-picker {
-        display: none !important;
-        visibility: hidden !important;
-      }
-      
-      .pdi-date-input {
-        position: relative !important;
-        cursor: pointer !important;
-        background-image: none !important;
-      }
-      
-      /* Additional aggressive override for PDI forms */
-      input[type="date"] {
-        background-image: none !important;
-      }
-      
-      /* Override any remaining calendar icons with extreme prejudice */
-      * input[type="date"]::-webkit-calendar-picker-indicator {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        background: transparent !important;
-        background-image: none !important;
-        width: 0 !important;
-        height: 0 !important;
-        position: absolute !important;
-        left: -9999px !important;
-        top: -9999px !important;
-        z-index: -9999 !important;
-      }
+  #pdi-pro input[type="date"]:hover,
+  #pdi-pro input[type="datetime-local"]:hover{ border-color:#94a3b8 !important; }
+  #pdi-pro input[type="date"]:focus,
+  #pdi-pro input[type="datetime-local"]:focus{
+    outline:2px solid #3b82f6 !important;
+    outline-offset:2px !important;
+    border-color:#3b82f6 !important;
+  }
+
+  /* show the calendar icon and make it clickable */
+  #pdi-pro input[type="date"]::-webkit-calendar-picker-indicator,
+  #pdi-pro input[type="datetime-local"]::-webkit-calendar-picker-indicator{
+    display:block !important;
+    opacity:1 !important;
+    visibility:visible !important;
+    pointer-events:auto !important;
+    width:20px !important; height:20px !important;
+    margin:0 4px 0 0 !important; padding:2px !important;
+    border:1px solid #d1d5db !important; border-radius:3px !important;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='18' rx='2' ry='2'/><line x1='16' y1='2' x2='16' y2='6'/><line x1='8' y1='2' x2='8' y2='6'/><line x1='3' y1='10' x2='21' y2='10'/></svg>") no-repeat center !important;
+    background-size:16px 16px !important;
+  }
+
+  /* kill any fake emoji/pseudo icons added elsewhere */
+  #pdi-pro input[type="date"]::after,
+  #pdi-pro input[type="datetime-local"]::after{ content:none !important; display:none !important; }
+
+  /* Radix in dialog */
+  #pdi-pro [data-radix-select-content],
+  #pdi-pro [data-radix-popper-content-wrapper]{ z-index:100000 !important; position:fixed !important; }
+  #pdi-pro [role="dialog"], #pdi-pro [data-radix-dialog-content]{ overflow:visible !important; }
     `;
     document.head.appendChild(style);
-    
+
+    // iOS/Chromium QoL: clicking the field opens the picker
+    const inputs = Array.from(document.querySelectorAll('#pdi-pro input[type="date"], #pdi-pro input[type="datetime-local"]')) as HTMLInputElement[];
+    const handlers: Array<() => void> = [];
+    inputs.forEach((el) => {
+      const handler = () => { if ((el as any).showPicker) (el as any).showPicker(); };
+      el.addEventListener('click', handler);
+      handlers.push(handler);
+    });
+
     return () => {
-      document.head.removeChild(style);
+      if (style.parentNode) style.parentNode.removeChild(style);
+      inputs.forEach((el, idx) => el.removeEventListener('click', handlers[idx]!));
     };
-  }, []);
-
-  // Additional effect to forcibly remove calendar icons
-  React.useEffect(() => {
-    const removeCalendarIcons = () => {
-      const dateInputs = document.querySelectorAll('input[type="date"]');
-      dateInputs.forEach((input) => {
-        // Force remove any calendar picker styling
-        const htmlInput = input as HTMLInputElement;
-        htmlInput.style.backgroundImage = 'none';
-        htmlInput.style.setProperty('background-image', 'none', 'important');
-        
-        // Hide any calendar picker indicators
-        const style = document.createElement('style');
-        style.textContent = `
-          input[type="date"]::-webkit-calendar-picker-indicator {
-            display: none !important;
-            opacity: 0 !important;
-            visibility: hidden !important;
-            position: absolute !important;
-            left: -9999px !important;
-            top: -9999px !important;
-            z-index: -9999 !important;
-          }
-        `;
-        document.head.appendChild(style);
-      });
-    };
-
-    // Remove icons immediately
-    removeCalendarIcons();
-    
-    // Remove icons after a short delay to catch any late-loading elements
-    const timer = setTimeout(removeCalendarIcons, 100);
-    
-    return () => clearTimeout(timer);
   }, []);
 
   // Form data state
@@ -339,8 +273,23 @@ const PdiChecklistPdf: React.FC<PdiChecklistPdfProps> = ({ car, onSave }) => {
 
     setLoading(true);
     try {
+      // If the car.id is not a UUID, use localStorage fallback to avoid DB errors
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(car.id);
+      if (!isUuid) {
+        const local = localStorage.getItem(`pdi:${car.id}`);
+        if (local) {
+          const existingPdiData = JSON.parse(local);
+          if (existingPdiData.formData) setFormData(prev => ({ ...prev, ...existingPdiData.formData }));
+          if (existingPdiData.checklistState) setChecklistState(existingPdiData.checklistState);
+          if (existingPdiData.overhauls) setOverhauls(existingPdiData.overhauls);
+          if (existingPdiData.signatures) setSignatures(existingPdiData.signatures);
+          setFinalStatus(existingPdiData.finalStatus || 'satisfied');
+        }
+        return;
+      }
+
       const { data, error } = await supabase
-        .from('cars')
+        .from('car_inventory')
         .select('notes')
         .eq('id', car.id)
         .single();
@@ -360,37 +309,15 @@ const PdiChecklistPdf: React.FC<PdiChecklistPdfProps> = ({ car, onSave }) => {
         }
 
         if (existingPdiData) {
-          // Load form data if available
-          if (existingPdiData.formData) {
-            setFormData(prev => ({ ...prev, ...existingPdiData.formData }));
-          }
-
-          // Load checklist state if available
-          if (existingPdiData.checklistState) {
-            setChecklistState(existingPdiData.checklistState);
-          }
-
-          // Load overhauls if available
-          if (existingPdiData.overhauls) {
-            setOverhauls(existingPdiData.overhauls);
-          }
-
-          // Load signatures if available
-          if (existingPdiData.signatures) {
-            setSignatures(existingPdiData.signatures);
-          }
-
-          // Set final status based on existing data
+          if (existingPdiData.formData) setFormData(prev => ({ ...prev, ...existingPdiData.formData }));
+          if (existingPdiData.checklistState) setChecklistState(existingPdiData.checklistState);
+          if (existingPdiData.overhauls) setOverhauls(existingPdiData.overhauls);
+          if (existingPdiData.signatures) setSignatures(existingPdiData.signatures);
           setFinalStatus('satisfied');
         }
       }
     } catch (error) {
-      console.error('Error loading PDI data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load PDI data",
-        variant: "destructive",
-      });
+      console.warn('Error loading PDI data:', error);
     } finally {
       setLoading(false);
     }
@@ -452,7 +379,6 @@ const PdiChecklistPdf: React.FC<PdiChecklistPdfProps> = ({ car, onSave }) => {
 
     setSaving(true);
     try {
-      // Prepare PDI data as JSON
       const pdiData = {
         formData,
         checklistState,
@@ -463,33 +389,28 @@ const PdiChecklistPdf: React.FC<PdiChecklistPdfProps> = ({ car, onSave }) => {
         completedBy: 'current_user'
       };
 
-      // Update car with PDI data in notes field
-      const { error } = await supabase
-        .from('cars')
-        .update({ 
-          notes: JSON.stringify(pdiData),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', car.id);
-
-      if (error) throw error;
-
-      // Call the onSave callback if provided
-      if (onSave) {
-        onSave(car.id, pdiData);
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(car.id);
+      if (isUuid) {
+        // Persist to DB when possible
+        const { error } = await supabase
+          .from('car_inventory')
+          .update({ 
+            notes: JSON.stringify(pdiData),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', car.id);
+        if (error) throw error;
+      } else {
+        // Fallback to local storage for mock/demo IDs
+        localStorage.setItem(`pdi:${car.id}`, JSON.stringify(pdiData));
       }
 
-      toast({
-        title: "Success",
-        description: "PDI data saved successfully",
-      });
+      if (onSave) onSave(car.id, pdiData);
+
+      toast({ title: "Success", description: "PDI data saved successfully" });
     } catch (error) {
-      console.error('Error saving PDI data:', error);
-      toast({
-        title: "Error", 
-        description: "Failed to save PDI data",
-        variant: "destructive",
-      });
+      console.warn('Error saving PDI data:', error);
+      toast({ title: "Error", description: "Failed to save PDI data", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -614,16 +535,6 @@ const PdiChecklistPdf: React.FC<PdiChecklistPdfProps> = ({ car, onSave }) => {
 
   return (
     <div className="w-full bg-white">
-      {/* Action Buttons */}
-      <div className="flex justify-end gap-2 mb-4 print:hidden">
-        <Button variant="outline" onClick={handlePrint} disabled={saving}>
-          Print PDF
-        </Button>
-        <Button onClick={handleSave} disabled={saving || !car?.id} className="bg-blue-600 hover:bg-blue-700 text-white">
-          {saving ? 'Saving...' : 'Save PDI Data'}
-        </Button>
-      </div>
-
       {/* Loading Overlay */}
       {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -637,7 +548,7 @@ const PdiChecklistPdf: React.FC<PdiChecklistPdfProps> = ({ car, onSave }) => {
       {/* Official PDI Form Layout - EXACT PIXEL-PERFECT COPY */}
       <div 
         ref={printRef}
-        className="w-[1100px] mx-auto bg-white border border-black p-6 pdi-form-container"
+        className="w-full max-w-[1200px] mx-auto bg-white border border-black p-6 pdi-form-container pdi-related-content rounded-none"
         style={{ 
           fontFamily: 'Arial, Helvetica, sans-serif',
           fontSize: '13px',
@@ -653,7 +564,7 @@ const PdiChecklistPdf: React.FC<PdiChecklistPdfProps> = ({ car, onSave }) => {
       </div>
 
         {/* Vehicle Information Grid - EXACT TABLE LAYOUT */}
-        <table className="w-full border-collapse border border-black mb-6" style={{ tableLayout: 'fixed' }}>
+                <table className="w-full border-collapse border border-black mb-6 rounded-none" style={{ tableLayout: 'fixed' }}>
           <colgroup>
             <col style={{ width: '16.66%' }} />
             <col style={{ width: '16.66%' }} />
@@ -872,7 +783,7 @@ const PdiChecklistPdf: React.FC<PdiChecklistPdfProps> = ({ car, onSave }) => {
         {/* Checklist Sections - EXACT TABLE STRUCTURE */}
         {Object.entries(checklistSections).map(([sectionKey, section]) => (
           <div key={sectionKey} className="mb-6">
-            <table className="w-full border-collapse border border-black" style={{ tableLayout: 'fixed' }}>
+            <table className="w-full border-collapse border border-black rounded-none" style={{ tableLayout: 'fixed' }}>
               <colgroup>
                 <col style={{ width: '78%' }} />
                 <col style={{ width: '11%' }} />
@@ -1167,6 +1078,18 @@ const PdiChecklistPdf: React.FC<PdiChecklistPdfProps> = ({ car, onSave }) => {
           <p className="text-right pt-4" style={{ fontSize: '10px' }}>Version time: March 2022</p>
         </div>
       </div>
+
+      {/* Action Buttons (optional if dialog provides its own footer) */}
+      {showInlineActions && (
+        <div className="flex justify-end gap-2 mt-4 print:hidden pdi-action-buttons">
+          <Button variant="outline" onClick={handlePrint} disabled={saving}>
+            Print PDF
+          </Button>
+          <Button onClick={handleSave} disabled={saving || !car?.id} className="bg-blue-600 hover:bg-blue-700 text-white">
+            {saving ? 'Saving...' : 'Save PDI Data'}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

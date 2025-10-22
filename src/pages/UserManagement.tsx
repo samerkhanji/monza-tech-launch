@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, UserPlus, Edit, Trash2, Phone, Mail, MapPin } from 'lucide-react';
+import { Users, Phone, Mail, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 
 const UserManagement: React.FC = () => {
@@ -125,7 +125,7 @@ const UserManagement: React.FC = () => {
   };
 
   // Only owners can access this page
-  if (user?.role !== 'owner') {
+  if (user?.role?.toUpperCase() !== 'OWNER') {
     return (
       <div className="p-6">
         <div className="text-center">
@@ -152,7 +152,6 @@ const UserManagement: React.FC = () => {
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm}>
-              <UserPlus className="h-4 w-4 mr-2" />
               Add User
             </Button>
           </DialogTrigger>
@@ -200,7 +199,7 @@ const UserManagement: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
                 <Select value={formData.role} onValueChange={(value: any) => setFormData({ ...formData, role: value })}>
-                  <SelectTrigger>
+                  <SelectTrigger id="role">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -216,7 +215,7 @@ const UserManagement: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="hybridRole">Hybrid Role</Label>
                   <Select value={formData.hybridRole || ''} onValueChange={(value: any) => setFormData({ ...formData, hybridRole: value || undefined })}>
-                    <SelectTrigger>
+                    <SelectTrigger id="hybridRole">
                       <SelectValue placeholder="Select hybrid role" />
                     </SelectTrigger>
                     <SelectContent>
@@ -346,7 +345,7 @@ const UserManagement: React.FC = () => {
                     size="sm"
                     onClick={() => openEditDialog(userData)}
                   >
-                    <Edit className="h-4 w-4" />
+                    Edit
                   </Button>
                   <Button 
                     variant="outline" 
@@ -354,7 +353,7 @@ const UserManagement: React.FC = () => {
                     onClick={() => handleDeleteUser(userData.id)}
                     className="text-red-600 hover:text-red-700"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    Delete
                   </Button>
                 </div>
               </CardContent>
@@ -410,7 +409,7 @@ const UserManagement: React.FC = () => {
             <div className="space-y-2">
               <Label htmlFor="editRole">Role</Label>
               <Select value={formData.role} onValueChange={(value: any) => setFormData({ ...formData, role: value })}>
-                <SelectTrigger>
+                <SelectTrigger id="editRole">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -426,7 +425,7 @@ const UserManagement: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="editHybridRole">Hybrid Role</Label>
                 <Select value={formData.hybridRole || ''} onValueChange={(value: any) => setFormData({ ...formData, hybridRole: value || undefined })}>
-                  <SelectTrigger>
+                  <SelectTrigger id="editHybridRole">
                     <SelectValue placeholder="Select hybrid role" />
                   </SelectTrigger>
                   <SelectContent>

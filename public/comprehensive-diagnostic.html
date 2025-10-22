@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Database Diagnostic - Monza TECH</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .container { background: white; border-radius: 8px; padding: 30px; margin: 20px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .step { background: #f8f9fa; border-radius: 6px; padding: 20px; margin: 15px 0; border-left: 4px solid #007bff; }
+        button { background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; margin: 8px; font-size: 14px; }
+        button:hover { background: #0056b3; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .info { color: #17a2b8; font-weight: bold; }
+        .code-block { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 6px; margin: 15px 0; font-family: 'Consolas', monospace; font-size: 13px; overflow-x: auto; }
+        .results { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; margin: 15px 0; white-space: pre-wrap; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; }
+        .highlight { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 15px; margin: 15px 0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full-width { grid-column: 1 / -1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Comprehensive Database Diagnostic</h1>
+        
+        <div class="highlight">
+            <strong>🎯 Goal:</strong> Find out exactly why Car Inventory shows (0) - check table structure, data, and RLS policies.
+        </div>
+        
+        <div class="grid">
+            <div class="step">
+                <h3>🔑 Test Connection</h3>
+                <button onclick="testConnection()">🧪 Test Supabase Connection</button>
+                <div id="connectionResult"></div>
+            </div>
+
+            <div class="step">
+                <h3>📊 Check Table Structure</h3>
+                <button onclick="checkTableStructure()">🔍 Check Table Schemas</button>
+                <div id="structureResult"></div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="step">
+                <h3>📈 Check Data Counts</h3>
+                <button onclick="checkDataCounts()">🔢 Count Records</button>
+                <div id="countResult"></div>
+            </div>
+
+            <div class="step">
+                <h3>🔒 Check RLS Status</h3>
+                <button onclick="checkRLSStatus()">🔓 Check RLS Policies</button>
+                <div id="rlsResult"></div>
+            </div>
+        </div>
+
+        <div class="step full-width">
+            <h3>🚨 Quick Fix Options</h3>
+            <button onclick="disableRLS()">🔓 Disable RLS Completely</button>
+            <button onclick="createPublicPolicy()">🔓 Create Public Read Policy</button>
+            <button onclick="checkAppConnection()">🧪 Test App Connection</button>
+            <div id="fixResult"></div>
+        </div>
+
+        <div class="step full-width">
+            <h3>📊 All Diagnostic Results</h3>
+            <div id="allResults" class="results">
+                Click the diagnostic buttons above to start...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://wunqntfreyezylvbzvxc.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1bnFudGZyZXllenlsdmJ6dnhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NDE4MDIsImV4cCI6MjA2MzMxNzgwMn0.AphXufXZef_wAvVT3TXl2s_JQwbI9wK6KN2uCQgVc5o';
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('allResults');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            results.innerHTML += `[${timestamp}] ${icon} ${message}\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        async function testConnection() {
+            const result = document.getElementById('connectionResult');
+            result.innerHTML = '<div class="info">🧪 Testing connection...</div>';
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                if (response.ok) {
+                    result.innerHTML = '<div class="success">✅ Connection successful!</div>';
+                    log('Supabase connection test: SUCCESS', 'success');
+                } else {
+                    result.innerHTML = `<div class="error">❌ Connection failed: ${response.status}</div>`;
+                    log(`Supabase connection test: FAILED - ${response.status}`, 'error');
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Connection error: ${error.message}</div>`;
+                log(`Supabase connection test: ERROR - ${error.message}`, 'error');
+            }
+        }
+
+        async function checkTableStructure() {
+            const result = document.getElementById('structureResult');
+            result.innerHTML = '<div class="info">🔍 Checking table structure...</div>';
+            
+            try {
+                // Check car_inventory structure
+                const carInventoryResponse = await fetch(`${SUPABASE_URL}/rest/v1/car_inventory?select=*&limit=1`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (carInventoryResponse.ok) {
+                    const data = await carInventoryResponse.json();
+                    const columns = data.length > 0 ? Object.keys(data[0]) : [];
+                    result.innerHTML = `<div class="success">✅ car_inventory accessible</div><div>Columns: ${columns.join(', ')}</div>`;
+                    log(`car_inventory structure: ${columns.length} columns found`, 'success');
+                } else {
+                    result.innerHTML = `<div class="error">❌ car_inventory error: ${carInventoryResponse.status}</div>`;
+                    log(`car_inventory structure: ERROR - ${carInventoryResponse.status}`, 'error');
+                }
+
+                // Check cars structure
+                const carsResponse = await fetch(`${SUPABASE_URL}/rest/v1/cars?select=*&limit=1`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (carsResponse.ok) {
+                    const data = await carsResponse.json();
+                    const columns = data.length > 0 ? Object.keys(data[0]) : [];
+                    log(`cars structure: ${columns.length} columns found`, 'success');
+                } else {
+                    log(`cars structure: ERROR - ${carsResponse.status}`, 'error');
+                }
+
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Structure check error: ${error.message}</div>`;
+                log(`Table structure check: ERROR - ${error.message}`, 'error');
+            }
+        }
+
+        async function checkDataCounts() {
+            const result = document.getElementById('countResult');
+            result.innerHTML = '<div class="info">🔢 Counting records...</div>';
+            
+            try {
+                // Count car_inventory
+                const carInventoryCount = await fetch(`${SUPABASE_URL}/rest/v1/car_inventory?select=count`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (carInventoryCount.ok) {
+                    const countData = await carInventoryCount.json();
+                    const count = countData[0]?.count || 0;
+                    result.innerHTML = `<div class="success">✅ car_inventory: ${count} records</div>`;
+                    log(`car_inventory count: ${count} records`, 'success');
+                } else {
+                    result.innerHTML = `<div class="error">❌ car_inventory count error: ${carInventoryCount.status}</div>`;
+                    log(`car_inventory count: ERROR - ${carInventoryCount.status}`, 'error');
+                }
+
+                // Count cars
+                const carsCount = await fetch(`${SUPABASE_URL}/rest/v1/cars?select=count`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (carsCount.ok) {
+                    const countData = await carsCount.json();
+                    const count = countData[0]?.count || 0;
+                    log(`cars count: ${count} records`, 'success');
+                } else {
+                    log(`cars count: ERROR - ${carsCount.status}`, 'error');
+                }
+
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Count check error: ${error.message}</div>`;
+                log(`Data count check: ERROR - ${error.message}`, 'error');
+            }
+        }
+
+        async function checkRLSStatus() {
+            const result = document.getElementById('rlsResult');
+            result.innerHTML = '<div class="info">🔓 Checking RLS status...</div>';
+            
+            try {
+                // Try to access tables with different methods
+                const testResponse = await fetch(`${SUPABASE_URL}/rest/v1/car_inventory?select=*&limit=1`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (testResponse.ok) {
+                    result.innerHTML = '<div class="success">✅ Tables accessible - RLS might be disabled</div>';
+                    log('RLS check: Tables are accessible', 'success');
+                } else {
+                    result.innerHTML = `<div class="error">❌ Tables blocked - RLS is active (${testResponse.status})</div>`;
+                    log(`RLS check: Tables blocked - ${testResponse.status}`, 'error');
+                }
+
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ RLS check error: ${error.message}</div>`;
+                log(`RLS check: ERROR - ${error.message}`, 'error');
+            }
+        }
+
+        async function disableRLS() {
+            const result = document.getElementById('fixResult');
+            result.innerHTML = '<div class="info">🔓 Disabling RLS...</div>';
+            
+            try {
+                // This is a test to see if we can access the tables
+                const testResponse = await fetch(`${SUPABASE_URL}/rest/v1/car_inventory?select=*&limit=1`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (testResponse.ok) {
+                    result.innerHTML = '<div class="success">✅ Tables are already accessible!</div>';
+                    log('RLS fix: Tables are accessible', 'success');
+                } else {
+                    result.innerHTML = `<div class="warning">⚠️ Tables still blocked. Run this SQL in Supabase:</div>
+                    <div class="code-block">
+ALTER TABLE public.car_inventory DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cars DISABLE ROW LEVEL SECURITY;
+                    </div>`;
+                    log('RLS fix: Tables still blocked - SQL needed', 'warning');
+                }
+
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ RLS fix error: ${error.message}</div>`;
+                log(`RLS fix: ERROR - ${error.message}`, 'error');
+            }
+        }
+
+        async function createPublicPolicy() {
+            const result = document.getElementById('fixResult');
+            result.innerHTML = '<div class="info">🔓 Creating public read policy...</div>';
+            
+            result.innerHTML = `<div class="warning">⚠️ Run this SQL in Supabase to create public read access:</div>
+            <div class="code-block">
+-- Enable RLS
+ALTER TABLE public.car_inventory ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cars ENABLE ROW LEVEL SECURITY;
+
+-- Create public read policies
+CREATE POLICY "Allow public read access" ON public.car_inventory
+    FOR SELECT USING (true);
+
+CREATE POLICY "Allow public read access" ON public.cars
+    FOR SELECT USING (true);
+            </div>`;
+            
+            log('Public policy: SQL commands generated', 'info');
+        }
+
+        async function checkAppConnection() {
+            const result = document.getElementById('fixResult');
+            result.innerHTML = '<div class="info">🧪 Testing app connection...</div>';
+            
+            try {
+                // Test the exact same request your app makes
+                const appResponse = await fetch(`${SUPABASE_URL}/rest/v1/car_inventory?select=*&order=created_at.desc`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (appResponse.ok) {
+                    const data = await appResponse.json();
+                    result.innerHTML = `<div class="success">✅ App connection works! Found ${data.length} vehicles</div>`;
+                    log(`App connection test: SUCCESS - ${data.length} vehicles`, 'success');
+                } else {
+                    result.innerHTML = `<div class="error">❌ App connection failed: ${appResponse.status}</div>`;
+                    log(`App connection test: FAILED - ${appResponse.status}`, 'error');
+                }
+
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ App connection error: ${error.message}</div>`;
+                log(`App connection test: ERROR - ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

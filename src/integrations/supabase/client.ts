@@ -1,28 +1,33 @@
-// Temporary Supabase client using mock implementation to avoid module issues
-// TODO: Re-enable real Supabase client once module resolution is fixed
+// src/integrations/supabase/client.ts
+// Auto-generated scaffold (safe). You can keep this as your canonical client.
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "./types";
 
-// Re-export the disabled client to avoid module resolution issues
-export { supabase } from './client-disabled';
+// Read from Vite env (.env.local / .env)
+const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
-// TODO: Uncomment below when module issues are resolved
-/*
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
-
-const SUPABASE_URL = "https://wunqntfreyezylvbzvxc.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1bnFudGZyZXllenlsdmJ6dnhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NDE4MDIsImV4cCI6MjA2MzMxNzgwMn0.AphXufXZef_wAvVT3TXl2s_JQwbI9wK6KN2uCQgVc5o";
-
-// Create Supabase client with proper configuration
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10
-    }
+// Fail fast in prod; warn in dev
+if (!url || !anon) {
+  const msg =
+    "Supabase env vars missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.local";
+  if (import.meta.env.DEV) {
+    console.warn("ℹ️", msg);
+  } else {
+    throw new Error(msg);
   }
+}
+
+export const supabase = createClient<Database>(url!, anon!, {
+  db: { schema: "public" },
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: "pkce", // best for SPAs
+  },
+  global: {
+    // Example: add app/version header if you want
+    headers: { "x-monza-app": "monza-tech-ui" },
+  },
 });
-*/

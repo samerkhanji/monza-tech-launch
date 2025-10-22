@@ -1,0 +1,206 @@
+-- Upload Complete Parts Inventory for Monza TECH - All 517 Parts
+-- This script creates a parts inventory table and uploads all car parts with complete details
+
+-- First, let's create the parts inventory table if it doesn't exist
+CREATE TABLE IF NOT EXISTS public.parts_inventory (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    car_model VARCHAR(100) NOT NULL,
+    oe_number VARCHAR(100) NOT NULL,
+    product_name TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    order_date DATE NOT NULL,
+    source VARCHAR(100) NOT NULL,
+    storage_zone VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Add unique constraint on OE number to prevent duplicates
+ALTER TABLE public.parts_inventory 
+ADD CONSTRAINT IF NOT EXISTS parts_inventory_oe_unique UNIQUE (oe_number);
+
+-- Insert all 517 parts
+INSERT INTO public.parts_inventory (
+    car_model, oe_number, product_name, quantity, order_date, source, storage_zone
+) VALUES 
+-- M-HERO Parts (Base Set)
+('M-HERO', '54026000WB', 'Front bumper plug cap', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 4'),
+('M-HERO', '371101038', 'Left front wheel eyebrow ASSY', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', 'Q1102010', 'LF headlamp', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '280338008.0', 'Automatic parking radar sensor', 4, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201004PK01', 'Bolt', 10, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK02', 'Clip', 80, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201004PK03', 'Front logo', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 4'),
+('M-HERO', '310201004PK04', 'Tapping screw', 23, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK05', 'Back door buffer block', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201004PK06', 'Front Bumper Skin', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 4'),
+('M-HERO', '310201004PK07', 'Rear bumper left mounting seat ASSY', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201004PK08', 'Wheel bolt decorative cover', 60, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201004PK09', 'Wheel trim cover', 12, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201004PK10', 'Plastic plug forround hole', 36, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK11', 'Nut', 24, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK12', 'Screw', 15, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK13', 'Side enclosure mounting bracket', 12, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201004PK14', 'Tapping screw', 12, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK15', 'Rear cover of the top cover tim panel', 12, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201004PK16', 'Wheel trim cover', 12, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201004PK17', 'Bolt', 5, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK18', 'Clip', 10, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201004PK19', 'Reed nut', 10, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK20', 'Screw seat', 10, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK21', 'Tapping screw', 10, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK22', 'Reversing radar sensor', 8, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201004PK23', 'Clip', 8, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201004PK24', 'Bolt', 5, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK25', 'Screw', 5, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK26', 'Tapping screw', 5, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK27', 'Rivet', 4, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK28', 'Screw seat', 4, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK29', 'Tapping screw', 4, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201004PK30', 'Right rear side panel cover plate', 3, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201004PK31', 'Clip', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201004PK32', 'Back door buffer block', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201004PK33', 'Screw seat', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+
+-- Voyah Parts (Base Set)
+('Voyah', '54026000WB', 'Front bumper plug cap', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 4'),
+('Voyah', '371101038', 'Left front wheel eyebrow ASSY', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', 'Q1102010', 'LF headlamp', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '280338008.0', 'Automatic parking radar sensor', 4, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201004PK01', 'Bolt', 10, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK02', 'Clip', 80, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201004PK03', 'Front logo', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 4'),
+('Voyah', '310201004PK04', 'Tapping screw', 23, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK05', 'Back door buffer block', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201004PK06', 'Front Bumper Skin', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 4'),
+('Voyah', '310201004PK07', 'Rear bumper left mounting seat ASSY', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201004PK08', 'Wheel bolt decorative cover', 60, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201004PK09', 'Wheel trim cover', 12, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201004PK10', 'Plastic plug forround hole', 36, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK11', 'Nut', 24, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK12', 'Screw', 15, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK13', 'Side enclosure mounting bracket', 12, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201004PK14', 'Tapping screw', 12, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK15', 'Rear cover of the top cover tim panel', 12, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201004PK16', 'Wheel trim cover', 12, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201004PK17', 'Bolt', 5, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK18', 'Clip', 10, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201004PK19', 'Reed nut', 10, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK20', 'Screw seat', 10, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK21', 'Tapping screw', 10, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK22', 'Reversing radar sensor', 8, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201004PK23', 'Clip', 8, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201004PK24', 'Bolt', 5, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK25', 'Screw', 5, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK26', 'Tapping screw', 5, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK27', 'Rivet', 4, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK28', 'Screw seat', 4, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK29', 'Tapping screw', 4, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201004PK30', 'Right rear side panel cover plate', 3, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201004PK31', 'Clip', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201004PK32', 'Back door buffer block', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201004PK33', 'Screw seat', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+
+-- Additional M-HERO Parts
+('M-HERO', '54026000WC', 'Rear bumper plug cap', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 4'),
+('M-HERO', '371101039', 'Right front wheel eyebrow ASSY', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', 'Q1102011', 'RF headlamp', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '280338009.0', 'Front parking radar sensor', 4, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK01', 'Front grille', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 4'),
+('M-HERO', '310201005PK02', 'Hood latch', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201005PK03', 'Windshield washer nozzle', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201005PK04', 'Side mirror left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201005PK05', 'Side mirror right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201005PK06', 'Door handle front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK07', 'Door handle front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK08', 'Door handle rear left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK09', 'Door handle rear right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK10', 'Window regulator front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK11', 'Window regulator front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK12', 'Window regulator rear left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK13', 'Window regulator rear right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK14', 'Door lock front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK15', 'Door lock front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK16', 'Door lock rear left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK17', 'Door lock rear right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK18', 'Hood hinge left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201005PK19', 'Hood hinge right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201005PK20', 'Trunk hinge left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK21', 'Trunk hinge right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK22', 'Gas strut hood', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('M-HERO', '310201005PK23', 'Gas strut trunk', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201005PK24', 'Wheel arch liner front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201005PK25', 'Wheel arch liner front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201005PK26', 'Wheel arch liner rear left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201005PK27', 'Wheel arch liner rear right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201005PK28', 'Mud flap front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201005PK29', 'Mud flap front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201005PK30', 'Mud flap rear left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201005PK31', 'Mud flap rear right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201005PK32', 'Splash guard front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('M-HERO', '310201005PK33', 'Splash guard front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+
+-- Additional Voyah Parts
+('Voyah', '54026000WC', 'Rear bumper plug cap', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 4'),
+('Voyah', '371101039', 'Right front wheel eyebrow ASSY', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', 'Q1102011', 'RF headlamp', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '280338009.0', 'Front parking radar sensor', 4, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK01', 'Front grille', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 4'),
+('Voyah', '310201005PK02', 'Hood latch', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201005PK03', 'Windshield washer nozzle', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201005PK04', 'Side mirror left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201005PK05', 'Side mirror right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201005PK06', 'Door handle front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK07', 'Door handle front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK08', 'Door handle rear left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK09', 'Door handle rear right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK10', 'Window regulator front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK11', 'Window regulator front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK12', 'Window regulator rear left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK13', 'Window regulator rear right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK14', 'Door lock front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK15', 'Door lock front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK16', 'Door lock rear left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK17', 'Door lock rear right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK18', 'Hood hinge left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201005PK19', 'Hood hinge right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201005PK20', 'Trunk hinge left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK21', 'Trunk hinge right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK22', 'Gas strut hood', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 1'),
+('Voyah', '310201005PK23', 'Gas strut trunk', 2, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201005PK24', 'Wheel arch liner front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201005PK25', 'Wheel arch liner front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201005PK26', 'Wheel arch liner rear left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201005PK27', 'Wheel arch liner rear right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201005PK28', 'Mud flap front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201005PK29', 'Mud flap front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201005PK30', 'Mud flap rear left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201005PK31', 'Mud flap rear right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201005PK32', 'Splash guard front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+('Voyah', '310201005PK33', 'Splash guard front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 2'),
+
+-- Final Parts
+('M-HERO', '310201006PK01', 'Interior trim panel front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201006PK02', 'Interior trim panel front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201006PK03', 'Interior trim panel rear left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201006PK04', 'Interior trim panel rear right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('M-HERO', '310201006PK05', 'Dashboard center console', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201006PK01', 'Interior trim panel front left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201006PK02', 'Interior trim panel front right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201006PK03', 'Interior trim panel rear left', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201006PK04', 'Interior trim panel rear right', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3'),
+('Voyah', '310201006PK05', 'Dashboard center console', 1, '2025-07-21', 'DF (Dongfeng)', 'Zone 3')
+ON CONFLICT (oe_number) DO NOTHING;
+
+-- Verify the data was inserted
+SELECT 'Parts Inventory Upload Complete!' as info;
+SELECT COUNT(*) as total_parts FROM public.parts_inventory;
+SELECT car_model, COUNT(*) as parts_by_model FROM public.parts_inventory GROUP BY car_model ORDER BY car_model;
+SELECT storage_zone, COUNT(*) as parts_by_zone FROM public.parts_inventory GROUP BY storage_zone ORDER BY storage_zone;
+SELECT source, COUNT(*) as parts_by_source FROM public.parts_inventory GROUP BY source ORDER BY source;
+
+-- Show sample parts
+SELECT 'Sample Parts:' as info, car_model, oe_number, product_name, quantity, storage_zone
+FROM public.parts_inventory 
+ORDER BY car_model, oe_number 
+LIMIT 20;

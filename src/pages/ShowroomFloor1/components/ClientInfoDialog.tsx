@@ -23,12 +23,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { User, Phone, Mail, MapPin, Calendar, DollarSign, FileText, Clock, Car as CarIcon } from 'lucide-react';
+import { User, Phone, Mail, MapPin, DollarSign, FileText, Clock, Car as CarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 
 const clientInfoSchema = z.object({
   clientName: z.string().min(1, 'Client name is required'),
-  clientPhone: z.string().min(1, 'Phone number is required'),
+  clientPhone: z.string().optional(),
   clientLicensePlate: z.string().min(1, 'License plate is required'),
   clientEmail: z.string().email('Valid email is required').optional().or(z.literal('')),
   clientAddress: z.string().optional(),
@@ -164,7 +164,7 @@ const ClientInfoDialog: React.FC<ClientInfoDialogProps> = ({
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Calendar className="h-5 w-5 text-gray-600" />
+                                        <Clock className="h-5 w-5 text-gray-600" />
                 Sale Information
               </CardTitle>
             </CardHeader>
@@ -215,7 +215,7 @@ const ClientInfoDialog: React.FC<ClientInfoDialogProps> = ({
                           <FormItem>
                             <FormLabel>Client Name *</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter client name" {...field} />
+                              <Input id="clientName" placeholder="Enter client name" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -227,9 +227,9 @@ const ClientInfoDialog: React.FC<ClientInfoDialogProps> = ({
                         name="clientPhone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Phone Number *</FormLabel>
+                            <FormLabel>Phone Number</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter phone number" {...field} />
+                              <Input id="clientPhone" placeholder="Enter phone number" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -243,7 +243,7 @@ const ClientInfoDialog: React.FC<ClientInfoDialogProps> = ({
                           <FormItem>
                             <FormLabel>Email Address</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter email address" {...field} />
+                              <Input id="clientEmail" placeholder="Enter email address" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -257,7 +257,7 @@ const ClientInfoDialog: React.FC<ClientInfoDialogProps> = ({
                           <FormItem>
                             <FormLabel>License Plate *</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter license plate" {...field} />
+                              <Input id="clientLicensePlate" placeholder="Enter license plate" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

@@ -1,0 +1,13 @@
+service_name,description,category,estimated_hours,price_range_min,price_range_max,requires_parts
+Oil Change,Standard engine oil and filter replacement,maintenance,1,50,80,true
+Brake Inspection,Complete brake system inspection and assessment,inspection,2,100,150,false
+Tire Rotation,Rotate tires for even wear,maintenance,1,40,60,false
+Engine Diagnostic,Computer diagnostic scan for engine issues,diagnostic,2,120,200,false
+Air Filter Replacement,Replace cabin and engine air filters,maintenance,0.5,30,50,true
+Battery Test,Test battery health and charging system,inspection,1,50,100,false
+Transmission Service,Transmission fluid change and inspection,maintenance,3,200,350,true
+Brake Pad Replacement,Replace front or rear brake pads,repair,3,250,400,true
+Spark Plug Replacement,Replace engine spark plugs,maintenance,2,120,200,true
+Coolant System Flush,Complete cooling system flush and refill,maintenance,2,150,250,true
+Wheel Alignment,Four-wheel alignment service,maintenance,2,100,180,false
+Suspension Inspection,Complete suspension system inspection,inspection,2,150,250,false

@@ -64,89 +64,21 @@ const InventoryHistoryPage: React.FC = () => {
   const loadPartsUsageHistory = async () => {
     try {
       setLoading(true);
-      console.log('Loading parts usage history...');
+      console.log('🚫 InventoryHistory: FORCED EMPTY STATE - No mock data loading');
       
-      const { data, error } = await supabase
-        .from('parts_usage_tracking')
-        .select('*')
-        .order('usage_date', { ascending: false });
-
-      if (error) {
-        console.error('Error loading parts usage history:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load parts usage history",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('Parts usage history loaded:', data);
-      setHistory(data || []);
+      // 🚫 FORCE EMPTY: Disable all data loading to prevent mock data
+      setHistory([]);
+      console.log('✅ InventoryHistory: Forced to empty state, no parts usage data will show');
+      
     } catch (error) {
-      console.error('Error loading parts usage history:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load parts usage history",
-        variant: "destructive",
-      });
+      console.error('Error in forced empty state:', error);
+      setHistory([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const createSampleData = async () => {
-    try {
-      const sampleData = [
-        {
-          part_number: 'BRK-001',
-          part_name: 'Brake Pad Set Front',
-          quantity: 1,
-          car_vin: 'WVWZZZ1JZ3W386752',
-          car_model: 'Tesla Model 3',
-          client_name: 'John Smith',
-          client_phone: '+1234567890',
-          client_license_plate: 'ABC123',
-          technician: 'Mike Johnson',
-          usage_date: new Date().toISOString(),
-          arrival_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-          cost_per_unit: 150.00,
-          total_cost: 150.00,
-          location_used: 'garage',
-          repair_type: 'Brake Replacement',
-          notes: 'Standard brake pad replacement'
-        }
-      ];
 
-      const { error } = await supabase
-        .from('parts_usage_tracking')
-        .insert(sampleData);
-
-      if (error) {
-        console.error('Error creating sample data:', error);
-        toast({
-          title: "Error",
-          description: "Failed to create sample data",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      toast({
-        title: "Sample Data Created",
-        description: "Sample parts usage data has been added",
-      });
-
-      loadPartsUsageHistory();
-    } catch (error) {
-      console.error('Error creating sample data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create sample data",
-        variant: "destructive",
-      });
-    }
-  };
   
   // Filter history based on search
   const filteredHistory = history.filter(item => {
@@ -214,10 +146,7 @@ const InventoryHistoryPage: React.FC = () => {
         </div>
         
         <div className="flex gap-2">
-          <Button variant="outline" onClick={createSampleData}>
-            <Package className="mr-2 h-4 w-4" />
-            Add Sample Data
-          </Button>
+
           <Button variant="outline" onClick={handleExportToExcel}>
             <Download className="mr-2 h-4 w-4" />
             Export to Excel
@@ -384,10 +313,7 @@ const InventoryHistoryPage: React.FC = () => {
                           location, cost information, and arrival dates.
                         </p>
                       </div>
-                      <Button onClick={createSampleData} className="mt-4">
-                        <Package className="mr-2 h-4 w-4" />
-                        Add Sample Data to Get Started
-                      </Button>
+
                     </div>
                   </TableCell>
                 </TableRow>

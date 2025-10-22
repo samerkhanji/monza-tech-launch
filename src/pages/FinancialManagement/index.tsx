@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, TrendingUp, TrendingDown, DollarSign, Car, Calendar, FileText, BarChart3, Plus } from 'lucide-react';
+import { Upload, TrendingUp, TrendingDown, DollarSign, Car, FileText, BarChart3, Plus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuditLog } from '@/hooks/useAuditLog';
 import CarPricingTable from './components/CarPricingTable';
@@ -354,7 +354,7 @@ const FinancialManagementPage: React.FC = () => {
             Receipt Manager
           </TabsTrigger>
           <TabsTrigger value="marketing-budget" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
+                                    <Clock className="h-4 w-4" />
             Marketing Budget
           </TabsTrigger>
         </TabsList>

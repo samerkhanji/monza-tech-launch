@@ -110,10 +110,10 @@ const UniversalFormAssistant: React.FC<UniversalFormAssistantProps> = ({
   };
 
   const handleVinScanned = async (vin: string) => {
-    const mockData = { vin, model: 'Detected from VIN', year: 2024 };
-    setExtractedData(mockData);
+    const extractedData = { vin };
+    setExtractedData(extractedData);
     
-    const formSuggestions = await enhancedMonzaBotService.suggestFormFill(formType, mockData);
+    const formSuggestions = await enhancedMonzaBotService.suggestFormFill(formType, extractedData);
     setSuggestions(formSuggestions);
     
     if (onSuggestions) {

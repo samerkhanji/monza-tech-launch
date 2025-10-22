@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Movement Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { margin: 5px; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🚗 Car Movement Test</h1>
+    
+    <div class="test-section">
+        <h2>1. List All Cars</h2>
+        <button onclick="listAllCars()">List All Cars</button>
+        <div id="allCars"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test Car Movement</h2>
+        <input type="text" id="carId" placeholder="Enter Car ID" style="width: 200px; padding: 5px;">
+        <button onclick="testMoveToFloor1()">Move to Floor 1</button>
+        <button onclick="testMoveToFloor2()">Move to Floor 2</button>
+        <button onclick="testMoveToGarage()">Move to Garage</button>
+        <div id="moveResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Check Specific Floor</h2>
+        <button onclick="checkFloor1()">Check Floor 1</button>
+        <button onclick="checkFloor2()">Check Floor 2</button>
+        <button onclick="checkGarage()">Check Garage</button>
+        <div id="floorCheck"></div>
+    </div>
+
+    <script>
+        // Replace with your actual Supabase credentials
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            console.log(`[${timestamp}] ${message}`);
+            
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${timestamp}] ${message}`;
+            
+            if (type === 'error') {
+                document.getElementById('moveResult').appendChild(div);
+            } else if (type === 'info') {
+                document.getElementById('allCars').appendChild(div);
+            }
+        }
+        
+        async function listAllCars() {
+            try {
+                log('Fetching all cars...', 'info');
+                
+                const { data, error } = await supabase
+                    .from('cars')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    log(`Error fetching cars: ${error.message}`, 'error');
+                    return;
+                }
+                
+                log(`Found ${data.length} cars:`, 'info');
+                data.forEach(car => {
+                    log(`- ID: ${car.id}, Model: ${car.model}, Floor: ${car.current_floor || 'N/A'}`, 'info');
+                });
+                
+                // Display in UI
+                const container = document.getElementById('allCars');
+                container.innerHTML = '<h3>All Cars:</h3>';
+                data.forEach(car => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `<strong>${car.model}</strong> (ID: ${car.id}) - Floor: ${car.current_floor || 'N/A'}`;
+                    container.appendChild(div);
+                });
+                
+            } catch (error) {
+                log(`Exception: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testMoveToFloor1() {
+            const carId = document.getElementById('carId').value;
+            if (!carId) {
+                alert('Please enter a Car ID');
+                return;
+            }
+            
+            try {
+                log(`Moving car ${carId} to Floor 1...`, 'info');
+                
+                const { error } = await supabase
+                    .from('cars')
+                    .update({ 
+                        current_floor: 'SHOWROOM_1',
+                        notes: `Moved to Floor 1 on ${new Date().toLocaleDateString()}`,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', carId);
+                
+                if (error) {
+                    log(`Error moving car: ${error.message}`, 'error');
+                } else {
+                    log(`✅ Car ${carId} moved to Floor 1 successfully!`, 'success');
+                    // Refresh the car list
+                    setTimeout(listAllCars, 1000);
+                }
+                
+            } catch (error) {
+                log(`Exception: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testMoveToFloor2() {
+            const carId = document.getElementById('carId').value;
+            if (!carId) {
+                alert('Please enter a Car ID');
+                return;
+            }
+            
+            try {
+                log(`Moving car ${carId} to Floor 2...`, 'info');
+                
+                const { error } = await supabase
+                    .from('cars')
+                    .update({ 
+                        current_floor: 'SHOWROOM_2',
+                        notes: `Moved to Floor 2 on ${new Date().toLocaleDateString()}`,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', carId);
+                
+                if (error) {
+                    log(`Error moving car: ${error.message}`, 'error');
+                } else {
+                    log(`✅ Car ${carId} moved to Floor 2 successfully!`, 'success');
+                    // Refresh the car list
+                    setTimeout(listAllCars, 1000);
+                }
+                
+            } catch (error) {
+                log(`Exception: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testMoveToGarage() {
+            const carId = document.getElementById('carId').value;
+            if (!carId) {
+                alert('Please enter a Car ID');
+                return;
+            }
+            
+            try {
+                log(`Moving car ${carId} to Garage...`, 'info');
+                
+                const { error } = await supabase
+                    .from('cars')
+                    .update({ 
+                        current_floor: 'GARAGE',
+                        notes: `Moved to Garage on ${new Date().toLocaleDateString()}`,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', carId);
+                
+                if (error) {
+                    log(`Error moving car: ${error.message}`, 'error');
+                } else {
+                    log(`✅ Car ${carId} moved to Garage successfully!`, 'success');
+                    // Refresh the car list
+                    setTimeout(listAllCars, 1000);
+                }
+                
+            } catch (error) {
+                log(`Exception: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkFloor1() {
+            try {
+                const { data, error } = await supabase
+                    .from('cars')
+                    .select('*')
+                    .eq('current_floor', 'SHOWROOM_1');
+                
+                if (error) {
+                    log(`Error checking Floor 1: ${error.message}`, 'error');
+                    return;
+                }
+                
+                const container = document.getElementById('floorCheck');
+                container.innerHTML = '<h3>Floor 1 Cars:</h3>';
+                if (data.length === 0) {
+                    container.innerHTML += '<p>No cars on Floor 1</p>';
+                } else {
+                    data.forEach(car => {
+                        const div = document.createElement('div');
+                        div.innerHTML = `<strong>${car.model}</strong> (ID: ${car.id})`;
+                        container.appendChild(div);
+                    });
+                }
+                
+            } catch (error) {
+                log(`Exception: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkFloor2() {
+            try {
+                const { data, error } = await supabase
+                    .from('cars')
+                    .select('*')
+                    .eq('current_floor', 'SHOWROOM_2');
+                
+                if (error) {
+                    log(`Error checking Floor 2: ${error.message}`, 'error');
+                    return;
+                }
+                
+                const container = document.getElementById('floorCheck');
+                container.innerHTML = '<h3>Floor 2 Cars:</h3>';
+                if (data.length === 0) {
+                    container.innerHTML += '<p>No cars on Floor 2</p>';
+                } else {
+                    data.forEach(car => {
+                        const div = document.createElement('div');
+                        div.innerHTML = `<strong>${car.model}</strong> (ID: ${car.id})`;
+                        container.appendChild(div);
+                    });
+                }
+                
+            } catch (error) {
+                log(`Exception: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkGarage() {
+            try {
+                const { data, error } = await supabase
+                    .from('cars')
+                    .select('*')
+                    .eq('current_floor', 'GARAGE');
+                
+                if (error) {
+                    log(`Error checking Garage: ${error.message}`, 'error');
+                    return;
+                }
+                
+                const container = document.getElementById('floorCheck');
+                container.innerHTML = '<h3>Garage Cars:</h3>';
+                if (data.length === 0) {
+                    container.innerHTML += '<p>No cars in Garage</p>';
+                } else {
+                    data.forEach(car => {
+                        const div = document.createElement('div');
+                        div.innerHTML = `<strong>${car.model}</strong> (ID: ${car.id})`;
+                        container.appendChild(div);
+                    });
+                }
+                
+            } catch (error) {
+                log(`Exception: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-load cars on page load
+        window.onload = function() {
+            log('Page loaded, testing Supabase connection...', 'info');
+            listAllCars();
+        };
+    </script>
+</body>
+</html>

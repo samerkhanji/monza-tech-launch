@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Upload, FileText, DollarSign, Calendar, Trash2 } from 'lucide-react';
+import { Upload, FileText, DollarSign, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface CarFinancialData {
@@ -225,7 +225,7 @@ const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ cars, onAddReceipt })
                         </div>
                         <p className="text-sm text-gray-600">{receipt.description}</p>
                         <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                          <Calendar className="h-3 w-3" />
+                          <Clock className="h-3 w-3" />
                           {new Date(receipt.date).toLocaleDateString()}
                           {receipt.fileName && (
                             <>

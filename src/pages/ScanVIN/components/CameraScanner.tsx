@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { QrCode, Camera, FileText, AlertCircle, X } from 'lucide-react';
 import QrScanner from 'qr-scanner';
 import { extractTextFromImage } from '@/utils/ocrUtils';
+import { safeLocalStorageGet } from '@/utils/errorHandling';
 
 interface CameraScannerProps {
   scanning: boolean;
@@ -232,7 +233,7 @@ const CameraScanner: React.FC<CameraScannerProps> = ({
     
     // Save scan result
     const timestamp = new Date().toISOString();
-    const savedScans = JSON.parse(localStorage.getItem('scanResults') || '[]');
+    const savedScans = safeLocalStorageGet<any[]>('scanResults', []);
     savedScans.push({
       id: Date.now().toString(),
       data,
@@ -278,7 +279,7 @@ const CameraScanner: React.FC<CameraScannerProps> = ({
     
     // Save to localStorage for later use
     const timestamp = new Date().toISOString();
-    const savedPhotos = JSON.parse(localStorage.getItem('vinPhotos') || '[]');
+    const savedPhotos = safeLocalStorageGet<any[]>('vinPhotos', []);
     savedPhotos.push({
       id: Date.now().toString(),
       photo: photoDataUrl,
@@ -349,7 +350,7 @@ const CameraScanner: React.FC<CameraScannerProps> = ({
         
         // Save extraction result
         const timestamp = new Date().toISOString();
-        const savedScans = JSON.parse(localStorage.getItem('ocrResults') || '[]');
+        const savedScans = safeLocalStorageGet<any[]>('ocrResults', []);
         savedScans.push({
           id: Date.now().toString(),
           extractedText,

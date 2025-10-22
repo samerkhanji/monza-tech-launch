@@ -20,6 +20,7 @@ interface CollapsibleSectionProps {
   onToggle: () => void;
   isMobile: boolean;
   onClose: () => void;
+  headerRight?: React.ReactNode;
 }
 
 const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
@@ -29,7 +30,8 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   isExpanded,
   onToggle,
   isMobile,
-  onClose
+  onClose,
+  headerRight
 }) => {
   const location = useLocation();
   const { user } = useAuth();
@@ -43,11 +45,40 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   return (
     <div className="space-y-1">
       <button
-        onClick={onToggle}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log(`🔽 Dropdown clicked: ${title}`);
+          onToggle();
+        }}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log(`🖱️ Dropdown mouse down: ${title}`);
+        }}
+        onTouchStart={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log(`📱 Dropdown touch start: ${title}`);
+        }}
+        onTouchEnd={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log(`📱 Dropdown touch end: ${title}`);
+          onToggle();
+        }}
         className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors"
+        style={{ 
+          pointerEvents: 'auto',
+          cursor: 'pointer',
+          userSelect: 'none'
+        }}
       >
         <SectionIcon className="mr-3 h-4 w-4" />
-        <span className="flex-1 text-left">{title}</span>
+        <span className="flex-1 text-left flex items-center gap-2">
+          {title}
+          {headerRight}
+        </span>
         {isExpanded ? (
           <ChevronDown className="h-4 w-4" />
         ) : (

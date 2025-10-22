@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🚨 Emergency Clear Floor 2 Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .emergency { background: #fee; border: 2px solid #f00; padding: 20px; margin: 10px 0; border-radius: 8px; }
+        .success { background: #efe; border: 2px solid #0a0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .info { background: #eef; border: 2px solid #00a; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .code { background: #f5f5f5; padding: 10px; font-family: monospace; margin: 5px 0; border-radius: 3px; }
+        button { padding: 12px 24px; margin: 5px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-primary { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <div class="emergency">
+        <h1>🚨 EMERGENCY: Clear Showroom Floor 2 Data</h1>
+        <p><strong>Problem:</strong> 20 cars are still showing in Showroom Floor 2 despite clearing attempts.</p>
+        <p><strong>Solution:</strong> Nuclear option - find and clear ALL possible data sources.</p>
+    </div>
+
+    <button class="btn-danger" onclick="nuclearClearAll()">🧨 NUCLEAR CLEAR - Remove All Floor 2 Data</button>
+    <button class="btn-primary" onclick="scanAndReport()">🔍 Scan All Storage Keys</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function scanAndReport() {
+            const results = document.getElementById('results');
+            let report = '<div class="info"><h3>🔍 Storage Scan Results:</h3>';
+            
+            // Check all localStorage keys
+            const allKeys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                allKeys.push(localStorage.key(i));
+            }
+            
+            // Filter for potential Floor 2 keys
+            const floor2Keys = allKeys.filter(key => 
+                key.toLowerCase().includes('floor2') || 
+                key.toLowerCase().includes('showroom') ||
+                key.toLowerCase().includes('car') ||
+                key.toLowerCase().includes('voyah')
+            );
+            
+            report += `<p><strong>Total localStorage keys:</strong> ${allKeys.length}</p>`;
+            report += `<p><strong>Potential Floor 2 related keys:</strong> ${floor2Keys.length}</p>`;
+            
+            if (floor2Keys.length > 0) {
+                report += '<div class="code"><strong>Suspicious keys found:</strong><br>';
+                floor2Keys.forEach(key => {
+                    const data = localStorage.getItem(key);
+                    let count = 'unknown';
+                    try {
+                        const parsed = JSON.parse(data);
+                        if (Array.isArray(parsed)) {
+                            count = parsed.length + ' items';
+                        } else if (typeof parsed === 'object') {
+                            count = 'object';
+                        }
+                    } catch(e) {
+                        count = 'string/other';
+                    }
+                    report += `• ${key}: ${count}<br>`;
+                });
+                report += '</div>';
+            }
+            
+            report += '</div>';
+            results.innerHTML = report;
+        }
+
+        function nuclearClearAll() {
+            if (!confirm('🚨 NUCLEAR OPTION: This will clear ALL localStorage data that could contain Floor 2 cars. Are you absolutely sure?')) {
+                return;
+            }
+            
+            const results = document.getElementById('results');
+            let cleared = 0;
+            let report = '<div class="success"><h3>🧨 Nuclear Clear Results:</h3>';
+            
+            // Get all localStorage keys
+            const allKeys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                allKeys.push(localStorage.key(i));
+            }
+            
+            // Clear EVERYTHING that could possibly contain car data
+            const suspiciousKeys = allKeys.filter(key => {
+                const lowerKey = key.toLowerCase();
+                return (
+                    lowerKey.includes('car') ||
+                    lowerKey.includes('showroom') ||
+                    lowerKey.includes('floor') ||
+                    lowerKey.includes('voyah') ||
+                    lowerKey.includes('vehicle') ||
+                    lowerKey.includes('inventory') ||
+                    lowerKey.includes('data') ||
+                    lowerKey.includes('cache')
+                );
+            });
+            
+            suspiciousKeys.forEach(key => {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        let itemCount = 'unknown';
+                        if (Array.isArray(parsed)) {
+                            itemCount = parsed.length;
+                        }
+                        localStorage.removeItem(key);
+                        cleared++;
+                        report += `✅ Cleared "${key}" (${itemCount} items)<br>`;
+                    } catch(e) {
+                        localStorage.removeItem(key);
+                        cleared++;
+                        report += `✅ Cleared "${key}" (non-JSON data)<br>`;
+                    }
+                }
+            });
+            
+            // Also clear specific known patterns
+            const specificPatterns = [
+                'monza', 'tech', 'floor2', 'showroom2', 'display',
+                'dashboard', 'analytics', 'reports', 'session'
+            ];
+            
+            specificPatterns.forEach(pattern => {
+                allKeys.forEach(key => {
+                    if (key.toLowerCase().includes(pattern) && localStorage.getItem(key)) {
+                        localStorage.removeItem(key);
+                        cleared++;
+                        report += `🎯 Pattern cleared: "${key}"<br>`;
+                    }
+                });
+            });
+            
+            // Trigger all possible refresh events
+            const events = [
+                'clearShowroomFloor2Data',
+                'showroomFloor2CarsCleared', 
+                'dataCleared',
+                'mockDataCleared',
+                'carsCleared',
+                'inventoryCleared',
+                'showroomCleared'
+            ];
+            
+            events.forEach(eventName => {
+                window.dispatchEvent(new CustomEvent(eventName));
+            });
+            
+            report += `<p><strong>Total keys cleared:</strong> ${cleared}</p>`;
+            report += '<p><strong>📡 Triggered refresh events:</strong> ' + events.join(', ') + '</p>';
+            report += '<p style="color: red; font-weight: bold;">🔄 Now refresh your main application - Floor 2 should be COMPLETELY EMPTY!</p>';
+            report += '</div>';
+            
+            results.innerHTML = report;
+            
+            // Auto-refresh after 3 seconds
+            setTimeout(() => {
+                if (confirm('Auto-refresh the page to apply changes?')) {
+                    window.location.reload();
+                }
+            }, 3000);
+        }
+
+        // Auto-scan on page load
+        window.addEventListener('load', scanAndReport);
+    </script>
+</body>
+</html>

@@ -11,9 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { Truck } from 'lucide-react';
 import { CAR_MODELS } from '@/types';
 
 interface AddCarOrderDialogProps {
@@ -40,19 +38,6 @@ const AddCarOrderDialog: React.FC<AddCarOrderDialogProps> = ({
     category: 'garage'
   });
 
-  const handleTrackShipment = () => {
-    if (!formData.shipmentCode.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a shipment code to track.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Navigate to shipping ETA page with the tracking code
-    navigate(`/shipping-eta?track=${encodeURIComponent(formData.shipmentCode.trim())}`);
-  };
 
   const handleSubmit = () => {
     if (!formData.model || !formData.supplier || !formData.orderReference) {
@@ -106,21 +91,21 @@ const AddCarOrderDialog: React.FC<AddCarOrderDialogProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="model">Car Model *</Label>
-              <Select
+              <select
+                id="model"
+                name="model"
                 value={formData.model}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, model: e.target.value }))}
+                className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                autocomplete="off"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select model" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CAR_MODELS.map((model) => (
-                    <SelectItem key={model.id} value={model.name}>
-                      {model.name} ({model.year})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                 <option value="">Select model</option>
+                 {CAR_MODELS.map((model) => (
+                   <option key={model.id} value={model.name}>
+                     {model.name} ({model.year})
+                   </option>
+                 ))}
+               </select>
             </div>
 
             <div className="space-y-2">
@@ -182,44 +167,25 @@ const AddCarOrderDialog: React.FC<AddCarOrderDialogProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="shipmentCode">Shipment Code</Label>
-              <div className="flex gap-2">
               <Input
-                  id="shipmentCode"
-                  type="text"
-                  value={formData.shipmentCode}
-                  onChange={(e) => setFormData(prev => ({ ...prev, shipmentCode: e.target.value }))}
-                  placeholder="Enter shipment code"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleTrackShipment}
-                  disabled={!formData.shipmentCode.trim()}
-                  className="px-3"
-                >
-                  <Truck className="h-4 w-4" />
-                </Button>
-              </div>
+                id="shipmentCode"
+                type="text"
+                value={formData.shipmentCode}
+                onChange={(e) => setFormData(prev => ({ ...prev, shipmentCode: e.target.value }))}
+                placeholder="Enter shipment code"
+              />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
-            <Select
+            <Input
+              id="category"
               value={formData.category}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="garage">Garage</SelectItem>
-                <SelectItem value="showroom">Showroom</SelectItem>
-                <SelectItem value="voyah">Voyah</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+              placeholder="Enter category (e.g., garage, showroom, voyah)"
+              className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
 
           <div className="space-y-2">

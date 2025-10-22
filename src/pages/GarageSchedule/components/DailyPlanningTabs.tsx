@@ -383,7 +383,6 @@ const DailyPlanningTabs: React.FC<DailyPlanningTabsProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CustomCalendarIcon className="h-5 w-5" />
             Daily Planning & Capacity Management
           </CardTitle>
         </CardHeader>

@@ -9,10 +9,10 @@ export const useRepairHistoryFilters = (repairHistory: GarageCar[]) => {
     return cars.filter(car => {
       const searchLower = searchTerm.toLowerCase();
       return (
-        car.carModel.toLowerCase().includes(searchLower) ||
-        car.customerName.toLowerCase().includes(searchLower) ||
-        (car.issueDescription && car.issueDescription.toLowerCase().includes(searchLower)) ||
-        car.carCode.toLowerCase().includes(searchLower)
+        (car.carModel?.toLowerCase() || car.model?.toLowerCase() || '').includes(searchLower) ||
+        (car.customerName?.toLowerCase() || '').includes(searchLower) ||
+        (car.issueDescription?.toLowerCase() || '').includes(searchLower) ||
+        (car.carCode?.toLowerCase() || '').includes(searchLower)
       );
     });
   };

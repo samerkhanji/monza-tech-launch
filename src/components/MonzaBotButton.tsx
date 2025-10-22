@@ -128,8 +128,8 @@ const MonzaBotButton: React.FC = () => {
           email: user?.email || '',
           role: user?.role || 'assistant'
         },
-        canAccessAnalytics: user?.role === 'owner' || user?.role === 'garage_manager',
-        canAccessClientData: user?.role === 'owner' || user?.role === 'garage_manager'
+        canAccessAnalytics: user?.role?.toUpperCase() === 'OWNER' || user?.role?.toLowerCase() === 'garage_manager',
+        canAccessClientData: user?.role?.toUpperCase() === 'OWNER' || user?.role?.toLowerCase() === 'garage_manager'
       };
 
       const response = await enhancedMonzaBotService.processEnhancedMessage(message, context);

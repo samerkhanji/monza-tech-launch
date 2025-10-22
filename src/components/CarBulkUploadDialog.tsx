@@ -1125,10 +1125,10 @@ const CarBulkUploadDialog: React.FC<CarBulkUploadDialogProps> = ({
                                   <SelectTrigger className="w-20">
                                     <SelectValue />
                                   </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="EV">EV</SelectItem>
-                                    <SelectItem value="REV">REV</SelectItem>
-                                    <SelectItem value="ICEV">ICEV</SelectItem>
+                                  <SelectContent className="z-[100] bg-white border shadow-lg max-h-48 overflow-auto" position="popper" sideOffset={4}>
+                                    <SelectItem value="EV" className="cursor-pointer hover:bg-gray-100">EV</SelectItem>
+                                    <SelectItem value="REV" className="cursor-pointer hover:bg-gray-100">REV</SelectItem>
+                                    <SelectItem value="ICEV" className="cursor-pointer hover:bg-gray-100">ICEV</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </TableCell>

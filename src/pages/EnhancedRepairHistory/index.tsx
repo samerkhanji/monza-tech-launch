@@ -251,7 +251,7 @@ const EnhancedRepairHistoryPage: React.FC = () => {
                 <TabsContent value="overview" className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <Clock className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">
                         {format(new Date(repair.repair_date), 'MMM d, yyyy')}
                       </span>

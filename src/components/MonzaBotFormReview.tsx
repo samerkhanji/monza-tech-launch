@@ -185,9 +185,11 @@ const MonzaBotFormReview: React.FC<MonzaBotFormReviewProps> = ({ onSubmissionPro
               {typeof value === 'boolean' ? (
                 <select
                   id={key}
+                  name={key}
                   value={value.toString()}
                   onChange={(e) => updateEditedField(key, e.target.value === 'true')}
                   className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                  autocomplete="off"
                 >
                   <option value="true">Yes</option>
                   <option value="false">No</option>
@@ -195,18 +197,22 @@ const MonzaBotFormReview: React.FC<MonzaBotFormReviewProps> = ({ onSubmissionPro
               ) : Array.isArray(value) ? (
                 <Textarea
                   id={key}
+                  name={key}
                   value={Array.isArray(value) ? value.join(', ') : ''}
                   onChange={(e) => updateEditedField(key, e.target.value.split(', ').filter(v => v.trim()))}
                   className="text-sm min-h-[60px]"
                   placeholder="Separate items with commas"
+                  autocomplete="off"
                 />
               ) : (
                 <Input
                   id={key}
+                  name={key}
                   type={typeof value === 'number' ? 'number' : 'text'}
                   value={value?.toString() || ''}
                   onChange={(e) => updateEditedField(key, typeof value === 'number' ? parseFloat(e.target.value) || 0 : e.target.value)}
                   className="text-sm"
+                  autocomplete="off"
                 />
               )}
             </div>

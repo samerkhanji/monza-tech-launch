@@ -4,10 +4,224 @@
 @import './styles/components.css';
 @import './styles/pdi-scrollbar-fix.css';
 @import './styles/notification-layout-fix.css';
+@import './styles/garage-schedule-layout-fix.css';
+@import './styles/dropdown-fixes.css';
 
+[html], body {
+  pointer-events: auto !important;
+}
+
+[data-root-reset],
+body,
+#root {
+  position: static !important;
+  z-index: auto !important;
+}
+
+/* Reserve vertical scrollbar space to prevent layout shift */
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable both-edges;
+}
+
+/* When a modal is open, reliably lock body scroll without layout shift */
+body.modal-open {
+  overflow: hidden !important;
+  padding-right: var(--scrollbar-width, 0px) !important;
+}
+
+/* Global PDI scrollbar enhancements */
+.pdi-scroll-container,
+.pdi-content-wrapper,
+.pdi-form-container,
+.pdi-related-content {
+  scrollbar-width: thin !important;
+  scrollbar-color: #ffd700 #f1f5f9 !important;
+}
+
+/* Basic scrollbar test - no custom styling */
+#pdi-scroll-container {
+  overflow: scroll !important;
+  height: 400px !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar,
+.pdi-content-wrapper::-webkit-scrollbar,
+.pdi-form-container::-webkit-scrollbar,
+.pdi-related-content::-webkit-scrollbar {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-track,
+.pdi-content-wrapper::-webkit-scrollbar-track,
+.pdi-form-container::-webkit-scrollbar-track,
+.pdi-related-content::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 8px !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-thumb,
+.pdi-content-wrapper::-webkit-scrollbar-thumb,
+.pdi-form-container::-webkit-scrollbar-thumb,
+.pdi-related-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ffd700, #ffed4a) !important;
+  border-radius: 8px !important;
+  border: 2px solid #f1f5f9 !important;
+}
+
+.pdi-scroll-container::-webkit-scrollbar-thumb:hover,
+.pdi-content-wrapper::-webkit-scrollbar-thumb:hover,
+.pdi-form-container::-webkit-scrollbar-thumb:hover,
+.pdi-related-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ffed4a, #ffd700) !important;
+}
+
+/* Ensure PDI tables are properly scrollable */
+.pdi-form-container table,
+.pdi-related-content table {
+  min-width: 1100px !important;
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* Fix for PDI form inputs */
+.pdi-form-container input,
+.pdi-form-container select,
+.pdi-form-container textarea {
+  font-size: 13px !important;
+  line-height: 1.3 !important;
+}
+
+/* Ensure PDI dialogs are properly sized */
+.pdi-form-container-dialog {
+  max-width: 95vw !important;
+  max-height: 95vh !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* Nuclear white background fix for dropdowns */
+.nuclear-white-bg {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  opacity: 1 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  mix-blend-mode: normal !important;
+  isolation: isolate !important;
+}
+
+.nuclear-white-bg * {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Force dropdown content to appear solid */
+.dropdown-content,
+.absolute.z-50 {
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+  isolation: isolate !important;
+}
+
+/* Specific fix for user search dropdown */
+.nuclear-white-bg.dropdown-content {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+  isolation: isolate !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+}
+
+/* Hide broadcast button globally */
+button:has(svg.lucide-message-circle),
+button:contains("Broadcast") {
+  display: none !important;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Global spacing and layout comfort */
+:root {
+  --form-gap: 16px;
+}
+
+/* Keep space for the scrollbar to prevent layout shift when overlays/menus open */
+html { scrollbar-gutter: stable; }
+
+/* Bulletproof portal roof for all modals */
+#modals-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647 !important;
+  isolation: isolate;
+  pointer-events: none;
+}
+#modals-root > * { pointer-events: auto; }
+
+/* Center ANY Radix dialog no matter what */
+[data-radix-dialog-content] {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+/* Prevent global aria-hidden from hiding modals */
+[aria-hidden="true"] { display: initial; visibility: initial; }
+
+/* Neutralize transforms that can break fixed stacking */
+html, body { transform: none !important; filter: none !important; }
+
+/* Cards and sections */
+.container, .card, .section, .page-content {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* Space inputs/selects/textarea from surrounding text */
+form .grid > *,
+form .space-y-2 > *,
+form .space-y-4 > *,
+form .space-y-6 > * {
+  margin-top: 8px;
+}
+
+/* Increase default gap between label and control */
+label + input,
+label + select,
+label + textarea {
+  margin-top: 6px;
+}
+
+/* Dialog content padding for comfortable editing */
+[data-radix-dialog-content],
+.car-status-dialog {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+/* Belt-and-suspenders: ensure overlay/content stack correctly */
+[data-radix-dialog-content] { z-index: 2147483001 !important; }
+[data-radix-dialog-overlay] { z-index: 2147483000 !important; }
+
+/* Extreme z-index option for hard conflicts */
+[data-radix-dialog-content].z-extreme { z-index: 2147483001 !important; }
+[data-radix-dialog-overlay].z-extreme { z-index: 2147483000 !important; }
+
+/* Table cells breathing room */
+table td, table th {
+  padding-left: 14px;
+  padding-right: 14px;
+}
 
 /* Dialog styles moved to components.css for better performance */
 
@@ -34,46 +248,48 @@
     margin: 1vh auto !important;
   }
   
-  [data-radix-dialog-content] > div:not(:first-child) {
+  [data-radix-dialog-content] > div.dialog-content {
     max-height: calc(98vh - 100px) !important;
   }
 }
 
 /* Custom scrollbar styling */
-[data-radix-dialog-content] *::-webkit-scrollbar {
+[data-radix-dialog-content] .scrollable-content::-webkit-scrollbar {
   width: 8px;
 }
 
-[data-radix-dialog-content] *::-webkit-scrollbar-track {
+[data-radix-dialog-content] .scrollable-content::-webkit-scrollbar-track {
   background: #f1f5f9;
   border-radius: 4px;
 }
 
-[data-radix-dialog-content] *::-webkit-scrollbar-thumb {
+[data-radix-dialog-content] .scrollable-content::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
 }
 
-[data-radix-dialog-content] *::-webkit-scrollbar-thumb:hover {
+[data-radix-dialog-content] .scrollable-content::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* Ensure proper z-indexing */
+/* Ensure proper z-indexing (aligned with dialog.tsx) */
 [data-radix-dialog-overlay] {
-  z-index: 50000 !important;
+  z-index: 2147483000 !important;
+  background: rgba(0,0,0,0.3) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  pointer-events: auto !important;
 }
 
 [data-radix-dialog-content] {
-  z-index: 50001 !important;
+  z-index: 2147483001 !important;
+  border-radius: 0 !important;
 }
 
-/* High z-index dialogs (like PDI) */
-[data-radix-dialog-content][style*="z-index: 99999"] {
-  z-index: 99999 !important;
-}
-
-[data-radix-dialog-overlay][style*="z-index: 99999"] {
-  z-index: 99998 !important;
+/* Ensure dialog and all its children stay interactive */
+[data-radix-dialog-content],
+[data-radix-dialog-content] .dialog-content {
+  pointer-events: auto !important;
 }
 
 /* =================================================================== */
@@ -110,7 +326,7 @@
 }
 
 /* Force content areas to be scrollable */
-[data-radix-dialog-content] > div:not(:first-child),
+[data-radix-dialog-content] > div.dialog-content,
 [data-radix-dialog-content] .space-y-6,
 [data-radix-dialog-content] .space-y-4 {
   flex: 1 !important;
@@ -150,6 +366,17 @@
   background: #e6c200 !important;
 }
 
+/* PDI document: responsive + no weird positioning */
+.pdi-doc { font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height: 1.3; }
+#pdi-body { overflow-y: auto !important; overflow-x: hidden !important; max-height: calc(95vh - 3.5rem - 3rem); }
+#pdi-body table { width: 100%; table-layout: fixed; }
+#pdi-body .signature-pad canvas { width: 100%; height: 80px; }
+.pdi-form-container, .pdi-related-content { position: static !important; inset: auto !important; }
+
+@media (max-width: 640px) {
+  #pdi-body { overflow-y: auto !important; overflow-x: hidden !important; }
+}
+
 /* Force dialog footers to be visible and sticky */
 [data-radix-dialog-content] div[class*="flex gap-3 justify-end"],
 [data-radix-dialog-content] div[class*="DialogFooter"],
@@ -173,7 +400,7 @@
     max-height: 98vh !important;
   }
   
-  [data-radix-dialog-content] > div:not(:first-child) {
+  [data-radix-dialog-content] > div.dialog-content {
     max-height: calc(98vh - 100px) !important;
   }
 }
@@ -198,9 +425,9 @@ body [data-radix-dialog-content],
 }
 
 /* Force proper spacing */
-[data-radix-dialog-content] .space-y-2 > * + *,
-[data-radix-dialog-content] .space-y-4 > * + *,
-[data-radix-dialog-content] .space-y-6 > * + * {
+[data-radix-dialog-content] .space-y-2 .spacing-item,
+[data-radix-dialog-content] .space-y-4 .spacing-item,
+[data-radix-dialog-content] .space-y-6 .spacing-item {
   margin-top: 8px !important;
 }
 
@@ -216,7 +443,7 @@ body [data-radix-dialog-content] {
 }
 
 /* Force all dialog children to fit properly */
-[data-radix-dialog-content] * {
+[data-radix-dialog-content] .dialog-content {
   box-sizing: border-box !important;
 }
 
@@ -905,9 +1132,35 @@ input[type="date"]:focus {
   pointer-events: auto !important;
 }
 
-[data-radix-dialog-content][aria-hidden="true"] {
-  aria-hidden: false !important;
+/* If Radix sets aria-hidden on dialog content or overlay, undo it to keep interactions working */
+[data-radix-dialog-content][aria-hidden="true"],
+[aria-hidden="true"][data-radix-dialog-content],
+[data-radix-dialog-overlay][aria-hidden="true"],
+[aria-hidden="true"][data-radix-dialog-overlay],
+[data-aria-hidden="true"][data-radix-dialog-content],
+[data-aria-hidden="true"][data-radix-dialog-overlay],
+[role="dialog"][aria-hidden="true"] {
   pointer-events: auto !important;
+}
+
+/* Restore interactivity even if some library sets inline pointer-events */
+html[style*="pointer-events"],
+body[style*="pointer-events"],
+body[data-scroll-locked] {
+  pointer-events: auto !important;
+}
+
+/* Prevent unintended dimming when Radix adds aria-hidden/inert */
+[aria-hidden="true"],
+[inert] {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Keep background non-interactive while dialog is open */
+[aria-hidden="true"]:not([data-radix-dialog-content]):not([data-radix-dialog-overlay]),
+[inert]:not([data-radix-dialog-content]):not([data-radix-dialog-overlay]) {
+  pointer-events: none !important;
 }
 
 /* Fix for focus management in dialogs */
@@ -928,8 +1181,8 @@ input[type="date"]:focus {
 /* ================================================= */
 
 /* FORCE delivery dialog to proper flex layout */
-[data-radix-dialog-content]:has(.delivery-form),
-[data-radix-dialog-content]:has([class*="delivery"]),
+.delivery-form-dialog,
+.delivery-class-dialog,
 .car-status-dialog [data-radix-dialog-content] {
   display: flex !important;
   flex-direction: column !important;
@@ -938,8 +1191,8 @@ input[type="date"]:focus {
 }
 
 /* FORCE header to stay at top */
-[data-radix-dialog-content]:has(.delivery-form) > div:first-child,
-[data-radix-dialog-content]:has([class*="delivery"]) > div:first-child,
+.delivery-form-dialog > div:first-child,
+.delivery-class-dialog > div:first-child,
 .car-status-dialog [data-radix-dialog-content] > div:first-child {
   flex-shrink: 0 !important;
   position: sticky !important;
@@ -951,8 +1204,8 @@ input[type="date"]:focus {
 }
 
 /* FORCE main content to be scrollable */
-[data-radix-dialog-content]:has(.delivery-form) .space-y-6,
-[data-radix-dialog-content]:has([class*="delivery"]) .space-y-6,
+.delivery-form-dialog .space-y-6,
+.delivery-class-dialog .space-y-6,
 .car-status-dialog [data-radix-dialog-content] .space-y-6 {
   flex: 1 !important;
   overflow-y: auto !important;
@@ -961,8 +1214,8 @@ input[type="date"]:focus {
 }
 
 /* FORCE button footer to stay at bottom */
-[data-radix-dialog-content]:has(.delivery-form) .flex.gap-3.justify-end,
-[data-radix-dialog-content]:has([class*="delivery"]) .flex.gap-3.justify-end,
+.delivery-form-dialog .flex.gap-3.justify-end,
+.delivery-class-dialog .flex.gap-3.justify-end,
 .car-status-dialog [data-radix-dialog-content] .flex.gap-3.justify-end {
   flex-shrink: 0 !important;
   position: sticky !important;
@@ -1052,3 +1305,27 @@ input[type="date"]:focus {
   display: block !important;
   width: 16px !important;
 }
+
+/* ================================================= */
+/* HARD-SAFE DIALOG LAYERING AND CLICK BEHAVIOR      */
+/* ================================================= */
+[data-radix-dialog-overlay] {
+  z-index: 1000 !important;
+  pointer-events: auto !important;
+}
+
+[role="dialog"] {
+  z-index: 1002 !important;
+  transform: translate(-50%, -50%) !important;
+  opacity: 1 !important;
+}
+
+  /* Precise centering/width for PDI dialog only */
+  .pdi-dialog-content {
+    max-width: min(1200px, 95vw) !important;
+    width: min(1200px, 95vw) !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    position: fixed !important;
+  }

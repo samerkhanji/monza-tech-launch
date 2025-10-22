@@ -2,7 +2,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { TableCell } from '@/components/ui/table';
-import { User, Phone, FileText, Lock, Calendar } from 'lucide-react';
+import { User, Phone, FileText, Lock } from 'lucide-react';
 import { Car } from '../types';
 import EditableCell from './EditableCell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,7 +23,7 @@ const CarClientCells: React.FC<CarClientCellsProps> = ({
   onClientInfoSave,
 }) => {
   const { user } = useAuth();
-  const canAccessClientData = user?.role === 'owner';
+  const canAccessClientData = user?.role?.toUpperCase() === 'OWNER';
 
   const handleClientInfoUpdate = (field: keyof Car, value: any) => {
     if (!canAccessClientData) return;
@@ -151,7 +151,7 @@ const CarClientCells: React.FC<CarClientCellsProps> = ({
             type="date"
           >
             <div className="flex items-center gap-1 text-xs text-muted-foreground mt-2">
-              <Calendar className="h-3 w-3" />
+                                      <Clock className="h-3 w-3" />
               <span>Sold: {formatDate(car.soldDate)}</span>
             </div>
           </EditableCell>

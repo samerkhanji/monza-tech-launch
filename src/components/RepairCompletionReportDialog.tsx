@@ -191,20 +191,22 @@ const RepairCompletionReportDialog: React.FC<RepairCompletionReportDialogProps> 
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Car Code</Label>
-                      <Input value={carData?.carCode || ''} disabled />
+                      <Label htmlFor="carCode">Car Code</Label>
+                      <Input id="carCode" name="carCode" value={carData?.carCode || ''} disabled />
                     </div>
                     <div>
-                      <Label>Car Model</Label>
-                      <Input value={carData?.carModel || ''} disabled />
+                      <Label htmlFor="carModel">Car Model</Label>
+                      <Input id="carModel" name="carModel" value={carData?.carModel || ''} disabled />
                     </div>
                     <div>
-                      <Label>Customer Name</Label>
-                      <Input value={carData?.customerName || ''} disabled />
+                      <Label htmlFor="customerName">Customer Name</Label>
+                      <Input id="customerName" name="customerName" value={carData?.customerName || ''} disabled />
                     </div>
                     <div>
-                      <Label>Technician Name</Label>
+                      <Label htmlFor="technician_name">Technician Name</Label>
                       <Input 
+                        id="technician_name"
+                        name="technician_name"
                         value={formData.technician_name}
                         onChange={(e) => handleInputChange('technician_name', e.target.value)}
                       />
@@ -212,8 +214,10 @@ const RepairCompletionReportDialog: React.FC<RepairCompletionReportDialogProps> 
                   </div>
                   
                   <div>
-                    <Label>Issue Description *</Label>
+                    <Label htmlFor="issue_description">Issue Description *</Label>
                     <Textarea
+                      id="issue_description"
+                      name="issue_description"
                       value={formData.issue_description}
                       onChange={(e) => handleInputChange('issue_description', e.target.value)}
                       placeholder="Describe the original issue..."
@@ -222,8 +226,10 @@ const RepairCompletionReportDialog: React.FC<RepairCompletionReportDialogProps> 
                   </div>
                   
                   <div>
-                    <Label>Solution Description *</Label>
+                    <Label htmlFor="solution_description">Solution Description *</Label>
                     <Textarea
+                      id="solution_description"
+                      name="solution_description"
                       value={formData.solution_description}
                       onChange={(e) => handleInputChange('solution_description', e.target.value)}
                       placeholder="Describe how the repair was completed..."
@@ -232,8 +238,10 @@ const RepairCompletionReportDialog: React.FC<RepairCompletionReportDialogProps> 
                   </div>
                   
                   <div>
-                    <Label>Actual Hours Worked *</Label>
+                    <Label htmlFor="actual_hours">Actual Hours Worked *</Label>
                     <Input 
+                      id="actual_hours"
+                      name="actual_hours"
                       type="number" 
                       step="0.5"
                       value={formData.actual_hours}
@@ -314,6 +322,8 @@ const RepairCompletionReportDialog: React.FC<RepairCompletionReportDialogProps> 
                   <div>
                     <Label>Quality Rating</Label>
                     <select 
+                      id="qualityRating"
+                      name="qualityRating"
                       className="w-full p-2 border border-gray-300 rounded"
                       value={formData.quality_rating}
                       onChange={(e) => handleInputChange('quality_rating', Number(e.target.value))}

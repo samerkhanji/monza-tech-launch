@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>💥 Nuclear Financial Data Cleaner</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            margin: 20px; 
+            background: #ffebee;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(244,67,54,0.3);
+            border: 3px solid #f44336;
+        }
+        .nuclear { 
+            background: linear-gradient(45deg, #f44336, #ff9800); 
+            color: white; 
+            padding: 25px; 
+            margin: -30px -30px 20px -30px; 
+            border-radius: 12px 12px 0 0; 
+            font-weight: bold;
+            text-align: center;
+            font-size: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        .step {
+            background: #f5f5f5;
+            border-left: 5px solid #f44336;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .code-block {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            border: 1px solid #00ff00;
+            overflow-x: auto;
+        }
+        button {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+        }
+        .success { background: #4caf50; color: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .warning { background: #ff9800; color: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .info { background: #2196f3; color: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nuclear">
+            💥 NUCLEAR FINANCIAL DATA CLEANER 💥
+            <br><small>Eliminate ALL Mock Financial Data</small>
+        </div>
+
+        <div class="warning">
+            🚨 The financial data is STILL showing because it's being regenerated! Time for nuclear action!
+        </div>
+
+        <div class="step">
+            <h3>🎯 Method 1: Browser Console Nuclear Clear</h3>
+            <p>Open Developer Tools (F12) → Console → Paste this code:</p>
+            <div class="code-block" id="consoleCode">
+// 💥 NUCLEAR FINANCIAL DATA CLEANER
+(async function nuclearClearFinancials() {
+    console.log('💥 STARTING NUCLEAR FINANCIAL CLEARING...');
+    
+    try {
+        // 1. Clear ALL localStorage financial data
+        const allKeys = Object.keys(localStorage);
+        const financialKeys = allKeys.filter(key => 
+            key.toLowerCase().includes('financial') ||
+            key.toLowerCase().includes('repair') ||
+            key.toLowerCase().includes('revenue') ||
+            key.toLowerCase().includes('profit') ||
+            key.toLowerCase().includes('car')
+        );
+        
+        console.log(`🔍 Found ${financialKeys.length} financial keys to clear`);
+        financialKeys.forEach(key => {
+            localStorage.removeItem(key);
+            console.log(`🧹 Cleared: ${key}`);
+        });
+        
+        // 2. Clear specific financial data
+        const specificKeys = [
+            'financialData', 'repairFinancials', 'carFinancialData',
+            'financialRecords', 'repairRecords', 'garageFinancials',
+            'financialDashboardData', 'carFinancialRecords', 'repairFinancialData',
+            'customerRevenue', 'profitData', 'costBreakdown', 'financialMetrics',
+            'revenueData', 'repairProfits', 'realFinancialRecords'
+        ];
+        
+        specificKeys.forEach(key => {
+            if (localStorage.getItem(key)) {
+                localStorage.removeItem(key);
+                console.log(`✅ Cleared specific: ${key}`);
+            }
+        });
+        
+        // 3. Force clear any React state/cache
+        if (window.React && window.React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED) {
+            console.log('🔄 Attempting React state clearing...');
+        }
+        
+        // 4. Fire ALL possible refresh events
+        const events = [
+            'clearFinancialData', 'financialDataCleared', 'repairFinancialsCleared',
+            'financialDashboardRefresh', 'clearRepairRecords', 'financialStateReset',
+            'dashboardDataRefresh', 'garageFinancialsCleared', 'revenueDataCleared'
+        ];
+        
+        events.forEach(eventName => {
+            window.dispatchEvent(new CustomEvent(eventName, {
+                detail: { nuclear: true, timestamp: new Date().toISOString() }
+            }));
+            console.log(`📡 Event fired: ${eventName}`);
+        });
+        
+        // 5. Force page reload after 2 seconds
+        setTimeout(() => {
+            console.log('🔄 FORCE RELOADING PAGE...');
+            window.location.reload();
+        }, 2000);
+        
+        console.log('💥 NUCLEAR FINANCIAL CLEARING COMPLETE!');
+        alert('💥 NUCLEAR CLEARING COMPLETE!\\nPage will reload in 2 seconds...');
+        
+    } catch (error) {
+        console.error('💀 NUCLEAR CLEARING FAILED:', error);
+        alert('💀 Nuclear clearing failed: ' + error.message);
+    }
+})();
+            </div>
+            <button onclick="copyConsoleCode()">📋 Copy Nuclear Code</button>
+        </div>
+
+        <div class="step">
+            <h3>🗑️ Method 2: Direct localStorage Clear</h3>
+            <button onclick="clearAllFinancialStorage()">💥 Clear All Financial Storage</button>
+            <button onclick="forcePageReload()">🔄 Force Page Reload</button>
+        </div>
+
+        <div class="step">
+            <h3>🎯 Expected Result</h3>
+            <p>After nuclear clearing:</p>
+            <ul>
+                <li>✅ <strong>Customer Revenue:</strong> $0.00 or real data only</li>
+                <li>✅ <strong>Total Profit:</strong> $0.00 or real data only</li>
+                <li>✅ <strong>Recent Repair Records:</strong> Empty or real repairs only</li>
+                <li>✅ <strong>No more CAR-000 through CAR-007 entries</strong></li>
+                <li>✅ <strong>No more "Toyota Camry 2018" mock entries</strong></li>
+            </ul>
+        </div>
+
+        <div id="results"></div>
+
+        <script>
+            function logResult(message, type = 'info') {
+                const results = document.getElementById('results');
+                const div = document.createElement('div');
+                div.className = type;
+                div.innerHTML = message;
+                results.appendChild(div);
+            }
+
+            function copyConsoleCode() {
+                const code = document.getElementById('consoleCode').textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    logResult('✅ Nuclear code copied! Open F12 → Console → Paste and press Enter', 'success');
+                });
+            }
+
+            function clearAllFinancialStorage() {
+                logResult('💥 Clearing all financial storage...', 'warning');
+                
+                const allKeys = Object.keys(localStorage);
+                const financialKeys = allKeys.filter(key => 
+                    key.toLowerCase().includes('financial') ||
+                    key.toLowerCase().includes('repair') ||
+                    key.toLowerCase().includes('revenue') ||
+                    key.toLowerCase().includes('profit') ||
+                    key.toLowerCase().includes('car')
+                );
+
+                let clearedCount = 0;
+                financialKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                    clearedCount++;
+                });
+
+                // Clear specific keys
+                const specificKeys = [
+                    'financialData', 'repairFinancials', 'carFinancialData',
+                    'financialRecords', 'repairRecords', 'garageFinancials',
+                    'realFinancialRecords', 'mockFinancialData'
+                ];
+
+                specificKeys.forEach(key => {
+                    if (localStorage.getItem(key)) {
+                        localStorage.removeItem(key);
+                        clearedCount++;
+                    }
+                });
+
+                // Fire events
+                const events = [
+                    'clearFinancialData', 'financialDataCleared', 'repairFinancialsCleared',
+                    'financialDashboardRefresh', 'clearRepairRecords'
+                ];
+
+                events.forEach(eventName => {
+                    window.dispatchEvent(new CustomEvent(eventName, {
+                        detail: { cleared: true, nuclear: true }
+                    }));
+                });
+
+                logResult(`✅ Cleared ${clearedCount} financial storage keys`, 'success');
+                logResult('🔄 Events fired. Please reload your Financial Dashboard page!', 'info');
+            }
+
+            function forcePageReload() {
+                logResult('🔄 Force reloading page...', 'info');
+                setTimeout(() => {
+                    if (window.parent && window.parent !== window) {
+                        window.parent.location.reload();
+                    } else {
+                        window.location.href = 'http://localhost:5173';
+                    }
+                }, 1000);
+            }
+
+            // Auto-show status
+            window.onload = () => {
+                logResult('🚨 Financial data is still showing! Use Method 1 for guaranteed clearing.', 'warning');
+            };
+        </script>
+    </div>
+</body>
+</html>

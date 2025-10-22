@@ -133,17 +133,6 @@ export const enhancedMonzaBotService = {
     return response.formFillData || {};
   },
 
-  async getShippingUpdates(trackingInfo?: string): Promise<EnhancedMonzaBotResponse> {
-    const message = trackingInfo 
-      ? `Check shipping status and ETA for tracking: ${trackingInfo}`
-      : "Check all pending shipments and provide ETA updates";
-      
-    return this.processEnhancedMessage(message, {
-      source: 'shipping_updates',
-      currentRoute: '/ordered-parts',
-      trackingCode: trackingInfo
-    });
-  },
 
   async getInventoryInsights(): Promise<EnhancedMonzaBotResponse> {
     return this.processEnhancedMessage(

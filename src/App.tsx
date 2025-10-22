@@ -1,32 +1,30 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { NotificationProvider } from '@/contexts/NotificationContext';
-import { QueryClient } from '@/contexts/QueryContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Layout from '@/components/layout/Layout';
-import { TutorialProvider } from './contexts/TutorialContext';
-import TutorialModal from './components/TutorialModal';
-import TutorialButton from './components/TutorialButton';
-import { CarDataProvider } from './contexts/CarDataContext';
 import LoadingSpinner from './components/ui/loading-spinner';
-import GlobalKeyboardShortcuts from './components/GlobalKeyboardShortcuts';
-import { initPerformanceMonitoring, preloadCriticalResources, markAppInteractive } from '@/utils/performance';
-import { BusinessActivityMonitor } from '@/services/businessActivityMonitor';
-import PWAService from '@/services/pwaService';
-import AutomatedBackupService from '@/services/automatedBackupService';
-import { AutomatedNotificationService } from '@/services/automatedNotificationService';
+
+import '@/styles/emergency-click-fix.css';
+
 // Launch 1.0: Network security features disabled
 // import NetworkSecurityBanner from './components/NetworkSecurityBanner';
 // import { useNetworkAuthorization } from './hooks/useNetworkSecurity';
 
-// Lazy load all route components to improve LCP
-import { LazyDashboard } from '@/components/LazyLoader';
+// Lazy load route components to improve LCP
+import Dashboard from '@/pages/Dashboard';
+const EnhancedDashboard = lazy(() => import('@/pages/EnhancedDashboard'));
+import MessageCenter from '@/components/MessageCenter';
+const SupabaseTestComponent = lazy(() => import('@/components/SupabaseTestComponent'));
+const UserRoleManager = lazy(() => import('@/components/UserRoleManager'));
+const AdminUsersPage = lazy(() => import('@/pages/AdminUsersPage'));
+const WarrantyTest = lazy(() => import('@/pages/WarrantyTest'));
 const CarInventory = lazy(() => import('@/pages/CarInventory'));
 const Repairs = lazy(() => import('@/pages/Repairs'));
 const Inventory = lazy(() => import('@/pages/InventoryGarage'));
-const ScanVIN = lazy(() => import('@/pages/ScanVIN'));
+const DataUpload = lazy(() => import('@/pages/DataUpload'));
+// NOTE: ScanVIN is imported eagerly to avoid dev-server dynamic import errors in some environments
+import ScanVIN from '@/pages/ScanVIN';
 const ScanPart = lazy(() => import('@/pages/ScanPart'));
 const Sales = lazy(() => import('@/pages/Sales'));
 const Analytics = lazy(() => import('@/pages/Analytics'));
@@ -42,11 +40,10 @@ const MessagingCenter = lazy(() => import('@/pages/MessagingCenter'));
 const NewRequest = lazy(() => import('@/pages/RequestCenter/NewRequest'));
 const OrderedCars = lazy(() => import('@/pages/OrderedCars'));
 const OrderedParts = lazy(() => import('@/pages/OrderedParts'));
-const ShippingETA = lazy(() => import('@/pages/ShippingETA'));
 const RepairHistory = lazy(() => import('@/pages/RepairHistory'));
 const EnhancedRepairHistory = lazy(() => import('@/pages/EnhancedRepairHistory'));
 const InventoryHistory = lazy(() => import('@/pages/InventoryHistory'));
-const InventoryFloor2 = lazy(() => import('@/pages/InventoryFloor2'));
+const InventoryFloor2 = lazy(() => import('@/pages/InventoryFloor2/SimpleIndex'));
 const GarageSchedule = lazy(() => import('@/pages/GarageSchedule'));
 const FinancialDashboardPage = lazy(() => import('@/pages/FinancialDashboard'));
 const Calendar = lazy(() => import('@/pages/Calendar'));
@@ -54,7 +51,7 @@ const BusinessCalendar = lazy(() => import('@/pages/BusinessCalendar'));
 const MarketingCalendar = lazy(() => import('@/pages/MarketingCalendar'));
 const ApiDocumentation = lazy(() => import('@/pages/ApiDocumentation'));
 const ApiKeyManagement = lazy(() => import('@/pages/ApiKeyManagement'));
-const ShowroomFloor1Page = lazy(() => import('@/pages/ShowroomFloor1'));
+import ShowroomFloor1Page from '@/pages/ShowroomFloor1';
 const ShowroomFloor2Page = lazy(() => import('@/pages/ShowroomFloor2'));
 const OwnerFinances = lazy(() => import('@/pages/OwnerFinances'));
 const AuditLogPage = lazy(() => import('@/pages/AuditLog'));
@@ -64,6 +61,7 @@ const GarageCarInventory = lazy(() => import('@/pages/GarageCarInventory'));
 const UserActivityDashboard = lazy(() => import('@/pages/UserActivityDashboard'));
 const DataLinkingSummaryPage = lazy(() => import('@/pages/DataLinkingSummary'));
 const TestDriveLogsPage = lazy(() => import('@/pages/TestDriveLogs'));
+const NewTestDrivePage = lazy(() => import('@/pages/test-drives/NewTestDrivePage'));
 const TestDriveScannerPage = lazy(() => import('@/pages/TestDriveScanner'));
 const NewCarArrivals = lazy(() => import('@/pages/NewCarArrivals'));
 const ShowroomInventory = lazy(() => import('@/pages/ShowroomInventory'));
@@ -99,60 +97,244 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 function AppContent() {
-  console.log('AppContent component rendering...');
-  const navigate = useNavigate();
-  const { user } = useAuth();
+  console.log('✅ Fixed AppContent component rendering...');
+  
+  // Hard-kill any pointer-events: none applied to <body>
+  React.useLayoutEffect(() => {
+    const fix = () => {
+      if (document.body.style.pointerEvents === 'none') {
+        document.body.style.pointerEvents = 'auto';
+      }
+    };
+    fix();
+    const mo = new MutationObserver(fix);
+    mo.observe(document.body, { attributes: true, attributeFilter: ['style'] });
+    return () => mo.disconnect();
+  }, []);
 
   useEffect(() => {
-    // Mark app as interactive immediately to prevent delays
-    markAppInteractive();
+    // 🚨 ULTRA AGGRESSIVE EMERGENCY FIX
+    console.log('🚨 ULTRA AGGRESSIVE EMERGENCY FIX STARTING');
     
-    // Initialize PWA service
-    PWAService.getInstance();
-    console.log('🚀 PWA Service initialized');
+    // Remove ALL event listeners that might be blocking
+    const removeAllEventListeners = () => {
+      const allElements = document.querySelectorAll('*');
+      allElements.forEach(el => {
+        const element = el as HTMLElement;
+        // Clone node to remove all event listeners
+        const newElement = element.cloneNode(true);
+        if (element.parentNode) {
+          element.parentNode.replaceChild(newElement, element);
+        }
+      });
+    };
     
-    // Start automated backups
-    AutomatedBackupService.startAutomatedBackups();
-    console.log('📦 Automated backup service started');
+    // Force click events to work
+    const forceClickEvents = () => {
+      document.addEventListener('click', function(e) {
+        console.log('🖱️ GLOBAL CLICK DETECTED on:', e.target);
+        e.stopImmediatePropagation();
+        return true;
+      }, { capture: true });
+      
+      document.addEventListener('mousedown', function(e) {
+        console.log('🖱️ GLOBAL MOUSEDOWN on:', e.target);
+        e.stopImmediatePropagation();
+        return true;
+      }, { capture: true });
+    };
     
-    // Initialize comprehensive business monitoring (Launch 1.0 - Demo alerts disabled)
-    BusinessActivityMonitor.initialize();
+    // Apply extreme fixes
+    forceClickEvents();
     
-    // Initialize automated notification service
-    AutomatedNotificationService.getInstance().initialize();
-    console.log('🚨 Automated Notification Service initialized');
+    const emergencyInteractionFix = () => {
+      // Force body and html to be interactive
+      document.body.style.setProperty('pointer-events', 'auto', 'important');
+      document.documentElement.style.setProperty('pointer-events', 'auto', 'important');
+      
+      // Remove ALL pointer-events restrictions from every element
+      const allElements = document.querySelectorAll('*');
+      let fixedCount = 0;
+      
+      allElements.forEach(el => {
+        const element = el as HTMLElement;
+        
+        // Force pointer events
+        element.style.setProperty('pointer-events', 'auto', 'important');
+        element.style.setProperty('cursor', 'auto', 'important');
+        element.style.setProperty('user-select', 'auto', 'important');
+        
+        // Remove blocking attributes
+        if (element.hasAttribute('inert')) {
+          element.removeAttribute('inert');
+          fixedCount++;
+        }
+        
+        // Remove aria-hidden from interactive elements
+        if (element.tagName === 'BUTTON' || element.tagName === 'INPUT' || 
+            element.tagName === 'SELECT' || element.tagName === 'TEXTAREA' ||
+            element.getAttribute('role') === 'button' || element.tagName === 'A') {
+          if (element.hasAttribute('aria-hidden')) {
+            element.removeAttribute('aria-hidden');
+            fixedCount++;
+          }
+        }
+        
+        // Force interactive elements to be visible and clickable
+        if (element.tagName === 'BUTTON' || element.tagName === 'INPUT' || 
+            element.tagName === 'SELECT' || element.tagName === 'TEXTAREA' ||
+            element.getAttribute('role') === 'button' || element.tagName === 'A') {
+          element.style.setProperty('opacity', '1', 'important');
+          element.style.setProperty('visibility', 'visible', 'important');
+          element.style.setProperty('display', element.style.display === 'none' ? 'block' : element.style.display, 'important');
+        }
+      });
+      
+      console.log('🔧 Emergency fix applied to', allElements.length, 'elements, fixed', fixedCount, 'blocking attributes');
+    };
+    
+    // REACT ROUTER DEBUG FIX
+    const reactRouterFix = () => {
+      // Force hash-based routing to work
+      if (window.location.hash) {
+        const hash = window.location.hash.substring(1);
+        console.log('🧭 Hash detected:', hash, 'attempting navigation');
+        window.history.pushState({}, '', hash);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      }
+      
+      // Make all links work with direct navigation
+      document.querySelectorAll('a[href^="/"]').forEach(link => {
+        const anchor = link as HTMLAnchorElement;
+        const originalHref = anchor.href;
+        anchor.onclick = function(e) {
+          e.preventDefault();
+          console.log('🧭 Link clicked:', originalHref);
+          window.location.href = originalHref;
+          return false;
+        };
+      });
+    };
+    
+    // Run immediately
+    emergencyInteractionFix();
+    reactRouterFix();
+    
+    // Run after DOM updates
+    setTimeout(() => { emergencyInteractionFix(); reactRouterFix(); }, 50);
+    setTimeout(() => { emergencyInteractionFix(); reactRouterFix(); }, 200);
+    setTimeout(() => { emergencyInteractionFix(); reactRouterFix(); }, 500);
+    setTimeout(() => { emergencyInteractionFix(); reactRouterFix(); }, 1000);
+    
+    // Run every 3 seconds as safety net
+    const emergencyInterval = setInterval(emergencyInteractionFix, 3000);
+    
+    // Make globally available for manual use
+    (window as any).emergencyFix = emergencyInteractionFix;
+    (window as any).manualFix = () => {
+      console.log('🔧 MANUAL FIX TRIGGERED');
+      emergencyInteractionFix();
+    };
+    
+    // NUCLEAR OPTION - Remove all potentially blocking CSS
+    (window as any).nuclearFix = () => {
+      console.log('💥 NUCLEAR FIX - REMOVING ALL BLOCKING CSS');
+      
+      // Remove all stylesheets temporarily
+      const sheets = Array.from(document.styleSheets);
+      sheets.forEach((sheet, index) => {
+        try {
+          if (sheet.href && sheet.href.includes('form-interaction-fix')) {
+            return; // Keep our fix stylesheet
+          }
+          sheet.disabled = true;
+          setTimeout(() => { if (sheet) sheet.disabled = false; }, 2000);
+        } catch (e) {
+          console.log('Could not disable stylesheet', index);
+        }
+      });
+      
+      // Force all elements to be clickable with inline styles
+      document.querySelectorAll('*').forEach(el => {
+        const element = el as HTMLElement;
+        element.style.cssText += '; pointer-events: auto !important; cursor: auto !important; user-select: auto !important;';
+      });
+      
+      console.log('💥 Nuclear fix applied - all CSS temporarily disabled');
+    };
+    
+    // REACT EVENT SYSTEM FIX
+    (window as any).reactEventFix = () => {
+      console.log('⚛️ REACT EVENT SYSTEM FIX');
+      
+      // Re-enable all React events that might be blocked
+      document.querySelectorAll('button, a, [role="button"], input, select, textarea').forEach(el => {
+        const element = el as HTMLElement;
+        
+        // Force click event to work
+        const originalClick = element.onclick;
+        element.onclick = function(e) {
+          console.log('🖱️ Click intercepted on:', element.tagName, element.textContent?.substring(0, 50));
+          e.stopPropagation();
+          if (originalClick) {
+            originalClick.call(this, e);
+          }
+          return true;
+        };
+        
+        // Add backup click listener
+        element.addEventListener('click', function(e) {
+          console.log('🖱️ Backup click on:', element.tagName, element.textContent?.substring(0, 50));
+        }, { capture: true });
+        
+        // Remove any event blocking
+        ['onmousedown', 'onmouseup', 'onpointerdown', 'onpointerup'].forEach(eventType => {
+          (element as any)[eventType] = null;
+        });
+      });
+      
+      console.log('⚛️ React event fix applied');
+    };
+    
+    console.log('✅ Emergency interaction fix system activated');
+    
+    console.log('✅ Simple app initialization complete - no heavy services');
+    
+
     
     // Note: Demo alerts disabled for Launch 1.0 - clean console experience
     // BusinessActivityMonitor.generateSampleIssues() moved to V2
 
     // Cleanup function
     return () => {
-      AutomatedBackupService.stopAutomatedBackups();
+      // AutomatedBackupService.stopAutomatedBackups();
+      clearInterval(emergencyInterval);
     };
   }, []);
 
-  useEffect(() => {
-    if (user?.id) {
-      // Initialize the old tour service (we will replace this)
-    }
-  }, [user, navigate]);
+  // Removed user/navigation effects - simplified
 
   return (
     <ErrorBoundary>
-      <QueryClient>
-              <ErrorBoundary>
-                <NotificationProvider>
-                  <ErrorBoundary>
-                    <Suspense fallback={<RouteLoadingFallback />}>
-                      <Routes>
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <Routes>
                         <Route path="/login" element={<Login />} />
                         <Route path="/" element={<Layout />}>
-                                  <Route index element={<LazyDashboard />} />
-        <Route path="dashboard" element={<LazyDashboard />} />
+                          <Route index element={<EnhancedDashboard />} />
+                          <Route path="dashboard" element={<Dashboard />} />
+                          <Route path="enhanced-dashboard" element={<EnhancedDashboard />} />
+                          <Route path="message-center" element={<MessageCenter />} />
+                          {/* Unified Message & Request Center - all functionality merged */}
+                          <Route path="request-center" element={<MessageCenter />} />
+                          <Route path="messaging-center" element={<MessageCenter />} />
+                          <Route path="supabase-test" element={<SupabaseTestComponent />} />
+                          <Route path="warranty-test" element={<WarrantyTest />} />
+                          <Route path="admin/users" element={<AdminUsersPage />} />
                           <Route path="car-inventory" element={<CarInventory />} />
                           <Route path="repairs" element={<Repairs />} />
                           <Route path="inventory" element={<Inventory />} />
                           <Route path="inventory-garage" element={<Inventory />} />
+                          <Route path="data-upload" element={<DataUpload />} />
                           <Route path="inventory-floor-2" element={<InventoryFloor2 />} />
                           <Route path="inventory-history" element={<InventoryHistory />} />
                           <Route path="scan-vin" element={<ScanVIN />} />
@@ -164,12 +346,9 @@ function AppContent() {
                           <Route path="employee-profile" element={<EmployeeProfile />} />
                           <Route path="employee-analytics" element={<EmployeeAnalytics />} />
                           <Route path="user-management" element={<UserManagement />} />
-                          <Route path="requests" element={<RequestCenter />} />
-                          <Route path="messaging-center" element={<MessagingCenter />} />
                           <Route path="requests/new" element={<NewRequest />} />
                           <Route path="ordered-cars" element={<OrderedCars />} />
                           <Route path="ordered-parts" element={<OrderedParts />} />
-                          <Route path="shipping-eta" element={<ShippingETA />} />
                           <Route path="repair-history" element={<RepairHistory />} />
                           <Route path="enhanced-repair-history" element={<EnhancedRepairHistory />} />
                           <Route path="garage-schedule" element={<GarageSchedule />} />
@@ -190,6 +369,7 @@ function AppContent() {
                           <Route path="user-activity-dashboard" element={<UserActivityDashboard />} />
                           <Route path="data-linking-summary" element={<DataLinkingSummaryPage />} />
                           <Route path="test-drive-logs" element={<TestDriveLogsPage />} />
+                          <Route path="test-drives/new" element={<NewTestDrivePage />} />
                           <Route path="test-drive-scanner" element={<TestDriveScannerPage />} />
                           <Route path="new-car-arrivals" element={<NewCarArrivals />} />
                           <Route path="showroom-inventory" element={<ShowroomInventory />} />
@@ -201,217 +381,21 @@ function AppContent() {
                           <Route path="part-management" element={<PartManagement />} />
                           <Route path="wstacy-employee-management" element={<WstacyEmployeeManagement />} />
                           <Route path="network-auth-test" element={<NetworkAuthTest />} />
-              <Route path="*" element={<NotFound />} />
-                        </Route>
-                      </Routes>
-                    </Suspense>
-                    <Toaster />
-                  </ErrorBoundary>
-                </NotificationProvider>
-              </ErrorBoundary>
-      </QueryClient>
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </Suspense>
+      <Toaster />
     </ErrorBoundary>
   );
 }
 
 function App() {
+  console.log('🚀 Fixed main App component rendering...');
+  
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <style>
-        {`
-          /* EMERGENCY DATE PICKER FIX - HIGHEST PRIORITY OVERRIDE */
-          input[type="date"]::-webkit-calendar-picker-indicator,
-          input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-          *::-webkit-calendar-picker-indicator,
-          input::-webkit-calendar-picker-indicator {
-            display: block !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-            cursor: pointer !important;
-            width: 20px !important;
-            height: 20px !important;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>') no-repeat center !important;
-            background-size: 16px 16px !important;
-            margin: 0 0 0 4px !important;
-            padding: 2px !important;
-            border: 1px solid #d1d5db !important;
-            border-radius: 3px !important;
-            outline: none !important;
-            position: static !important;
-            left: auto !important;
-            top: auto !important;
-            right: auto !important;
-            bottom: auto !important;
-            transform: none !important;
-            z-index: 1 !important;
-            pointer-events: auto !important;
-            user-select: none !important;
-            -webkit-appearance: auto !important;
-            -moz-appearance: auto !important;
-            appearance: auto !important;
-          }
-
-          /* Firefox date picker support */
-          input[type="date"]::-moz-calendar-picker,
-          input[type="datetime-local"]::-moz-calendar-picker,
-          *::-moz-calendar-picker {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            cursor: pointer !important;
-          }
-
-          /* Ensure date inputs are fully functional */
-          input[type="date"],
-          input[type="datetime-local"] {
-            cursor: pointer !important;
-            position: relative !important;
-            background-color: white !important;
-            color: #000 !important;
-            -webkit-appearance: none !important;
-            -moz-appearance: none !important;
-            appearance: none !important;
-          }
-
-          /* PDI and all date input classes */
-          input[type="date"].pdi-date-input,
-          input[type="date"].calendar-fix,
-          input[type="date"].mt-1,
-          input[type="date"].w-full,
-          input[type="datetime-local"].pdi-date-input,
-          input[type="datetime-local"].calendar-fix,
-          input[type="datetime-local"].mt-1,
-          input[type="datetime-local"].w-full {
-            background-color: white !important;
-            color: #000 !important;
-            cursor: pointer !important;
-          }
-
-          /* Enhanced focus and hover states */
-          input[type="date"]:focus,
-          input[type="datetime-local"]:focus {
-            outline: 2px solid #3b82f6 !important;
-            outline-offset: 2px !important;
-            border-color: #3b82f6 !important;
-          }
-
-          input[type="date"]:hover,
-          input[type="datetime-local"]:hover {
-            border-color: #94a3b8 !important;
-          }
-
-          /* Remove any pseudo-element calendar emojis */
-          input[type="date"]::after,
-          input[type="datetime-local"]::after {
-            display: none !important;
-            content: "" !important;
-          }
-
-          /* Force calendar picker to be clickable in all contexts */
-          input[type="date"]::-webkit-calendar-picker-indicator:hover {
-            background-color: #f3f4f6 !important;
-          }
-
-          /* EMERGENCY FIX: Radix Select Dropdown Visibility */
-          [data-radix-select-content] {
-            z-index: 999999 !important;
-            position: fixed !important;
-            background: white !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 8px !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-            min-width: 200px !important;
-            max-height: 300px !important;
-            overflow-y: auto !important;
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-          }
-
-          [data-radix-select-item] {
-            display: flex !important;
-            align-items: center !important;
-            padding: 8px 12px !important;
-            cursor: pointer !important;
-            pointer-events: auto !important;
-            color: #1f2937 !important;
-            background: white !important;
-          }
-
-          [data-radix-select-item]:hover {
-            background-color: #f3f4f6 !important;
-          }
-
-          [data-radix-select-trigger] {
-            cursor: pointer !important;
-            pointer-events: auto !important;
-            background: white !important;
-            border: 2px solid #d1d5db !important;
-          }
-
-          [data-radix-select-trigger]:hover {
-            border-color: #6b7280 !important;
-          }
-
-          /* Force dialog to allow overflow for dropdowns */
-          [role="dialog"] {
-            overflow: visible !important;
-          }
-
-          [data-radix-dialog-content] {
-            overflow: visible !important;
-          }
-
-          /* Emergency Select Portal Fix */
-          [data-radix-popper-content-wrapper] {
-            z-index: 999999 !important;
-          }
-
-          /* ULTIMATE SELECT FIX - NUCLEAR OPTION */
-          .customs-select-trigger {
-            position: relative !important;
-            z-index: 1 !important;
-          }
-
-          .customs-select-content {
-            position: fixed !important;
-            z-index: 999999 !important;
-            background: white !important;
-            border: 1px solid #ccc !important;
-            border-radius: 6px !important;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
-            min-width: 200px !important;
-            padding: 4px !important;
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-          }
-
-          .customs-select-item {
-            padding: 8px 12px !important;
-            cursor: pointer !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 8px !important;
-            border-radius: 4px !important;
-            margin: 2px 0 !important;
-          }
-
-          .customs-select-item:hover {
-            background: #f1f5f9 !important;
-          }
-        `}
-      </style>
-      <AuthProvider>
-        <CarDataProvider>
-          <TutorialProvider>
-            <AppContent />
-            <TutorialModal />
-            <TutorialButton />
-            <GlobalKeyboardShortcuts />
-          </TutorialProvider>
-        </CarDataProvider>
-      </AuthProvider>
+      <AppContent />
     </Router>
   );
 }

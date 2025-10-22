@@ -1,0 +1,200 @@
+/* Form Interaction Fix - Ensures all forms and dialogs are interactable */
+
+/* Force all form elements to be interactive */
+form, 
+form *,
+input,
+select,
+textarea,
+button,
+[role="button"],
+[data-radix-dialog-content],
+[data-radix-dialog-content] *,
+[role="dialog"],
+[role="dialog"] * {
+  pointer-events: auto !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+  -ms-user-select: auto !important;
+}
+
+/* Remove any blocking overlays that aren't supposed to be there */
+body > div[style*="pointer-events: none"]:not([data-radix-dialog-overlay]):not([data-overlay]):not(.sidebar-overlay) {
+  display: none !important;
+}
+
+/* Ensure dialog overlays don't block their own content */
+[data-radix-dialog-overlay] {
+  pointer-events: auto !important;
+  z-index: 1000000 !important;
+}
+
+[data-radix-dialog-content] {
+  pointer-events: auto !important;
+  z-index: 1000001 !important;
+  position: relative !important;
+}
+
+/* Fix for any elements with aria-hidden but still need to be interactive */
+[aria-hidden="true"] form,
+[aria-hidden="true"] input,
+[aria-hidden="true"] select,
+[aria-hidden="true"] textarea,
+[aria-hidden="true"] button,
+[aria-hidden="true"] [role="button"] {
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Prevent body scroll lock from affecting form interaction */
+body[data-scroll-locked],
+body[style*="overflow: hidden"],
+html[style*="overflow: hidden"] {
+  pointer-events: auto !important;
+}
+
+body[data-scroll-locked] form,
+body[data-scroll-locked] input,
+body[data-scroll-locked] select,
+body[data-scroll-locked] textarea,
+body[data-scroll-locked] button {
+  pointer-events: auto !important;
+}
+
+/* Fix for React portals and modal roots */
+#modals-root,
+#modals-root *,
+[data-portal],
+[data-portal] * {
+  pointer-events: auto !important;
+}
+
+/* Ensure dropdowns and selects work */
+[data-radix-select-content],
+[data-radix-popover-content],
+[data-radix-dropdown-menu-content] {
+  pointer-events: auto !important;
+  z-index: 1000002 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix for any transform or filter that might interfere - NO BLUR EVER */
+html,
+body,
+#root,
+* {
+  transform: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* EMERGENCY FIX - MAKE EVERYTHING CLICKABLE */
+*,
+*::before,
+*::after,
+html,
+body,
+#root,
+div,
+button,
+input,
+select,
+textarea,
+a,
+[role="button"],
+.pointer-events-none,
+[style*="pointer-events: none"] {
+  pointer-events: auto !important;
+  cursor: auto !important;
+}
+
+/* Force all interactive elements to be clickable */
+button,
+[role="button"],
+input,
+select,
+textarea,
+a {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+}
+
+/* Exception: only actual overlay backgrounds should block pointer events */
+[data-radix-dialog-overlay]:not([data-radix-dialog-content]),
+.overlay-background:not(form):not(input):not(select):not(textarea):not(button) {
+  pointer-events: auto;
+}
+
+/* But their children (the actual content) should be interactive */
+[data-radix-dialog-overlay] > *,
+.overlay-background > * {
+  pointer-events: auto !important;
+}
+
+/* Fix for any inert attributes */
+[inert] form,
+[inert] input,
+[inert] select,
+[inert] textarea,
+[inert] button {
+  pointer-events: auto !important;
+}
+
+/* Cursor fixes for interactive elements */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+input:not(:disabled),
+select:not(:disabled),
+textarea:not(:disabled) {
+  cursor: pointer !important;
+}
+
+input:not(:disabled),
+select:not(:disabled),
+textarea:not(:disabled) {
+  cursor: text !important;
+}
+
+/* Force visibility for hidden but interactive elements */
+[style*="visibility: hidden"] form,
+[style*="visibility: hidden"] input,
+[style*="visibility: hidden"] select,
+[style*="visibility: hidden"] textarea,
+[style*="visibility: hidden"] button {
+  visibility: visible !important;
+}
+
+/* Fix for opacity issues */
+[style*="opacity: 0"] form,
+[style*="opacity: 0"] input,
+[style*="opacity: 0"] select,
+[style*="opacity: 0"] textarea,
+[style*="opacity: 0"] button {
+  opacity: 1 !important;
+}
+
+/* Ensure proper z-index stacking */
+form {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Fix for mobile touch events */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea {
+    touch-action: manipulation !important;
+    -webkit-touch-callout: default !important;
+    -webkit-user-select: auto !important;
+  }
+}

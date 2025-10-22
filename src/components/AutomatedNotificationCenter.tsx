@@ -29,6 +29,7 @@ import {
 import { ComprehensiveNotificationService } from '@/services/comprehensiveNotificationService';
 import { AutomatedNotificationService } from '@/services/automatedNotificationService';
 import { toast } from '@/hooks/use-toast';
+import '@/styles/notification-centers-fix.css';
 
 interface AutomatedNotificationCenterProps {
   isOpen: boolean;
@@ -113,7 +114,7 @@ const AutomatedNotificationCenter: React.FC<AutomatedNotificationCenterProps> = 
       case 'inventory': return <Package className="w-4 h-4" />;
       case 'financial': return <DollarSign className="w-4 h-4" />;
       case 'system': return <Settings className="w-4 h-4" />;
-      case 'schedule': return <Calendar className="w-4 h-4" />;
+      case 'schedule': return <Clock className="w-4 h-4" />;
       case 'shipment': return <Truck className="w-4 h-4" />;
       case 'customer': return <Users className="w-4 h-4" />;
       case 'workflow': return <Zap className="w-4 h-4" />;
@@ -191,7 +192,7 @@ const AutomatedNotificationCenter: React.FC<AutomatedNotificationCenterProps> = 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden automated-notification-dialog notification-dialog-final-fix" style={{backgroundColor: '#ffffff', zIndex: 99999}}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bell className="w-5 h-5" />

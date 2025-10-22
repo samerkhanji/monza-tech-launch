@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
@@ -23,7 +24,7 @@ interface AddPartDialogProps {
   onAddPart: (part: Omit<InventoryItem, 'id' | 'lastUpdated'>) => void;
   onIncrementPart?: (partNumber: string, quantity: number) => void;
   existingParts?: InventoryItem[];
-  floor: 'Floor 1' | 'Floor 2' | 'Garage';
+  floor: 'Floor 1' | 'Floor 2' | 'Garage' | 'Parts Inventory';
 }
 
 const AddPartDialog: React.FC<AddPartDialogProps> = ({
@@ -55,7 +56,7 @@ const AddPartDialog: React.FC<AddPartDialogProps> = ({
     room: '',
     supplier: 'DF',
     vehicleType: 'EV' as VehicleType,
-    category: floor === 'Garage' ? 'part' : 'accessory' as 'part' | 'accessory',
+    category: (floor === 'Garage' || floor === 'Parts Inventory') ? 'part' : 'accessory' as 'part' | 'accessory',
     vin: '',
     pdiStatus: 'pending' as InventoryItem['pdiStatus'],
     pdiNotes: '',
@@ -152,7 +153,7 @@ const AddPartDialog: React.FC<AddPartDialogProps> = ({
         },
         supplier: selectedOrderedPart.supplier,
         vehicleType: formData.vehicleType,
-        category: selectedOrderedPart.category === 'voyah' ? 'part' : 'part',
+        category: selectedOrderedPart.category === 'ev_erev' ? 'part' : 'part',
         vin: formData.vin,
         pdiStatus: formData.pdiStatus,
         pdiNotes: formData.pdiNotes,
@@ -173,6 +174,45 @@ const AddPartDialog: React.FC<AddPartDialogProps> = ({
     onClose();
   };
 
+  const handleOrderNewPart = () => {
+    if (!formData.partName || !formData.partNumber || !formData.supplier || !formData.quantity) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields (Part Name, Part Number, Supplier, Quantity)",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Create new order
+    const newOrder: OrderedPart = {
+      id: Date.now().toString(),
+      part_name: formData.partName,
+      part_number: formData.partNumber,
+      quantity: formData.quantity,
+      supplier: formData.supplier,
+      order_reference: `ORD-${Date.now().toString().slice(-6)}`,
+      order_date: new Date().toISOString(),
+      status: 'ordered',
+      category: formData.vehicleType === 'EV' || formData.vehicleType === 'REV' ? 'ev_erev' : 'normal_engine',
+      notes: formData.pdiNotes,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    // Save to localStorage
+    const existingOrders = JSON.parse(localStorage.getItem('orderedParts') || '[]');
+    localStorage.setItem('orderedParts', JSON.stringify([...existingOrders, newOrder]));
+
+    toast({
+      title: "Order Created",
+      description: `Order for ${formData.partName} (${formData.partNumber}) has been created successfully.`,
+    });
+
+    resetForm();
+    onClose();
+  };
+
   const resetForm = () => {
     setFormData({
       carModel: '',
@@ -185,7 +225,7 @@ const AddPartDialog: React.FC<AddPartDialogProps> = ({
       room: '',
       supplier: 'DF',
       vehicleType: 'EV',
-      category: floor === 'Garage' ? 'part' : 'accessory',
+      category: (floor === 'Garage' || floor === 'Parts Inventory') ? 'part' : 'accessory',
       vin: '',
       pdiStatus: 'pending',
       pdiNotes: '',
@@ -742,7 +782,8 @@ const AddPartDialog: React.FC<AddPartDialogProps> = ({
   const roomsByFloor = {
     'Floor 1': ['Display Storage', 'Customer Area', 'Waiting Room Storage'],
     'Floor 2': ['Premium Display', 'Executive Storage', 'VIP Lounge Storage'],
-    'Garage': ['Engine Parts Room', 'Maintenance Bay', 'Accessories Room', 'Tool Storage', 'Waste Management']
+    'Garage': ['Engine Parts Room', 'Maintenance Bay', 'Accessories Room', 'Tool Storage', 'Waste Management'],
+    'Parts Inventory': ['Main Warehouse', 'Parts Storage', 'Inventory Room', 'Stock Area', 'Distribution Center']
   };
 
   return (
@@ -758,7 +799,7 @@ const AddPartDialog: React.FC<AddPartDialogProps> = ({
         </DialogHeader>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="manual" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Manual Entry
@@ -770,6 +811,10 @@ const AddPartDialog: React.FC<AddPartDialogProps> = ({
             <TabsTrigger value="ordered" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               From Orders ({orderedParts.length})
+            </TabsTrigger>
+            <TabsTrigger value="order" className="flex items-center gap-2">
+              <Search className="h-4 w-4" />
+              Order New Part
             </TabsTrigger>
           </TabsList>
 
@@ -791,11 +836,12 @@ const AddPartDialog: React.FC<AddPartDialogProps> = ({
                   <Label htmlFor="vehicleType">Vehicle Type</Label>
                   <select
                     id="vehicleType"
-                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2"
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     value={formData.vehicleType}
                     onChange={(e) => handleInputChange('vehicleType', e.target.value)}
                     required
                   >
+                    <option value="">Select vehicle type</option>
                     <option value="EV">Electric Vehicle (EV)</option>
                     <option value="REV">Range Extended EV (REV)</option>
                     <option value="ICEV">Internal Combustion (ICEV)</option>
@@ -844,13 +890,19 @@ const AddPartDialog: React.FC<AddPartDialogProps> = ({
                   <Label htmlFor="supplier">Supplier</Label>
                   <select
                     id="supplier"
-                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2"
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     value={formData.supplier}
                     onChange={(e) => handleInputChange('supplier', e.target.value)}
                     required
                   >
+                    <option value="">Select supplier</option>
                     <option value="DF">Dong Feng (DF)</option>
                     <option value="AZ">AutoZone (AZ)</option>
+                    <option value="BMW">BMW Parts</option>
+                    <option value="TESLA">Tesla Parts</option>
+                    <option value="BYD">BYD Parts</option>
+                    <option value="MERCEDES">Mercedes Parts</option>
+                    <option value="GENERIC">Generic Parts</option>
                   </select>
                 </div>
               </div>
@@ -860,7 +912,7 @@ const AddPartDialog: React.FC<AddPartDialogProps> = ({
                   <Label htmlFor="room">Room</Label>
                   <select
                     id="room"
-                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2"
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     value={formData.room}
                     onChange={(e) => handleInputChange('room', e.target.value)}
                   >
@@ -1174,7 +1226,7 @@ const AddPartDialog: React.FC<AddPartDialogProps> = ({
                         <Label htmlFor="room">Storage Room</Label>
                         <select
                           id="room"
-                          className="w-full h-10 rounded-md border border-input bg-background px-3 py-2"
+                          className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           value={formData.room}
                           onChange={(e) => handleInputChange('room', e.target.value)}
                         >
@@ -1228,6 +1280,143 @@ const AddPartDialog: React.FC<AddPartDialogProps> = ({
                 )}
               </>
             )}
+          </TabsContent>
+
+          <TabsContent value="order" className="space-y-4">
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-medium text-blue-900 mb-2">Order New Part</h3>
+                <p className="text-sm text-blue-700">
+                  Order parts that are not currently in inventory. This will create a new order that can be tracked.
+                </p>
+              </div>
+
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                handleOrderNewPart();
+              }} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="orderPartName">Part Name *</Label>
+                    <Input
+                      id="orderPartName"
+                      value={formData.partName}
+                      onChange={(e) => handleInputChange('partName', e.target.value)}
+                      placeholder="e.g., Air Filter, Brake Pads"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="orderPartNumber">Part Number *</Label>
+                    <Input
+                      id="orderPartNumber"
+                      value={formData.partNumber}
+                      onChange={(e) => handleInputChange('partNumber', e.target.value)}
+                      placeholder="e.g., VF-2024-AF-001"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="orderCarModel">Compatible Car Model</Label>
+                    <Input
+                      id="orderCarModel"
+                      value={formData.carModel}
+                      onChange={(e) => handleInputChange('carModel', e.target.value)}
+                      placeholder="e.g., Tesla Model 3, Voyah Dream"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="orderVehicleType">Vehicle Type</Label>
+                    <select
+                      id="orderVehicleType"
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={formData.vehicleType}
+                      onChange={(e) => handleInputChange('vehicleType', e.target.value)}
+                    >
+                      <option value="">Select vehicle type</option>
+                      <option value="EV">Electric Vehicle (EV)</option>
+                      <option value="REV">Range Extended EV (REV)</option>
+                      <option value="ICEV">Internal Combustion (ICEV)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="orderQuantity">Quantity *</Label>
+                    <Input
+                      id="orderQuantity"
+                      type="number"
+                      min="1"
+                      value={formData.quantity}
+                      onChange={(e) => handleInputChange('quantity', parseInt(e.target.value))}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="orderSupplier">Supplier *</Label>
+                    <select
+                      id="orderSupplier"
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={formData.supplier}
+                      onChange={(e) => handleInputChange('supplier', e.target.value)}
+                      required
+                    >
+                      <option value="">Select supplier</option>
+                      <option value="DF">Dong Feng (DF)</option>
+                      <option value="AZ">AutoZone (AZ)</option>
+                      <option value="BMW">BMW Parts</option>
+                      <option value="TESLA">Tesla Parts</option>
+                      <option value="BYD">BYD Parts</option>
+                      <option value="MERCEDES">Mercedes Parts</option>
+                      <option value="GENERIC">Generic Parts</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="orderCategory">Category</Label>
+                    <select
+                      id="orderCategory"
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={formData.category}
+                      onChange={(e) => handleInputChange('category', e.target.value)}
+                    >
+                      <option value="">Select category</option>
+                      <option value="part">Engine Part</option>
+                      <option value="accessory">Accessory</option>
+                      <option value="tool">Tool</option>
+                      <option value="consumable">Consumable</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="orderNotes">Order Notes</Label>
+                  <Textarea
+                    id="orderNotes"
+                    value={formData.pdiNotes}
+                    onChange={(e) => handleInputChange('pdiNotes', e.target.value)}
+                    placeholder="Additional notes about the order, urgency, special requirements..."
+                    rows={3}
+                  />
+                </div>
+
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={onClose}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                    Create Order
+                  </Button>
+                </DialogFooter>
+              </form>
+            </div>
           </TabsContent>
         </Tabs>
       </DialogContent>

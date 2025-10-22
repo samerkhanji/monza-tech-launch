@@ -1,17 +1,20 @@
-/* PDI CHECKLIST SCROLLBAR FIX */
+/* PDI CHECKLIST SCROLLBAR FIX - ENHANCED VERSION */
 
-/* Enhanced scrollbar for PDI dialogs */
+/* Enhanced scrollbar for PDI dialogs and all PDI-related content */
 .pdi-scroll-container {
   scrollbar-width: thin !important;
   scrollbar-color: #ffd700 #f1f5f9 !important;
   overflow-y: auto !important;
-  overflow-x: hidden !important;
+  overflow-x: auto !important;
   scrollbar-gutter: stable !important;
+  max-height: calc(100vh - 200px) !important;
+  width: 100% !important;
 }
 
 /* Force scrollbar to always show on webkit browsers */
 .pdi-scroll-container::-webkit-scrollbar {
   width: 16px !important;
+  height: 16px !important;
   display: block !important;
   background: #f1f5f9 !important;
   border-radius: 0 !important;
@@ -30,6 +33,7 @@
   border: 2px solid #f1f5f9 !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
   min-height: 40px !important;
+  min-width: 40px !important;
 }
 
 .pdi-scroll-container::-webkit-scrollbar-thumb:hover {
@@ -49,6 +53,8 @@
 /* Ensure content has proper spacing for scrollbar */
 .pdi-scroll-container .w-\[1100px\] {
   margin-right: 8px !important;
+  margin-bottom: 8px !important;
+  min-width: 1100px !important;
 }
 
 /* Smooth scrolling */
@@ -60,11 +66,13 @@
 @media (max-width: 768px) {
   .pdi-scroll-container::-webkit-scrollbar {
     width: 12px !important;
+    height: 12px !important;
   }
   
   .pdi-scroll-container .w-\[1100px\] {
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 800px !important;
     margin-right: 4px !important;
   }
 }
@@ -90,15 +98,88 @@
 
 /* PDI Dialog specific improvements */
 [data-radix-dialog-content] .pdi-scroll-container {
-  max-height: calc(95vh - 140px) !important;
-  padding: 1rem !important;
+  max-height: calc(90vh - 200px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding-right: 8px !important;
+}
+
+/* PDI Checklist Dialog specific styling */
+.pdi-checklist-dialog .pdi-scroll-container {
+  max-height: 400px !important;
+  height: 400px !important;
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+  padding: 16px !important;
+  margin: 8px 0 !important;
+  border: 2px solid #e5e7eb !important;
+  position: relative !important;
+  display: block !important;
+  min-height: 400px !important;
+  scrollbar-width: auto !important;
+  scrollbar-gutter: stable !important;
+}
+
+
+
+/* Ensure PDI checklist content flows properly */
+.pdi-checklist-dialog .pdi-scroll-container > div {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Fix for PDI checklist form elements */
+.pdi-checklist-dialog .pdi-scroll-container input,
+.pdi-checklist-dialog .pdi-scroll-container select,
+.pdi-checklist-dialog .pdi-scroll-container textarea {
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}
+
+/* Ensure PDI checklist grid layouts work properly */
+.pdi-checklist-dialog .pdi-scroll-container .grid {
+  gap: 16px !important;
+}
+
+/* Force scrollbar to always be visible in PDI checklist */
+.pdi-checklist-dialog .pdi-scroll-container::-webkit-scrollbar {
+  width: 20px !important;
+  display: block !important;
+  background: #f3f4f6 !important;
+}
+
+.pdi-checklist-dialog .pdi-scroll-container::-webkit-scrollbar-track {
+  background: #f3f4f6 !important;
+  border-radius: 10px !important;
+  margin: 4px !important;
+}
+
+.pdi-checklist-dialog .pdi-scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ffd700, #ffed4a) !important;
+  border-radius: 10px !important;
+  border: 3px solid #f3f4f6 !important;
+  min-height: 50px !important;
+}
+
+.pdi-checklist-dialog .pdi-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ffed4a, #ffd700) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Ensure content is tall enough to scroll */
+.pdi-checklist-dialog .pdi-scroll-container > div {
+  min-height: 600px !important;
 }
 
 /* Ensure PDI content is properly contained */
 .pdi-content-wrapper {
   width: 100% !important;
   max-width: 100% !important;
-  overflow-x: hidden !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
 }
 
 /* Fix for PDI form width on smaller screens */
@@ -106,13 +187,13 @@
   .pdi-content-wrapper .w-\[1100px\] {
     width: 100% !important;
     max-width: 100% !important;
-    min-width: auto !important;
+    min-width: 900px !important;
   }
   
   .pdi-form-container {
     width: 100% !important;
     max-width: 100% !important;
-    min-width: auto !important;
+    min-width: 900px !important;
     margin: 0 auto !important;
   }
 }
@@ -121,6 +202,8 @@
 .pdi-form-container {
   max-width: 100% !important;
   overflow-x: auto !important;
+  overflow-y: auto !important;
+  width: 100% !important;
 }
 
 /* Improve PDI form responsiveness */
@@ -128,15 +211,143 @@
   .pdi-form-container {
     padding: 1rem !important;
     font-size: 12px !important;
+    min-width: 700px !important;
   }
   
   .pdi-form-container table {
     font-size: 11px !important;
+    min-width: 700px !important;
   }
   
   .pdi-form-container input,
   .pdi-form-container select {
     font-size: 11px !important;
     padding: 4px !important;
+  }
+}
+
+/* Global PDI scrollbar fixes for all PDI-related components */
+.pdi-scroll-container-dialog {
+  max-width: 95vw !important;
+  max-height: 95vh !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* Fix for PDI dialogs in Showroom Floor 1 and 2 */
+.pdi-view-dialog .pdi-scroll-container {
+  max-height: calc(90vh - 120px) !important;
+  width: 100% !important;
+}
+
+/* Fix for PDI checklist dialog */
+.pdi-checklist-dialog .pdi-scroll-container {
+  max-height: calc(90vh - 100px) !important;
+  width: 100% !important;
+}
+
+/* Ensure PDI forms are scrollable on all screen sizes */
+.pdi-form-container table {
+  min-width: 1100px !important;
+  width: 100% !important;
+}
+
+/* Fix for PDI signature areas */
+.pdi-signature-area {
+  overflow: visible !important;
+  position: relative !important;
+}
+
+/* Ensure PDI buttons are always visible */
+.pdi-action-buttons {
+  position: sticky !important;
+  top: 0 !important;
+  background: white !important;
+  z-index: 10 !important;
+  padding: 1rem 0 !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Fix for PDI print layout */
+@media print {
+  .pdi-scroll-container {
+    overflow: visible !important;
+    max-height: none !important;
+    width: 100% !important;
+  }
+  
+  .pdi-form-container {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: auto !important;
+  }
+  
+  .pdi-form-container table {
+    min-width: auto !important;
+    width: 100% !important;
+  }
+}
+
+/* Enhanced scrollbar for all PDI-related content areas */
+.pdi-related-content {
+  scrollbar-width: thin !important;
+  scrollbar-color: #ffd700 #f1f5f9 !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+}
+
+.pdi-related-content::-webkit-scrollbar {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.pdi-related-content::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 6px !important;
+}
+
+.pdi-related-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ffd700, #ffed4a) !important;
+  border-radius: 6px !important;
+  border: 1px solid #f1f5f9 !important;
+}
+
+.pdi-related-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ffed4a, #ffd700) !important;
+}
+
+/* Fix for PDI content in modals and dialogs */
+[data-radix-dialog-content] .pdi-content {
+  max-height: calc(100vh - 200px) !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  width: 100% !important;
+}
+
+/* Ensure PDI tables are properly scrollable */
+.pdi-table-container {
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  max-height: calc(100vh - 300px) !important;
+  width: 100% !important;
+}
+
+.pdi-table-container table {
+  min-width: 1100px !important;
+  width: 100% !important;
+}
+
+/* Fix for PDI form inputs on mobile */
+@media (max-width: 640px) {
+  .pdi-form-container input,
+  .pdi-form-container select,
+  .pdi-form-container textarea {
+    font-size: 14px !important;
+    padding: 8px !important;
+  }
+  
+  .pdi-form-container table {
+    font-size: 12px !important;
+    min-width: 600px !important;
   }
 } 

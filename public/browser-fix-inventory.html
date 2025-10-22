@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Fix - Car Inventory</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-bottom: 30px; text-align: center; }
+        .code-block {
+            background: #1e1e1e;
+            color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .warning {
+            background: #fff3e0;
+            border-color: #ff9800;
+            color: #e65100;
+        }
+        .success {
+            background: #e8f5e8;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛠️ Fix Car Inventory Display (Browser Method)</h1>
+        
+        <div class="step warning">
+            <strong>⚠️ Issue Detected</strong><br>
+            Permission restrictions are preventing the terminal script from working.<br>
+            Let's use a browser-based approach instead.
+        </div>
+
+        <div class="step">
+            <strong>📋 Step 1: Open Car Inventory Page</strong><br>
+            1. Open a new tab: <strong>http://localhost:5173/car-inventory</strong><br>
+            2. Keep this tab open alongside that page
+        </div>
+
+        <div class="step">
+            <strong>🔧 Step 2: Open Browser Console</strong><br>
+            On the Car Inventory page:
+            <ul>
+                <li>Press <strong>F12</strong> (or right-click → Inspect)</li>
+                <li>Click the <strong>Console</strong> tab</li>
+                <li>You should see the browser console</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <strong>⚡ Step 3: Run Fix Script</strong><br>
+            Copy and paste this entire script into the console and press Enter:
+        </div>
+
+        <div class="code-block">
+// Fix Car Inventory Display - Paste this in console
+(async function fixCarInventory() {
+  console.log('🚗 Fixing Car Inventory Display...');
+  
+  // Check if supabase is available
+  if (typeof window.supabase === 'undefined') {
+    // Try to get supabase from the app
+    const appSupabase = window.supabase;
+    if (!appSupabase) {
+      console.error('❌ Supabase not available. Make sure you\'re on the Car Inventory page.');
+      return;
+    }
+  }
+  
+  try {
+    // Use the app's existing supabase connection
+    const { supabase } = await import('/src/integrations/supabase/client.ts');
+    
+    console.log('🔍 Checking tables...');
+    
+    // Check current state
+    const { data: carsData, error: carsError } = await supabase
+      .from('cars')
+      .select('*');
+      
+    const { data: inventoryData, error: inventoryError } = await supabase
+      .from('car_inventory')
+      .select('*');
+    
+    const carsCount = carsData?.length || 0;
+    const inventoryCount = inventoryData?.length || 0;
+    
+    console.log(`📊 cars table: ${carsCount} records`);
+    console.log(`📦 car_inventory table: ${inventoryCount} records`);
+    
+    if (inventoryCount === 0) {
+      console.log('❌ No data in car_inventory. Please upload stock data first.');
+      return;
+    }
+    
+    if (carsCount > 0) {
+      console.log('✅ cars table has data. Try refreshing the page.');
+      return;
+    }
+    
+    console.log('🔄 Copying data from car_inventory to cars...');
+    
+    // Transform and copy data
+    const transformedData = inventoryData.map(item => ({
+      vin_number: item.vin,
+      brand: 'Voyah',
+      model: item.model,
+      year: item.model_year,
+      color: item.color,
+      category: item.vehicle_type === 'EV' ? 'EV' : 'REV',
+      status: item.status === 'Available' ? 'in_stock' : 
+             item.status === 'Sold' ? 'sold' : 'reserved',
+      current_location: item.status === 'Available' ? 'Inventory' : 'Delivered',
+      selling_price: item.selling_price || 50000,
+      battery_percentage: 100,
+      range_km: 520,
+      notes: [
+        item.notes,
+        item.client_name ? `Client: ${item.client_name}` : null,
+        item.delivery_date ? `Delivery: ${item.delivery_date}` : null
+      ].filter(Boolean).join(' | ') || null
+    }));
+    
+    console.log(`📤 Uploading ${transformedData.length} vehicles...`);
+    
+    // Insert data in smaller batches
+    const batchSize = 10;
+    let successCount = 0;
+    
+    for (let i = 0; i < transformedData.length; i += batchSize) {
+      const batch = transformedData.slice(i, i + batchSize);
+      
+      try {
+        const { error } = await supabase
+          .from('cars')
+          .insert(batch);
+          
+        if (error) {
+          console.log(`❌ Batch ${i/batchSize + 1} error:`, error.message);
+        } else {
+          successCount += batch.length;
+          console.log(`✅ Batch ${i/batchSize + 1} uploaded (${batch.length} vehicles)`);
+        }
+      } catch (e) {
+        console.log(`❌ Batch ${i/batchSize + 1} failed:`, e.message);
+      }
+    }
+    
+    console.log(`🎉 Fix completed! ${successCount} vehicles uploaded.`);
+    console.log('🔄 Refreshing page in 3 seconds...');
+    
+    setTimeout(() => {
+      window.location.reload();
+    }, 3000);
+    
+  } catch (error) {
+    console.error('❌ Fix failed:', error);
+    console.log('💡 Try refreshing the page and running the script again.');
+  }
+})();
+        </div>
+
+        <div class="step success">
+            <strong>✅ After Running the Script</strong><br>
+            The page should automatically refresh and show your vehicles.<br>
+            If it doesn't work, try refreshing manually.
+        </div>
+
+        <div class="step">
+            <strong>🚀 Alternative: Simple Page Refresh</strong><br>
+            Sometimes the data is already there and just needs a refresh.<br>
+            <button onclick="window.open('http://localhost:5173/car-inventory', '_blank')">Open Car Inventory</button>
+        </div>
+
+        <div class="step">
+            <strong>🆘 If Nothing Works</strong><br>
+            1. Check if you're logged into the app<br>
+            2. Make sure the development server is running<br>
+            3. Try accessing other pages to verify the app is working<br>
+            4. Clear browser cache and try again
+        </div>
+    </div>
+
+    <script>
+        console.log('🛠️ Car Inventory Fix Tool Loaded');
+        console.log('Follow the steps above to fix your inventory display');
+    </script>
+</body>
+</html>

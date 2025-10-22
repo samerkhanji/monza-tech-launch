@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// Use native select here for stability inside dialog
 
 import { Car } from '../types';
 
@@ -31,23 +31,32 @@ const EditCarDialog: React.FC<EditCarDialogProps> = ({
 
   useEffect(() => {
     // Initialize form state with car data when dialog opens
-    setEditValues({
-      color: car.color || '',
-      notes: car.notes || '',
-      category: car.category || 'EV',
-      batteryPercentage: car.batteryPercentage || undefined,
-      status: car.status || 'in_stock',
+    if (car && isOpen) {
+      console.log('🔍 EditCarDialog: Populating form with car data:', car);
+      setEditValues({
+        color: car.color || '',
+        notes: car.notes || '',
+        category: car.category || 'EV',
+        batteryPercentage: car.batteryPercentage || undefined,
 
-      brand: car.brand || '',
-      customModelName: car.customModelName || '',
+        brand: car.brand || '',
+        customModelName: car.customModelName || '',
 
-      sellingPrice: car.sellingPrice || undefined,
-      model: car.model || '',
-      year: car.year || undefined,
-      customerRequirements: car.customerRequirements || '',
-      shipmentCode: car.shipmentCode || '',
-    });
-  }, [car]);
+        sellingPrice: car.sellingPrice || undefined,
+        model: car.model || '',
+        year: car.year || undefined,
+        customerRequirements: car.customerRequirements || '',
+        shipmentCode: car.shipmentCode || '',
+        vinNumber: car.vinNumber || '',
+        interiorColor: (car as any).interiorColor || (car as any).interior_color || '',
+        range: (car as any).range || undefined,
+        kmDriven: (car as any).kmDriven || (car as any).mileage || undefined,
+      });
+    } else {
+      // Clear form when dialog closes
+      setEditValues({});
+    }
+  }, [car, isOpen]);
 
   const handleInputChange = (field: keyof Partial<Car>, value: any) => {
     setEditValues(prev => ({ ...prev, [field]: value }));
@@ -71,6 +80,10 @@ const EditCarDialog: React.FC<EditCarDialogProps> = ({
             <Label htmlFor="brand" className="text-right">Brand</Label>
             <Input id="brand" value={editValues.brand || ''} onChange={(e) => handleInputChange('brand', e.target.value)} className="col-span-3" />
           </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="vinNumber" className="text-right">VIN</Label>
+            <Input id="vinNumber" value={editValues.vinNumber || ''} onChange={(e) => handleInputChange('vinNumber' as any, e.target.value)} className="col-span-3 font-mono" />
+          </div>
            <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="model" className="text-right">Model</Label>
             <Input id="model" value={editValues.model || ''} onChange={(e) => handleInputChange('model', e.target.value)} className="col-span-3" />
@@ -83,37 +96,37 @@ const EditCarDialog: React.FC<EditCarDialogProps> = ({
             <Label htmlFor="color" className="text-right">Color</Label>
             <Input id="color" value={editValues.color || ''} onChange={(e) => handleInputChange('color', e.target.value)} className="col-span-3" />
           </div>
-           <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="interiorColor" className="text-right">Color interior</Label>
+            <Input id="interiorColor" value={(editValues as any).interiorColor || ''} onChange={(e) => setEditValues(prev => ({ ...prev, interiorColor: e.target.value }))} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="category" className="text-right">Category</Label>
-            <Select value={editValues.category || 'EV'} onValueChange={(value: 'EV' | 'REV' | 'ICEV' | 'Other') => handleInputChange('category', value)}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="EV">EV</SelectItem>
-                  <SelectItem value="REV">REV</SelectItem>
-                  <SelectItem value="ICEV">ICEV</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+            <select
+              id="category"
+              value={(editValues.category as any) || 'EV'}
+              onChange={(e) => handleInputChange('category', e.target.value as any)}
+              className="col-span-3 h-10 rounded-none border border-input bg-background px-3 py-2"
+            >
+              <option value="EV">EV</option>
+              <option value="REV">REV</option>
+              <option value="ICEV">ICEV</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
            <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="batteryPercentage" className="text-right">Battery %</Label>
             <Input id="batteryPercentage" type="number" min="0" max="100" value={editValues.batteryPercentage || ''} onChange={(e) => handleInputChange('batteryPercentage', parseInt(e.target.value) || undefined)} className="col-span-3" />
           </div>
-           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="status" className="text-right">Status</Label>
-             <Select value={editValues.status || 'in_stock'} onValueChange={(value: 'in_stock' | 'sold' | 'reserved') => handleInputChange('status', value)}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="in_stock">In Stock</SelectItem>
-                  <SelectItem value="sold">Sold</SelectItem>
-                  <SelectItem value="reserved">Reserved</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="range" className="text-right">Range Capacity (km)</Label>
+            <Input id="range" type="number" value={(editValues as any).range || ''} onChange={(e) => setEditValues(prev => ({ ...prev, range: parseInt(e.target.value) || undefined }))} className="col-span-3" />
           </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="kmDriven" className="text-right">Km Driven</Label>
+            <Input id="kmDriven" type="number" value={(editValues as any).kmDriven || ''} onChange={(e) => setEditValues(prev => ({ ...prev, kmDriven: parseInt(e.target.value) || undefined }))} className="col-span-3" />
+          </div>
+
            
 
            
@@ -132,22 +145,6 @@ const EditCarDialog: React.FC<EditCarDialogProps> = ({
                 placeholder="Enter shipment code"
                 className="flex-1"
               />
-              {editValues.shipmentCode && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (editValues.shipmentCode) {
-                      window.open(`/shipping-eta?track=${encodeURIComponent(editValues.shipmentCode)}`, '_blank');
-                    }
-                  }}
-                  className="px-3"
-                  title="Track Shipment"
-                >
-                  Track
-                </Button>
-              )}
             </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">

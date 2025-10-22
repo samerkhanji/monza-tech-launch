@@ -4,36 +4,72 @@
    COMPREHENSIVE CALENDAR & DATE PICKER FIXES
    ======================================== */
 
+/* Business Event Dialog - Calendar Fix */
+.dialog-content-wrapper {
+  overflow: visible !important;
+}
+
+.business-event-dialog {
+  overflow: visible !important;
+}
+
+.business-event-dialog .dialog-content-wrapper {
+  overflow: visible !important;
+}
+
+/* Custom DateTime Input - Calendar Popup Fix */
+.custom-datetime-input {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.custom-datetime-input .calendar-popup {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  background: white !important;
+  border: 2px solid #d1d5db !important;
+  border-radius: 0 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  padding: 16px !important;
+  margin-top: 8px !important;
+  min-width: 300px !important;
+  max-height: 400px !important;
+  overflow-y: auto !important;
+}
+
 /* Base calendar widget styling */
 .react-day-picker,
 .rdp,
 .calendar-widget,
 .date-picker-popup,
-[class*="calendar"],
-[class*="date-picker"],
-[data-radix-calendar],
-[data-radix-popper-content-wrapper] {
+.calendar-component,
+.date-picker-component,
+.calendar-radix,
+.popper-content-wrapper {
   z-index: 1050 !important;
   background: white !important;
   position: relative !important;
   border: 1px solid #e2e8f0 !important;
-  border-radius: 8px !important;
+  border-radius: 0 !important;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
   padding: 16px !important;
   margin: 4px !important;
 }
 
 /* Calendar within dialogs - special handling */
-[data-radix-dialog-content] .react-day-picker,
-[data-radix-dialog-content] .rdp,
-[data-radix-dialog-content] .calendar-widget,
-[data-radix-dialog-content] [class*="calendar"] {
+.dialog-content-wrapper .react-day-picker,
+.dialog-content-wrapper .rdp,
+.dialog-content-wrapper .calendar-widget,
+.dialog-content-wrapper .calendar-component {
   z-index: 1060 !important;
   background: white !important;
   position: relative !important;
   overflow: visible !important;
-  border: 2px solid var(--monza-yellow) !important;
-  border-radius: 8px !important;
+  border: 2px solid #ffd700 !important;
+  border-radius: 0 !important;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
   padding: 16px !important;
   margin: 8px 0 !important;
@@ -42,29 +78,29 @@
 /* Calendar selected day styling */
 .react-day-picker .rdp-day_selected,
 .rdp-day_selected {
-  background-color: var(--monza-yellow) !important;
-  color: var(--monza-black) !important;
+  background-color: #ffd700 !important;
+  color: #111111 !important;
   font-weight: bold !important;
-  border-radius: 6px !important;
+  border-radius: 0 !important;
 }
 
 /* Calendar today styling */
 .react-day-picker .rdp-day_today,
 .rdp-day_today {
   background-color: rgba(255, 215, 0, 0.2) !important;
-  color: var(--monza-black) !important;
+  color: #111111 !important;
   font-weight: bold !important;
-  border: 2px solid var(--monza-yellow) !important;
-  border-radius: 6px !important;
+  border: 2px solid #ffd700 !important;
+  border-radius: 0 !important;
 }
 
 /* Calendar navigation buttons */
 .react-day-picker .rdp-nav_button,
 .rdp-nav_button {
-  background: var(--monza-yellow) !important;
-  color: var(--monza-black) !important;
+  background: #ffd700 !important;
+  color: #111111 !important;
   border: none !important;
-  border-radius: 6px !important;
+  border-radius: 0 !important;
   width: 32px !important;
   height: 32px !important;
   display: flex !important;
@@ -74,9 +110,9 @@
   transition: all 0.2s ease !important;
 }
 
-.react-day-picker .rdp-nav_button:hover,
-.rdp-nav_button:hover {
-  background: var(--monza-yellow-darker) !important;
+.react-day-picker .rdp-nav_button.hover,
+.rdp-nav_button.hover {
+  background: #e6c200 !important;
   transform: scale(1.05) !important;
 }
 
@@ -89,10 +125,10 @@
   font-weight: 500 !important;
 }
 
-.react-day-picker .rdp-day:hover,
-.rdp-day:hover {
+.react-day-picker .rdp-day.hover,
+.rdp-day.hover {
   background-color: rgba(255, 215, 0, 0.1) !important;
-  color: var(--monza-black) !important;
+  color: #111111 !important;
 }
 
 /* Calendar header */
@@ -100,7 +136,7 @@
 .rdp-caption {
   font-weight: bold !important;
   font-size: 16px !important;
-  color: var(--monza-black) !important;
+  color: #111111 !important;
   margin-bottom: 16px !important;
 }
 
@@ -109,15 +145,156 @@
    ======================================== */
 
 /* Universal Dialog Fixes for Better Sizing and Scrolling */
-[data-radix-dialog-content] {
+.dialog-content-wrapper {
   max-width: min(95vw, 1200px) !important;
   width: 95vw !important;
   max-height: 95vh !important;
   overflow: hidden !important;
 }
 
+/* Customs Dialog Specific Fix - Single Scrollbar */
+.customs-dialog-content {
+  overflow: hidden !important;
+}
+
+.customs-dialog-content .flex-1 {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #cbd5e1 #f1f5f9 !important;
+}
+
+.customs-dialog-content .flex-1::-webkit-scrollbar {
+  width: 8px !important;
+  display: block !important;
+}
+
+.customs-dialog-content .flex-1::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 4px !important;
+}
+
+.customs-dialog-content .flex-1::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-radius: 4px !important;
+}
+
+.customs-dialog-content .flex-1::-webkit-scrollbar-thumb.hover {
+  background: #94a3b8 !important;
+}
+
+/* Hide all other scrollbars in customs dialog */
+.customs-dialog-content .non-scrollable::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+}
+
+.customs-dialog-content .non-scrollable {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* Remove scrollbars from button containers in customs form */
+.customs-dialog-content .flex.items-center.gap-3,
+.customs-dialog-content .flex.items-center.gap-2 {
+  overflow: visible !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.customs-dialog-content .flex.items-center.gap-3::-webkit-scrollbar,
+.customs-dialog-content .flex.items-center.gap-2::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Remove scrollbars from all button containers and buttons in customs form */
+.customs-dialog-content button,
+.customs-dialog-content .flex.items-center,
+.customs-dialog-content .flex.gap-2,
+.customs-dialog-content .flex.gap-3 {
+  overflow: visible !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.customs-dialog-content button::-webkit-scrollbar,
+.customs-dialog-content .flex.items-center::-webkit-scrollbar,
+.customs-dialog-content .flex.gap-2::-webkit-scrollbar,
+.customs-dialog-content .flex.gap-3::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Remove scrollbars from Car Details View - keep only main scrollbar */
+.car-details-root,
+.car-details-root .content-element,
+.car-details-root .space-y-6,
+.car-details-root .grid,
+.car-details-root .flex,
+.car-details-root .rounded-2xl,
+.car-details-root .border,
+.car-details-root .bg-white,
+.car-details-root .shadow-sm,
+.car-details-root .p-6,
+.car-details-root .p-4,
+.car-details-root .min-h-screen,
+.car-details-root .h-380px,
+.car-details-root .auto-rows-1fr,
+.car-details-root .auto-rows-minmax {
+  overflow: visible !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.car-details-root::-webkit-scrollbar,
+.car-details-root .scrollable-content::-webkit-scrollbar,
+.car-details-root .space-y-6::-webkit-scrollbar,
+.car-details-root .grid::-webkit-scrollbar,
+.car-details-root .flex::-webkit-scrollbar,
+.car-details-root .rounded-2xl::-webkit-scrollbar,
+.car-details-root .border::-webkit-scrollbar,
+.car-details-root .bg-white::-webkit-scrollbar,
+.car-details-root .shadow-sm::-webkit-scrollbar,
+.car-details-root .p-6::-webkit-scrollbar,
+.car-details-root .p-4::-webkit-scrollbar,
+.car-details-root .min-h-screen::-webkit-scrollbar,
+.car-details-root .h-380px::-webkit-scrollbar,
+.car-details-root .auto-rows-1fr::-webkit-scrollbar,
+.car-details-root .auto-rows-minmax::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Nuclear option: Remove ALL scrollbars from car details view */
+.car-details-root,
+.car-details-root .content-element {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  overflow: visible !important;
+}
+
+.car-details-root::-webkit-scrollbar,
+.car-details-root .scrollable-content::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* Ensure main page scrollbar remains visible */
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar,
+html::-webkit-scrollbar {
+  display: block !important;
+  width: 14px !important;
+}
+
 /* Make dialog headers sticky */
-[data-radix-dialog-content] > div:first-child {
+.dialog-content-wrapper > div.dialog-header {
   position: sticky !important;
   top: 0 !important;
   background: white !important;
@@ -128,35 +305,83 @@
 }
 
 /* Make dialog content scrollable */
-[data-radix-dialog-content] > div:not(:first-child) {
+.dialog-content-wrapper > div.dialog-content {
   overflow-y: auto !important;
-  max-height: calc(95vh - 120px) !important;
+  max-height: 85vh !important;
   padding: 0.25rem !important;
   padding-bottom: 1rem !important;
 }
 
 /* Custom scrollbar styling */
-[data-radix-dialog-content] *::-webkit-scrollbar {
+.dialog-content-wrapper .scrollable-content::-webkit-scrollbar {
   width: 8px;
 }
 
-[data-radix-dialog-content] *::-webkit-scrollbar-track {
+.dialog-content-wrapper .scrollable-content::-webkit-scrollbar-track {
   background: #f1f5f9;
   border-radius: 4px;
 }
 
-[data-radix-dialog-content] *::-webkit-scrollbar-thumb {
+.dialog-content-wrapper .scrollable-content::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
 }
 
-[data-radix-dialog-content] *::-webkit-scrollbar-thumb:hover {
+.dialog-content-wrapper .scrollable-content::-webkit-scrollbar-thumb.hover {
   background: #94a3b8;
 }
 
 /* ========================================
    FORM & INPUT OPTIMIZATIONS
    ======================================== */
+
+/* PDI shared utilities */
+.input {
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 6px !important;
+  border: 1px solid #d1d5db !important;
+  background-color: white !important;
+  padding: 0 12px !important;
+  font-size: 15px !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  outline: none !important;
+}
+.input.focus {
+  outline: 2px solid #fbbf24 !important;
+  border-color: #fbbf24 !important;
+}
+.checkbox {
+  height: 20px !important;
+  width: 20px !important;
+  border-radius: 4px !important;
+  border: 1px solid #d1d5db !important;
+  color: #7c3aed !important;
+  cursor: pointer !important;
+}
+.checkbox.focus {
+  outline: 2px solid #9333ea !important;
+}
+.radio {
+  height: 16px !important;
+  width: 16px !important;
+  color: #7c3aed !important;
+  border: 1px solid #d1d5db !important;
+  cursor: pointer !important;
+}
+.radio.focus {
+  outline: 2px solid #9333ea !important;
+}
+
+/* Make date pickers clickable but don’t overlay a second icon */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  opacity: 1; cursor: pointer; margin-left: 6px;
+}
+
+/* Avoid accidental overlay elements catching clicks */
+label { cursor: default; }
+label > .input, label input, label textarea { cursor: text; }
 
 /* Date input optimizations */
 input[type="date"] {
@@ -185,7 +410,7 @@ input[type="date"]::-webkit-outer-spin-button {
 }
 
 /* Enhanced focus state for better usability */
-input[type="date"]:focus {
+input[type="date"].focus {
   outline: 2px solid #3b82f6 !important;
   outline-offset: 2px !important;
   border-color: #3b82f6 !important;
@@ -197,22 +422,22 @@ input[type="date"]:focus {
 
 /* Mobile responsive improvements */
 @media (max-width: 768px) {
-  [data-radix-dialog-content] {
+  .dialog-content-wrapper {
     max-width: 98vw !important;
     width: 98vw !important;
     max-height: 98vh !important;
     margin: 1vh auto !important;
   }
   
-  [data-radix-dialog-content] > div:not(:first-child) {
-    max-height: calc(98vh - 100px) !important;
+  .dialog-content-wrapper > div.dialog-content {
+    max-height: 88vh !important;
   }
 
   /* Mobile calendar improvements */
   .react-day-picker,
   .rdp,
-  [data-radix-dialog-content] .react-day-picker,
-  [data-radix-dialog-content] .rdp {
+  .dialog-content-wrapper .react-day-picker,
+  .dialog-content-wrapper .rdp {
     padding: 12px !important;
     margin: 4px 0 !important;
     font-size: 14px !important;

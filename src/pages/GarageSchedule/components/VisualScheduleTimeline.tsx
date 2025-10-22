@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+// import { supabase } from '@/integrations/supabase/client';
 import { CarWaitingService } from '../utils/CarWaitingService';
 import { CarWorkflowService, CarAttentionItem } from '@/services/carWorkflowService';
 import { PartsInventoryService } from '@/services/partsInventoryService';
@@ -17,6 +17,7 @@ import { RepairHistoryService } from '@/services/repairHistoryService';
 import { RealCarDataService, RealCarData } from '@/services/realCarDataService';
 import { GarageCostTrackingService } from '@/services/garageCostTrackingService';
 import { toolsEquipmentService, Tool } from '@/services/toolsEquipmentService';
+import { CarInventoryService } from '@/services/carInventoryService';
 // V2 FEATURE - Manual Cost Entry (hidden for Launch 1.0)
 // import ManualCostEntryDialog from './ManualCostEntryDialog';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -31,7 +32,6 @@ import {
   AlertTriangle,
   User,
   MapPin,
-  Calendar,
   Timer,
   Bell,
   RefreshCw,
@@ -51,6 +51,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { OwnerNotificationService } from '@/services/ownerNotificationService';
+import { CarMovementReason } from '@/types/purposeReason';
 
 interface TimeSlot {
   hour: string;
@@ -128,11 +129,13 @@ interface WaitingCar {
 interface VisualScheduleTimelineProps {
   date: string;
   onScheduleUpdate: (schedule: any) => void;
+  onWorkflowComplete?: (car: any) => void;
 }
 
 export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
   date,
-  onScheduleUpdate
+  onScheduleUpdate,
+  onWorkflowComplete
 }) => {
   const { toast } = useToast();
   const { addNotification } = useNotifications();
@@ -175,8 +178,8 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
   // Determine if today is Saturday and adjust hours accordingly
   const isSaturday = new Date(date).getDay() === 6;
   const workHours = isSaturday 
-    ? ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00'] // Saturday: 8AM-2PM
-    : ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00']; // Regular: 8AM-4PM
+            ? ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00'] // Saturday: 9AM-2PM
+        : ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00']; // Regular: 9AM-5PM
 
   // Initialize time slots
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(() => 
@@ -254,16 +257,20 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
     }
   }, [date]);
 
-  // Save schedule to localStorage
+  // Save schedule to localStorage (debounced to prevent infinite loops)
   useEffect(() => {
-    const scheduleData = {
-      date,
-      timeSlots,
-      lastUpdated: new Date().toISOString()
-    };
-    localStorage.setItem(`garage_schedule_${date}`, JSON.stringify(scheduleData));
-    onScheduleUpdate(scheduleData);
-  }, [timeSlots, date, onScheduleUpdate]);
+    const timeoutId = setTimeout(() => {
+      const scheduleData = {
+        date,
+        timeSlots,
+        lastUpdated: new Date().toISOString()
+      };
+      localStorage.setItem(`garage_schedule_${date}`, JSON.stringify(scheduleData));
+      onScheduleUpdate(scheduleData);
+    }, 1000); // Debounce for 1 second
+
+    return () => clearTimeout(timeoutId);
+  }, [timeSlots, date]); // Removed onScheduleUpdate from dependencies
 
   // Real-time clock and overrun detection
   useEffect(() => {
@@ -286,19 +293,6 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
   // Check for reminders on load
   useEffect(() => {
     checkForReminders();
-    
-    // Show instruction for new features
-    const hasShownPauseInstruction = localStorage.getItem('pause_instruction_shown');
-    if (!hasShownPauseInstruction) {
-      setTimeout(() => {
-        toast({
-          title: "🚀 Database Integration Active!",
-          description: "Real car data with pricing, sales status, and precise timing tracking. Toggle 'Database Cars' to use live data.",
-          variant: "destructive"
-        });
-        localStorage.setItem('pause_instruction_shown', 'true');
-      }, 2000);
-    }
   }, []);
 
   function formatTimeDisplay(hour: string): string {
@@ -546,6 +540,32 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
 
     if (!targetCar) return;
 
+    // Import the garage schedule history service
+    const { GarageScheduleHistoryService } = await import('@/services/garageScheduleHistoryService');
+
+    // Record the status change in repair history
+    GarageScheduleHistoryService.recordStatusChange(
+      targetCar.id,
+      targetCar.carCode,
+      targetCar.carModel,
+      targetCar.customerName,
+      targetCar.status,
+      newStatus,
+      targetCar.assignedMechanic || 'Garage Mechanic',
+      `Status changed from ${targetCar.status} to ${newStatus}`,
+      {
+        partsUsed: targetCar.partsNeeded ? [targetCar.partsNeeded.partName] : [],
+        toolsUsed: targetCar.assignedTools?.map(tool => tool.toolName) || [],
+        workNotes: targetCar.notes,
+        issueDescription: `Work type: ${targetCar.workType}`,
+        estimatedDuration: targetCar.estimatedDuration,
+        actualDuration: targetCar.actualDuration,
+        priority: targetCar.priority,
+        assignedMechanic: targetCar.assignedMechanic,
+        location: 'garage_repair'
+      }
+    );
+
     // Handle real car database updates first if needed
     if (newStatus === 'completed' && targetCar.realCarId) {
       try {
@@ -658,17 +678,29 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
               'delivery_lot',
               'in_progress',
               'completed',
-              'Repair completed',
+              CarMovementReason.REPAIR,
               car.assignedMechanic || 'Garage Mechanic'
             );
             
-            // Add completion to repair history
-            RepairHistoryService.updateRepairStatus(
+            // Record completion in repair history
+            GarageScheduleHistoryService.recordCompletion(
               car.id,
-              'completed',
+              car.carCode,
+              car.carModel,
+              car.customerName,
+              car.status,
+              car.assignedMechanic || 'Garage Mechanic',
+              `Repair completed successfully`,
               {
-                actualHours: parseInt(car.estimatedDuration.replace('h', '')) || 2,
-                completionDate: new Date().toISOString()
+                partsUsed: car.partsNeeded ? [car.partsNeeded.partName] : [],
+                toolsUsed: car.assignedTools?.map(tool => tool.toolName) || [],
+                workNotes: car.notes,
+                issueDescription: `Completed ${car.workType} work`,
+                estimatedDuration: car.estimatedDuration,
+                actualDuration: updatedCar.actualDuration,
+                priority: car.priority,
+                assignedMechanic: car.assignedMechanic,
+                location: 'garage_repair'
               }
             );
           } else if (newStatus === 'in_progress') {
@@ -679,7 +711,7 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
               'garage_repair',
               'scheduled',
               'in_progress',
-              'Work started',
+              CarMovementReason.REPAIR,
               car.assignedMechanic || 'Garage Mechanic'
             );
           }
@@ -690,10 +722,10 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
       })
     })));
 
-    // Refresh real data if needed
-    if (targetCar.realCarId && showRealData) {
-      setTimeout(() => loadRealCarData(), 1000);
-    }
+    // Refresh real data if needed (disabled)
+    // if (targetCar.realCarId && showRealData) {
+    //   setTimeout(() => loadRealCarData(), 1000);
+    // }
   }
 
 
@@ -711,7 +743,7 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
     setShowPauseDialog(true);
   }
 
-  function handlePauseSubmit() {
+  async function handlePauseSubmit() {
     if (!selectedCarForPause || !pauseReason.trim()) {
       toast({
         title: "Missing Information",
@@ -720,6 +752,32 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
       });
       return;
     }
+
+    // Import the garage schedule history service
+    const { GarageScheduleHistoryService } = await import('@/services/garageScheduleHistoryService');
+
+    // Record the pause in repair history
+    GarageScheduleHistoryService.recordStatusChange(
+      selectedCarForPause.id,
+      selectedCarForPause.carCode,
+      selectedCarForPause.carModel,
+      selectedCarForPause.customerName,
+      selectedCarForPause.status,
+      'paused',
+      'Garage Manager',
+      `Work paused: ${pauseReason}`,
+      {
+        partsUsed: selectedCarForPause.partsNeeded ? [selectedCarForPause.partsNeeded.partName] : [],
+        toolsUsed: selectedCarForPause.assignedTools?.map(tool => tool.toolName) || [],
+        workNotes: selectedCarForPause.notes,
+        issueDescription: `Work type: ${selectedCarForPause.workType}`,
+        estimatedDuration: selectedCarForPause.estimatedDuration,
+        actualDuration: selectedCarForPause.actualDuration,
+        priority: selectedCarForPause.priority,
+        assignedMechanic: selectedCarForPause.assignedMechanic,
+        location: 'garage_repair'
+      }
+    );
 
     const pauseInfo = {
       reason: pauseReason,
@@ -746,7 +804,7 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
       'garage_repair',
       'in_progress',
       'paused',
-      `Work paused: ${pauseReason}`,
+      CarMovementReason.OTHER,
       'Garage Manager'
     );
 
@@ -760,7 +818,33 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
     });
   }
 
-  function handleResumeWork(car: ScheduledCar) {
+  async function handleResumeWork(car: ScheduledCar) {
+    // Import the garage schedule history service
+    const { GarageScheduleHistoryService } = await import('@/services/garageScheduleHistoryService');
+
+    // Record the resume in repair history
+    GarageScheduleHistoryService.recordStatusChange(
+      car.id,
+      car.carCode,
+      car.carModel,
+      car.customerName,
+      car.status,
+      'in_progress',
+      'Garage Manager',
+      `Work resumed after pause`,
+      {
+        partsUsed: car.partsNeeded ? [car.partsNeeded.partName] : [],
+        toolsUsed: car.assignedTools?.map(tool => tool.toolName) || [],
+        workNotes: car.notes,
+        issueDescription: `Work type: ${car.workType}`,
+        estimatedDuration: car.estimatedDuration,
+        actualDuration: car.actualDuration,
+        priority: car.priority,
+        assignedMechanic: car.assignedMechanic,
+        location: 'garage_repair'
+      }
+    );
+
     setTimeSlots(prev => prev.map(slot => ({
       ...slot,
       cars: slot.cars.map(c => 
@@ -778,7 +862,7 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
       'garage_repair',
       'paused',
       'in_progress',
-      'Work resumed after pause',
+      CarMovementReason.REPAIR,
       'Garage Manager'
     );
 
@@ -1329,27 +1413,27 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
         pricing: car.pricing
       };
 
-      // Update car status in database
-      try {
-        const { error } = await supabase
-          .from('cars')
-          .update({
-            garage_status: 'in_repair',
-            current_location: 'Garage',
-            notes: `Scheduled for repair at ${formatTimeDisplay(timeSlot)} - ${car.issue}`,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', realCarData.id);
+      // Update car status in database (disabled)
+      // try {
+      //   const { error } = await supabase
+      //     .from('cars')
+      //     .update({
+      //       garage_status: 'in_repair',
+      //       current_location: 'Garage',
+      //       notes: `Scheduled for repair at ${formatTimeDisplay(timeSlot)} - ${car.issue}`,
+      //       updated_at: new Date().toISOString()
+      //     })
+      //     .eq('id', realCarData.id);
 
-        if (error) throw error;
-      } catch (error) {
-        console.error('Error updating car status:', error);
-        toast({
-          title: "Database Update Failed",
-          description: "Car scheduled but database not updated",
-          variant: "destructive"
-        });
-      }
+      //   if (error) throw error;
+      // } catch (error) {
+      //   console.error('Error updating car status:', error);
+      //   toast({
+      //     title: "Database Update Failed",
+      //     description: "Car scheduled but database not updated",
+      //     variant: "destructive"
+      //   });
+      // }
 
     } else if (car.source === 'priority') {
       // Handle priority car
@@ -1375,7 +1459,7 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
         'garage_repair',
         'waiting_attention',
         'scheduled',
-        'Moved to garage schedule',
+        CarMovementReason.MOVED_TO_GARAGE,
         'Schedule Manager'
       );
     } else {
@@ -1405,43 +1489,33 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
         : slot
     ));
 
+    // Remove car from all inventory locations when moved to garage schedule
+    CarInventoryService.removeCarFromInventory(car.vinNumber, `Moved to garage schedule at ${formatTimeDisplay(timeSlot)}`);
+
     toast({
-      title: "Car Scheduled Successfully",
-      description: `${car.vinNumber.slice(-6)} scheduled for ${formatTimeDisplay(timeSlot)}${car.pricing ? ` • Value: $${car.pricing.sellingPrice?.toLocaleString()}` : ''}`,
-      variant: "destructive"
+      title: "Car Scheduled",
+      description: `${car.model} (${car.vinNumber.slice(-6)}) scheduled for ${formatTimeDisplay(timeSlot)}`,
     });
 
-    // Refresh the cars list
-    if (showRealData) {
-      loadRealCarData();
-    } else {
-      loadAllCarsNeedingAttention();
-    }
+    // Refresh the cars list (disabled real data loading)
+    loadAllCarsNeedingAttention();
   };
 
-  // Load car data on mount and when dependencies change
+  // Load car data on mount only (disabled real data loading)
   useEffect(() => {
     const loadData = async () => {
-      if (showRealData) {
-        await loadRealCarData();
-      } else {
-        loadAllCarsNeedingAttention();
-      }
+      // Disabled real data loading to prevent Supabase errors
+      loadAllCarsNeedingAttention();
     };
     
     loadData();
-  }, [showRealData]); // Removed timeSlots and waitingCars to prevent loops
+  }, []); // Only run on mount to prevent infinite loops
 
-  // Refresh real car data periodically
+  // Refresh real car data periodically (disabled)
   useEffect(() => {
-    if (!showRealData) return;
-
-    const interval = setInterval(() => {
-      loadRealCarData();
-    }, 60000); // Increased to 60 seconds to reduce load
-
-    return () => clearInterval(interval);
-  }, [showRealData]);
+    // Disabled periodic refresh to prevent Supabase errors
+    return () => {};
+  }, []); // Only run on mount
 
   // Check for workflow efficiency issues and send owner notifications
   const checkWorkflowEfficiencyIssues = useCallback((now: Date): void => {
@@ -1889,7 +1963,7 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
                   <div>
                     <Label>Work Type</Label>
                     <Select value={newCarForm.workType} onValueChange={(value: any) => setNewCarForm(prev => ({ ...prev, workType: value }))}>
-                      <SelectTrigger>
+                      <SelectTrigger id="workType">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1904,7 +1978,7 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
                   <div>
                     <Label>Time Slot</Label>
                     <Select value={selectedTimeSlot} onValueChange={setSelectedTimeSlot}>
-                      <SelectTrigger>
+                      <SelectTrigger id="timeSlot">
                         <SelectValue placeholder="Select time slot" />
                       </SelectTrigger>
                       <SelectContent>
@@ -2008,7 +2082,7 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
                 <div>
                   <Label>Urgency</Label>
                   <Select value={partsForm.urgency} onValueChange={(value: any) => setPartsForm(prev => ({ ...prev, urgency: value }))}>
-                    <SelectTrigger>
+                    <SelectTrigger id="urgency">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -2627,10 +2701,10 @@ export const VisualScheduleTimeline: React.FC<VisualScheduleTimelineProps> = ({
                                   <Button
                                     size="sm"
                                     className="h-9 px-4 text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
-                                    onClick={() => handleCarStatusUpdate(car.id, 'completed')}
+                                    onClick={() => onWorkflowComplete ? onWorkflowComplete(car) : handleCarStatusUpdate(car.id, 'completed')}
                                   >
                                     <CheckCircle className="h-4 w-4 mr-2" />
-                                    Complete
+                                    Complete Work
                                   </Button>
                                   <Button
                                     size="sm"

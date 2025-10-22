@@ -14,6 +14,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { UserPlus, FileText } from 'lucide-react';
+import { safeLocalStorageGet } from '@/utils/errorHandling';
 
 const formSchema = z.object({
   clientName: z.string().min(2, "Client name is required"),
@@ -42,7 +43,7 @@ const LeadSourceForm: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      const existingLeads = JSON.parse(localStorage.getItem('salesLeads') || '[]');
+      const existingLeads = safeLocalStorageGet<any[]>('salesLeads', []);
       const newLead = {
         id: Date.now().toString(),
         clientName: data.clientName,
@@ -98,7 +99,7 @@ const LeadSourceForm: React.FC = () => {
                   <FormItem>
                     <FormLabel className="text-monza-black">Client Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter client name" {...field} className="border-monza-grey/30 focus-visible:ring-monza-yellow" />
+                      <Input id="leadClientName" placeholder="Enter client name" {...field} className="border-monza-grey/30 focus-visible:ring-monza-yellow" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

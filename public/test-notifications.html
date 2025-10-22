@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Notifications - Monza TECH</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .btn {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: block;
+            width: 100%;
+        }
+        .btn:hover {
+            background: #26d0ce;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        .btn-danger {
+            background: #ff6b6b;
+        }
+        .btn-danger:hover {
+            background: #ff5252;
+        }
+        .form-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 14px;
+        }
+        .log {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .success {
+            background: rgba(40,167,69,0.2);
+            border: 2px solid #28a745;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .error {
+            background: rgba(220,53,69,0.2);
+            border: 2px solid #dc3545;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 Test Notification System</h1>
+        
+        <div class="form-group">
+            <label for="supabaseUrl">Supabase URL:</label>
+            <input type="text" id="supabaseUrl" placeholder="https://your-project.supabase.co">
+        </div>
+        
+        <div class="form-group">
+            <label for="supabaseKey">Supabase Anon Key:</label>
+            <input type="text" id="supabaseKey" placeholder="Your anon key">
+        </div>
+        
+        <div class="form-group">
+            <label for="userId">User ID (UUID):</label>
+            <input type="text" id="userId" placeholder="550e8400-e29b-41d4-a716-446655440000" value="550e8400-e29b-41d4-a716-446655440000">
+        </div>
+
+        <button class="btn" onclick="testConnection()">🔗 Test Supabase Connection</button>
+        
+        <h3>Quick Test Notifications:</h3>
+        
+        <button class="btn" onclick="createMessageNotification()">💬 Create Message Notification</button>
+        <button class="btn" onclick="createCarNotification()">🚗 Create Car Notification</button>
+        <button class="btn" onclick="createRequestNotification()">📝 Create Request Notification</button>
+        
+        <h3>Custom Notification:</h3>
+        
+        <div class="form-group">
+            <label for="notificationType">Type:</label>
+            <select id="notificationType">
+                <option value="message">Message</option>
+                <option value="car">Car</option>
+                <option value="request">Request</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="notificationTitle">Title:</label>
+            <input type="text" id="notificationTitle" placeholder="Notification title">
+        </div>
+        
+        <div class="form-group">
+            <label for="notificationBody">Body:</label>
+            <textarea id="notificationBody" rows="3" placeholder="Notification body text"></textarea>
+        </div>
+        
+        <button class="btn" onclick="createCustomNotification()">➕ Create Custom Notification</button>
+        
+        <h3>Management:</h3>
+        <button class="btn" onclick="loadNotifications()">📋 Load All Notifications</button>
+        <button class="btn btn-danger" onclick="clearAllNotifications()">🗑️ Clear All Test Notifications</button>
+
+        <div id="result"></div>
+        <div id="log" class="log" style="display: none;"></div>
+    </div>
+
+    <script>
+        let supabase = null;
+
+        function log(message) {
+            const logElement = document.getElementById('log');
+            logElement.style.display = 'block';
+            logElement.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('log').style.display = 'none';
+        }
+
+        function showResult(message, isError = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <div class="${isError ? 'error' : 'success'}">
+                    ${message}
+                </div>
+            `;
+        }
+
+        function initSupabase() {
+            const url = document.getElementById('supabaseUrl').value;
+            const key = document.getElementById('supabaseKey').value;
+            
+            if (!url || !key) {
+                showResult('Please enter Supabase URL and Key', true);
+                return false;
+            }
+            
+            try {
+                supabase = window.supabase.createClient(url, key);
+                return true;
+            } catch (error) {
+                showResult('Failed to initialize Supabase: ' + error.message, true);
+                return false;
+            }
+        }
+
+        async function testConnection() {
+            clearLog();
+            
+            if (!initSupabase()) return;
+            
+            try {
+                log('Testing Supabase connection...');
+                
+                // Test basic connection
+                const { data, error } = await supabase.from('notifications').select('count').limit(1);
+                
+                if (error) {
+                    log('Error: ' + error.message);
+                    showResult('Connection failed: ' + error.message, true);
+                } else {
+                    log('✅ Connection successful!');
+                    log('📊 Notifications table is accessible');
+                    showResult('✅ Supabase connection successful! Notifications table is ready.');
+                }
+            } catch (error) {
+                log('❌ Connection failed: ' + error.message);
+                showResult('Connection failed: ' + error.message, true);
+            }
+        }
+
+        async function createMessageNotification() {
+            clearLog();
+            
+            if (!initSupabase()) return;
+            
+            const userId = document.getElementById('userId').value;
+            if (!userId) {
+                showResult('Please enter a User ID', true);
+                return;
+            }
+            
+            try {
+                log('Creating message notification...');
+                
+                const { data, error } = await supabase.from('notifications').insert({
+                    type: 'message',
+                    title: 'New message from Khalil Mansour',
+                    body: 'The Voyah Free PDI inspection is complete. All systems are ready for customer delivery.',
+                    entity_id: 'chat-' + Date.now(),
+                    recipient_id: userId,
+                    meta: { sender: 'Khalil Mansour', priority: 'normal' }
+                }).select();
+                
+                if (error) {
+                    log('❌ Error: ' + error.message);
+                    showResult('Failed to create notification: ' + error.message, true);
+                } else {
+                    log('✅ Message notification created successfully!');
+                    log('📧 Notification ID: ' + data[0].id);
+                    showResult('✅ Message notification created! Check your app for the new notification.');
+                }
+            } catch (error) {
+                log('❌ Failed: ' + error.message);
+                showResult('Failed to create notification: ' + error.message, true);
+            }
+        }
+
+        async function createCarNotification() {
+            clearLog();
+            
+            if (!initSupabase()) return;
+            
+            const userId = document.getElementById('userId').value;
+            if (!userId) {
+                showResult('Please enter a User ID', true);
+                return;
+            }
+            
+            try {
+                log('Creating car notification...');
+                
+                const { data, error } = await supabase.from('notifications').insert({
+                    type: 'car',
+                    title: 'Car Moved to Showroom Floor 1',
+                    body: 'VOYAH FREE • VIN: LDP95H961SE900274 has been successfully moved from garage to showroom display.',
+                    entity_id: 'LDP95H961SE900274',
+                    route: '/car-inventory',
+                    recipient_id: userId,
+                    meta: { 
+                        vin: 'LDP95H961SE900274', 
+                        model: 'VOYAH FREE',
+                        priority: 'high',
+                        from_location: 'garage',
+                        to_location: 'showroom_floor_1'
+                    }
+                }).select();
+                
+                if (error) {
+                    log('❌ Error: ' + error.message);
+                    showResult('Failed to create notification: ' + error.message, true);
+                } else {
+                    log('✅ Car notification created successfully!');
+                    log('🚗 Notification ID: ' + data[0].id);
+                    showResult('✅ Car notification created! Check your app for the new notification.');
+                }
+            } catch (error) {
+                log('❌ Failed: ' + error.message);
+                showResult('Failed to create notification: ' + error.message, true);
+            }
+        }
+
+        async function createRequestNotification() {
+            clearLog();
+            
+            if (!initSupabase()) return;
+            
+            const userId = document.getElementById('userId').value;
+            if (!userId) {
+                showResult('Please enter a User ID', true);
+                return;
+            }
+            
+            try {
+                log('Creating request notification...');
+                
+                const { data, error } = await supabase.from('notifications').insert({
+                    type: 'request',
+                    title: 'Approve Parts Purchase (USD 520)',
+                    body: 'Mike Johnson requested premium brake pads and rotors for Tesla Model S repair. Customer approval pending.',
+                    entity_id: 'request-' + Date.now(),
+                    route: '/message-center',
+                    recipient_id: userId,
+                    action_required: true,
+                    meta: { 
+                        priority: 'urgent',
+                        amount: 520,
+                        currency: 'USD',
+                        requestor: 'Mike Johnson',
+                        vehicle: 'Tesla Model S',
+                        parts: ['brake pads', 'rotors']
+                    }
+                }).select();
+                
+                if (error) {
+                    log('❌ Error: ' + error.message);
+                    showResult('Failed to create notification: ' + error.message, true);
+                } else {
+                    log('✅ Request notification created successfully!');
+                    log('📝 Notification ID: ' + data[0].id);
+                    showResult('✅ Request notification created! Check your app - you should see Accept/Deny buttons.');
+                }
+            } catch (error) {
+                log('❌ Failed: ' + error.message);
+                showResult('Failed to create notification: ' + error.message, true);
+            }
+        }
+
+        async function createCustomNotification() {
+            clearLog();
+            
+            if (!initSupabase()) return;
+            
+            const userId = document.getElementById('userId').value;
+            const type = document.getElementById('notificationType').value;
+            const title = document.getElementById('notificationTitle').value;
+            const body = document.getElementById('notificationBody').value;
+            
+            if (!userId || !title) {
+                showResult('Please enter User ID and Title', true);
+                return;
+            }
+            
+            try {
+                log('Creating custom notification...');
+                
+                const { data, error } = await supabase.from('notifications').insert({
+                    type: type,
+                    title: title,
+                    body: body || null,
+                    entity_id: type + '-custom-' + Date.now(),
+                    recipient_id: userId,
+                    action_required: type === 'request',
+                    meta: { 
+                        custom: true,
+                        created_via: 'test_tool',
+                        priority: 'normal'
+                    }
+                }).select();
+                
+                if (error) {
+                    log('❌ Error: ' + error.message);
+                    showResult('Failed to create notification: ' + error.message, true);
+                } else {
+                    log('✅ Custom notification created successfully!');
+                    log('📝 Notification ID: ' + data[0].id);
+                    showResult('✅ Custom notification created! Check your app for the new notification.');
+                }
+            } catch (error) {
+                log('❌ Failed: ' + error.message);
+                showResult('Failed to create notification: ' + error.message, true);
+            }
+        }
+
+        async function loadNotifications() {
+            clearLog();
+            
+            if (!initSupabase()) return;
+            
+            const userId = document.getElementById('userId').value;
+            if (!userId) {
+                showResult('Please enter a User ID', true);
+                return;
+            }
+            
+            try {
+                log('Loading notifications for user: ' + userId);
+                
+                const { data, error } = await supabase
+                    .from('notifications')
+                    .select('*')
+                    .eq('recipient_id', userId)
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    log('❌ Error: ' + error.message);
+                    showResult('Failed to load notifications: ' + error.message, true);
+                } else {
+                    log('✅ Loaded ' + data.length + ' notifications');
+                    
+                    if (data.length === 0) {
+                        log('📭 No notifications found for this user');
+                        showResult('No notifications found for this user ID.');
+                    } else {
+                        data.forEach((notif, index) => {
+                            log(`${index + 1}. [${notif.type.toUpperCase()}] ${notif.title} (${notif.read_at ? 'READ' : 'UNREAD'})`);
+                        });
+                        
+                        const unreadCount = data.filter(n => !n.read_at).length;
+                        showResult(`Found ${data.length} notifications (${unreadCount} unread). Check console/log for details.`);
+                    }
+                }
+            } catch (error) {
+                log('❌ Failed: ' + error.message);
+                showResult('Failed to load notifications: ' + error.message, true);
+            }
+        }
+
+        async function clearAllNotifications() {
+            clearLog();
+            
+            if (!confirm('⚠️ Are you sure you want to delete ALL notifications for this user? This cannot be undone!')) {
+                return;
+            }
+            
+            if (!initSupabase()) return;
+            
+            const userId = document.getElementById('userId').value;
+            if (!userId) {
+                showResult('Please enter a User ID', true);
+                return;
+            }
+            
+            try {
+                log('Deleting all notifications for user: ' + userId);
+                
+                const { data, error } = await supabase
+                    .from('notifications')
+                    .delete()
+                    .eq('recipient_id', userId);
+                
+                if (error) {
+                    log('❌ Error: ' + error.message);
+                    showResult('Failed to delete notifications: ' + error.message, true);
+                } else {
+                    log('✅ All notifications deleted successfully!');
+                    showResult('✅ All notifications deleted! Your notification centers should now be empty.');
+                }
+            } catch (error) {
+                log('❌ Failed: ' + error.message);
+                showResult('Failed to delete notifications: ' + error.message, true);
+            }
+        }
+
+        // Auto-populate from localStorage if available
+        window.onload = function() {
+            const savedUrl = localStorage.getItem('supabase_url');
+            const savedKey = localStorage.getItem('supabase_key');
+            
+            if (savedUrl) document.getElementById('supabaseUrl').value = savedUrl;
+            if (savedKey) document.getElementById('supabaseKey').value = savedKey;
+            
+            // Save values when they change
+            document.getElementById('supabaseUrl').addEventListener('change', function() {
+                localStorage.setItem('supabase_url', this.value);
+            });
+            document.getElementById('supabaseKey').addEventListener('change', function() {
+                localStorage.setItem('supabase_key', this.value);
+            });
+        };
+    </script>
+</body>
+</html>

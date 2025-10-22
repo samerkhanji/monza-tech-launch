@@ -107,6 +107,7 @@ input[type="datetime-local"]:hover {
 [data-radix-dialog-overlay] {
   overflow: visible !important;
   position: fixed !important;
+  background: rgba(0,0,0,0.3) !important;
 }
 
 /* 10. CALENDAR STYLING */

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Database Tables - Monza TECH</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-bottom: 30px; text-align: center; }
+        .table-info {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .success { border-color: #28a745; background: #d4edda; }
+        .error { border-color: #dc3545; background: #f8d7da; }
+        .warning { border-color: #ffc107; background: #fff3cd; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        #log {
+            background-color: #1e1e1e;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗃️ Database Tables Inspector</h1>
+        
+        <div id="status" class="table-info">
+            <strong>Ready to check database tables</strong><br>
+            This will check both 'cars' and 'car_inventory' tables.
+        </div>
+
+        <button onclick="checkTables()">Check Tables</button>
+        <button onclick="copyData()">Copy car_inventory → cars</button>
+        <button onclick="switchToCarInventory()">Use car_inventory table</button>
+
+        <div id="results"></div>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://wunqntfreyezylvbzvxc.supabase.co';
+        let supabase = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function showResults(html) {
+            document.getElementById('results').innerHTML = html;
+        }
+
+        async function initSupabase() {
+            if (!supabase) {
+                const anonKey = prompt('Please enter your Supabase ANON KEY:\\n(Get it from: https://supabase.com/dashboard/project/wunqntfreyezylvbzvxc/settings/api)');
+                if (!anonKey) return false;
+                supabase = window.supabase.createClient(SUPABASE_URL, anonKey);
+            }
+            return true;
+        }
+
+        async function checkTables() {
+            if (!(await initSupabase())) return;
+
+            log('🔍 Checking database tables...');
+            let resultsHtml = '';
+
+            // Check cars table
+            try {
+                const { data: carsData, error: carsError } = await supabase
+                    .from('cars')
+                    .select('*', { count: 'exact' })
+                    .limit(5);
+
+                if (carsError) {
+                    resultsHtml += `<div class="table-info error">
+                        <strong>❌ 'cars' table</strong><br>
+                        Error: ${carsError.message}
+                    </div>`;
+                    log(`❌ cars table error: ${carsError.message}`);
+                } else {
+                    const count = carsData?.length || 0;
+                    resultsHtml += `<div class="table-info ${count > 0 ? 'success' : 'warning'}">
+                        <strong>📊 'cars' table</strong><br>
+                        Records: ${count}<br>
+                        Status: ${count > 0 ? 'Has data' : 'Empty'}
+                    </div>`;
+                    log(`✅ cars table: ${count} records`);
+                    
+                    if (count > 0) {
+                        log(`Sample cars data: ${JSON.stringify(carsData[0], null, 2)}`);
+                    }
+                }
+            } catch (e) {
+                log(`❌ Error checking cars table: ${e.message}`);
+            }
+
+            // Check car_inventory table
+            try {
+                const { data: inventoryData, error: inventoryError } = await supabase
+                    .from('car_inventory')
+                    .select('*', { count: 'exact' })
+                    .limit(5);
+
+                if (inventoryError) {
+                    resultsHtml += `<div class="table-info error">
+                        <strong>❌ 'car_inventory' table</strong><br>
+                        Error: ${inventoryError.message}
+                    </div>`;
+                    log(`❌ car_inventory table error: ${inventoryError.message}`);
+                } else {
+                    const count = inventoryData?.length || 0;
+                    resultsHtml += `<div class="table-info ${count > 0 ? 'success' : 'warning'}">
+                        <strong>📦 'car_inventory' table</strong><br>
+                        Records: ${count}<br>
+                        Status: ${count > 0 ? 'Has data' : 'Empty'}
+                    </div>`;
+                    log(`✅ car_inventory table: ${count} records`);
+                    
+                    if (count > 0) {
+                        log(`Sample inventory data: ${JSON.stringify(inventoryData[0], null, 2)}`);
+                    }
+                }
+            } catch (e) {
+                log(`❌ Error checking car_inventory table: ${e.message}`);
+            }
+
+            showResults(resultsHtml);
+        }
+
+        async function copyData() {
+            if (!(await initSupabase())) return;
+
+            log('🔄 Copying data from car_inventory to cars table...');
+
+            try {
+                // First, get all data from car_inventory
+                const { data: inventoryData, error: fetchError } = await supabase
+                    .from('car_inventory')
+                    .select('*');
+
+                if (fetchError) {
+                    log(`❌ Error fetching car_inventory data: ${fetchError.message}`);
+                    return;
+                }
+
+                if (!inventoryData || inventoryData.length === 0) {
+                    log(`⚠️ No data found in car_inventory table`);
+                    return;
+                }
+
+                log(`📊 Found ${inventoryData.length} records in car_inventory`);
+
+                // Transform data to match cars table structure
+                const carsData = inventoryData.map(item => ({
+                    vin_number: item.vin,
+                    model: item.model,
+                    brand: 'Voyah', // Default brand
+                    year: item.model_year,
+                    color: item.color,
+                    category: item.vehicle_type === 'EV' ? 'EV' : 'REEV',
+                    status: item.status === 'Available' ? 'in_stock' : 
+                           item.status === 'Sold' ? 'sold' : 'reserved',
+                    current_location: item.status === 'Available' ? 'Inventory' : 'Sold',
+                    selling_price: 50000, // Default price
+                    client_name: item.client_name,
+                    delivery_date: item.delivery_date,
+                    notes: item.notes,
+                    created_at: item.created_at,
+                    updated_at: item.updated_at
+                }));
+
+                // Insert in batches
+                const batchSize = 50;
+                let successCount = 0;
+
+                for (let i = 0; i < carsData.length; i += batchSize) {
+                    const batch = carsData.slice(i, i + batchSize);
+                    
+                    const { data, error } = await supabase
+                        .from('cars')
+                        .upsert(batch, { 
+                            onConflict: 'vin_number',
+                            ignoreDuplicates: false 
+                        });
+
+                    if (error) {
+                        log(`❌ Error in batch ${Math.floor(i/batchSize) + 1}: ${error.message}`);
+                    } else {
+                        successCount += batch.length;
+                        log(`✅ Uploaded batch ${Math.floor(i/batchSize) + 1}`);
+                    }
+                }
+
+                log(`🎉 Copy completed! ${successCount} records copied to cars table`);
+                
+            } catch (error) {
+                log(`❌ Copy failed: ${error.message}`);
+            }
+        }
+
+        async function switchToCarInventory() {
+            log('🔧 This would require modifying the app code to use car_inventory table primarily');
+            log('💡 Alternative: Use the copy function above to move data to cars table');
+            alert('This requires code changes. Use "Copy car_inventory → cars" instead for immediate results.');
+        }
+
+        log('🗃️ Database Tables Inspector Ready');
+        log('Click "Check Tables" to see current state');
+    </script>
+</body>
+</html>

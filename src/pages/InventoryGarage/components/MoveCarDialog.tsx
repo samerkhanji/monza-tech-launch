@@ -7,94 +7,92 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { dateUtils } from '@/lib/utils';
-import { InventoryItem } from '@/types/inventory';
+import { Building, Package, Clock } from 'lucide-react';
+
+interface GarageCar {
+  id: string;
+  model: string;
+  vinNumber?: string;
+  color: string;
+}
 
 interface MoveCarDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  item: InventoryItem;
-  onMove: (id: string, newLocation: string) => void;
+  car: GarageCar;
+  onMoveCar: (destination: string, notes?: string) => void;
 }
 
-const validLocations = [
-  'Showroom Floor 1',
-  'Showroom Floor 2',
-  'Service Bay 1',
-  'Service Bay 2',
-  'Service Bay 3',
-  'Maintenance Bay',
-  'Parts Storage',
-  'Customer Parking',
-  'Employee Parking'
-];
-
-export const MoveCarDialog: React.FC<MoveCarDialogProps> = ({
+const MoveCarDialog: React.FC<MoveCarDialogProps> = ({
   isOpen,
   onClose,
-  item,
-  onMove,
+  car,
+  onMoveCar
 }) => {
-  const [selectedLocation, setSelectedLocation] = React.useState<string>('');
-
-  const handleMove = () => {
-    if (selectedLocation) {
-      onMove(item.id, selectedLocation);
-      onClose();
+  const destinations = [
+    {
+      id: 'floor1',
+      label: 'Showroom Floor 1',
+      description: 'Move to main showroom floor 1',
+      icon: Building
+    },
+    {
+      id: 'floor2',
+      label: 'Showroom Floor 2',
+      description: 'Move to luxury showroom floor 2',
+      icon: Building
+    },
+    {
+      id: 'inventory',
+      label: 'Car Inventory',
+      description: 'Move to main car inventory storage',
+      icon: Package
+    },
+    {
+      id: 'garage-schedule',
+      label: 'Garage Schedule',
+      description: 'Add to garage schedule for service/repair',
+      icon: Clock
     }
-  };
+  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle>Move Car to New Location</DialogTitle>
+          <DialogTitle>Move Car - {car?.model}</DialogTitle>
         </DialogHeader>
-        <div className="py-4">
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-medium mb-2">Current Location</p>
-              <p className="text-sm text-gray-600">
-                {`${item.location.room} (${item.location.shelf}-${item.location.column}-${item.location.row})`}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm font-medium mb-2">Select New Location</p>
-              <Select
-                value={selectedLocation}
-                onValueChange={setSelectedLocation}
+        
+        <div className="space-y-4">
+          <div className="bg-gray-50 p-3 rounded">
+            <p className="text-sm"><strong>VIN:</strong> {car?.vinNumber}</p>
+            <p className="text-sm"><strong>Model:</strong> {car?.model}</p>
+            <p className="text-sm"><strong>Color:</strong> {car?.color}</p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Select destination:</p>
+            {destinations.map((dest) => (
+              <Button
+                key={dest.id}
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => onMoveCar(dest.id)}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a location" />
-                </SelectTrigger>
-                <SelectContent>
-                  {validLocations.map((location) => (
-                    <SelectItem key={location} value={location}>
-                      {location}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                {dest.label}
+              </Button>
+            ))}
           </div>
         </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancel
-          </Button>
-          <Button
-            onClick={handleMove}
-            disabled={!selectedLocation}
-          >
-            Move Car
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
+
+export default MoveCarDialog;

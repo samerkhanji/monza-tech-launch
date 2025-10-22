@@ -18,7 +18,6 @@ interface GarageCar {
   color: string;
   brand?: string;
   category?: string;
-  status: 'in_stock' | 'sold' | 'reserved';
   arrivalDate?: string;
   batteryPercentage?: number;
   sellingPrice?: number;
@@ -64,15 +63,18 @@ const EditGarageCarDialog: React.FC<EditGarageCarDialogProps> = ({
     model: car.model || '',
     year: car.year || new Date().getFullYear(),
     color: car.color || '',
+    interiorColor: (car as any).interiorColor || '',
     brand: car.brand || '',
     category: car.category || 'EV',
     vinNumber: car.vinNumber || '',
     
-    // Status & Pricing
-    status: car.status || 'in_stock',
+    // Pricing
     sellingPrice: car.sellingPrice || 0,
 
+    // Technical Specs
     batteryPercentage: car.batteryPercentage || 0,
+    range: (car as any).range || 0,
+    kmDriven: (car as any).kmDriven || (car as any).kilometersDriven || 0,
     
     // Garage Info
     garageLocation: car.garageLocation || 'Bay 1',
@@ -132,11 +134,7 @@ const EditGarageCarDialog: React.FC<EditGarageCarDialogProps> = ({
     { value: 'awaiting_parts', label: 'Awaiting Parts' }
   ];
 
-  const carStatus = [
-    { value: 'in_stock', label: 'In Stock' },
-    { value: 'sold', label: 'Sold' },
-    { value: 'reserved', label: 'Reserved' }
-  ];
+
 
   const categories = [
     { value: 'EV', label: 'Electric Vehicle' },
@@ -222,6 +220,14 @@ const EditGarageCarDialog: React.FC<EditGarageCarDialogProps> = ({
                     />
                   </div>
                   <div>
+                    <Label htmlFor="interiorColor">Color interior</Label>
+                    <Input
+                      id="interiorColor"
+                      value={formData.interiorColor}
+                      onChange={(e) => handleInputChange('interiorColor', e.target.value)}
+                    />
+                  </div>
+                  <div>
                     <Label htmlFor="vinNumber">VIN Number</Label>
                     <Input
                       id="vinNumber"
@@ -253,21 +259,7 @@ const EditGarageCarDialog: React.FC<EditGarageCarDialogProps> = ({
                   <CardTitle className="text-lg">Status & Pricing</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="status">Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {carStatus.map((status) => (
-                          <SelectItem key={status.value} value={status.value}>
-                            {status.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+
                   <div>
                     <Label htmlFor="sellingPrice">Selling Price ($)</Label>
                     <Input
@@ -287,6 +279,26 @@ const EditGarageCarDialog: React.FC<EditGarageCarDialogProps> = ({
                       max="100"
                       value={formData.batteryPercentage}
                       onChange={(e) => handleInputChange('batteryPercentage', parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="range">Range Capacity (km)</Label>
+                    <Input
+                      id="range"
+                      type="number"
+                      min="0"
+                      value={formData.range || ''}
+                      onChange={(e) => handleInputChange('range', parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="kmDriven">Km Driven</Label>
+                    <Input
+                      id="kmDriven"
+                      type="number"
+                      min="0"
+                      value={formData.kmDriven || ''}
+                      onChange={(e) => handleInputChange('kmDriven', parseInt(e.target.value) || 0)}
                     />
                   </div>
                 </CardContent>

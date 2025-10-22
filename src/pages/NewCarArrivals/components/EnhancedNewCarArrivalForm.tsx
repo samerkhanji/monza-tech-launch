@@ -11,6 +11,7 @@ import { Bot, Car, Save } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import EnhancedVoiceCameraInterface from '@/components/EnhancedVoiceCameraInterface';
+import { safeParseInt } from '@/utils/errorHandling';
 
 interface NewCarData {
   vin_number: string;
@@ -228,7 +229,7 @@ const EnhancedNewCarArrivalForm: React.FC = () => {
                         min="0"
                         max="100"
                         value={formData.battery_percentage}
-                        onChange={(e) => handleInputChange('battery_percentage', parseInt(e.target.value))}
+                        onChange={(e) => handleInputChange('battery_percentage', safeParseInt(e.target.value, 85))}
                       />
                     </div>
                     

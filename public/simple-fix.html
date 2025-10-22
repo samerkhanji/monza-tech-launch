@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Fix - Monza TECH</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .container { background: white; border-radius: 8px; padding: 30px; margin: 20px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .step { background: #e8f5e8; border-radius: 6px; padding: 20px; margin: 15px 0; border-left: 4px solid #28a745; }
+        button { background: #28a745; color: white; border: none; padding: 15px 30px; border-radius: 6px; cursor: pointer; margin: 10px; font-size: 16px; font-weight: 600; }
+        button:hover { background: #218838; }
+        .code-block { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 6px; margin: 15px 0; font-family: 'Consolas', monospace; font-size: 13px; overflow-x: auto; }
+        textarea { width: 100%; height: 500px; padding: 15px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace; font-size: 12px; resize: vertical; }
+        .highlight { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 20px; margin: 20px 0; }
+        .success { color: #28a745; font-weight: bold; }
+        .big-button { font-size: 20px; padding: 20px 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Simple Fix - Get Your Inventory Working NOW</h1>
+        
+        <div class="highlight">
+            <h3>🎯 ONE COMMAND TO FIX EVERYTHING</h3>
+            <p>This single SQL command will create the table, upload your data, and fix all permissions in one go!</p>
+        </div>
+        
+        <div class="step">
+            <h3>📋 Your Complete Stock Data Ready</h3>
+            <p>All <strong>40 vehicles</strong> including:</p>
+            <ul>
+                <li><strong>20 sold vehicles</strong> with client names (Yoland Salem, FADI ASSI, etc.)</li>
+                <li><strong>20 available vehicles</strong> ready for sale</li>
+                <li><strong>All models:</strong> Free, Dream, Passion, Courage, Mhero</li>
+                <li><strong>Complete warranty data</strong> and pricing</li>
+            </ul>
+            
+            <button onclick="generateCompleteSQL()" class="big-button">🚀 Generate Complete Fix SQL</button>
+        </div>
+
+        <div class="step">
+            <h3>📝 Complete SQL Fix</h3>
+            <textarea id="sqlOutput" placeholder="Click the button above to generate the complete fix..."></textarea>
+        </div>
+
+        <div class="step">
+            <h3>🛠️ Instructions</h3>
+            <ol>
+                <li><strong>Click the button above</strong> to generate the SQL</li>
+                <li><strong>Copy ALL the SQL</strong> from the text area</li>
+                <li><strong>Paste and run</strong> in your Supabase SQL Editor</li>
+                <li><strong>Refresh your Car Inventory page</strong> - it should show <strong>Car Inventory (40)</strong>!</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function generateCompleteSQL() {
+            const sqlOutput = document.getElementById('sqlOutput');
+            
+            // Complete stock data
+            const stockData = [
+                { status: 'Sold', client_name: 'Yoland Salem', vin: 'LDP95H961SE900274', vehicle_type: 'REEV', color: 'GREY', model: 'Free', model_year: 2025, delivery_date: '2025-05-17', vehicle_warranty_expiry: '2030-05-17', battery_warranty_expiry: '2033-05-17', dms_warranty_deadline: '08/20/2030' },
+                { status: 'Sold', client_name: 'H.E. Saqr Ghabbash Said Ghabbash', vin: 'LDP95H963RE104961', vehicle_type: 'REEV', color: 'BLACK', model: 'Dream', model_year: 2024, delivery_date: '2025-06-03', vehicle_warranty_expiry: '2030-06-03', battery_warranty_expiry: '2033-06-03', dms_warranty_deadline: '10/15/2029' },
+                { status: 'Sold', client_name: 'Assaad Obeid', vin: 'LDP95H960SE900265', vehicle_type: 'REEV', color: 'GREY', model: 'Free', model_year: 2025, delivery_date: '2025-05-17', vehicle_warranty_expiry: '2030-05-17', battery_warranty_expiry: '2033-05-17', dms_warranty_deadline: '08/20/2030' },
+                { status: 'Sold', client_name: 'FADI ASSI', vin: 'LDP95H961RE300364', vehicle_type: 'REEV', color: 'GREEN', model: 'Free', model_year: 2024, delivery_date: '2025-05-16', vehicle_warranty_expiry: '2030-05-16', battery_warranty_expiry: '2033-05-16', dms_warranty_deadline: '10/01/2029' },
+                { status: 'Sold', client_name: 'DIAB Hisham Nahed', vin: 'LDP95H963RE300365', vehicle_type: 'REEV', color: 'GREEN', model: 'Free', model_year: 2024, delivery_date: '2025-06-17', vehicle_warranty_expiry: '2030-06-17', battery_warranty_expiry: '2033-06-17', dms_warranty_deadline: '10/01/2029' },
+                { status: 'Sold', client_name: 'Mashreq Hospital', vin: 'LDP91E968RE201874', vehicle_type: 'REEV', color: 'BLACK', model: 'Passion', model_year: 2024, delivery_date: '2025-05-23', vehicle_warranty_expiry: '2030-05-23', battery_warranty_expiry: '2033-05-23', dms_warranty_deadline: '10/01/2029' },
+                { status: 'Sold', client_name: 'Ali Kobeissy', vin: 'LDP29H923SM520023', vehicle_type: 'REEV', color: 'GREY', model: 'Mhero', model_year: 2025, delivery_date: '2025-05-22', vehicle_warranty_expiry: '2030-05-22', battery_warranty_expiry: '2033-05-22', dms_warranty_deadline: 'NOT ON DMS' },
+                { status: 'Sold', client_name: 'Samir Haddad', vin: 'LDP91E968RE201857', vehicle_type: 'REEV', color: 'BLACK', model: 'Passion', model_year: 2024, delivery_date: '2025-05-23', vehicle_warranty_expiry: '2030-05-23', battery_warranty_expiry: '2033-05-23', dms_warranty_deadline: '10/01/2029' },
+                { status: 'Sold', client_name: 'Mohamad Kafel', vin: 'LDP95H963SE900258', vehicle_type: 'REEV', color: 'GREY', model: 'Free', model_year: 2025, delivery_date: '2025-06-03', vehicle_warranty_expiry: '2030-06-03', battery_warranty_expiry: '2033-06-03', dms_warranty_deadline: '08/21/2030' },
+                { status: 'Sold', client_name: 'Ziad el Sayed', vin: 'LDP95H967RE302345', vehicle_type: 'REEV', color: 'GREEN', model: 'Free', model_year: 2024, delivery_date: '2025-06-19', vehicle_warranty_expiry: '2030-06-19', battery_warranty_expiry: '2033-06-19', dms_warranty_deadline: '10/01/2029' },
+                { status: 'Sold', client_name: 'RAKAN ABDEL WAHAB', vin: 'LDP91E963RE201782', vehicle_type: 'REEV', color: 'BLACK', model: 'Passion', model_year: 2024, delivery_date: '2025-06-17', vehicle_warranty_expiry: '2030-06-17', battery_warranty_expiry: '2033-06-17', dms_warranty_deadline: '10/01/2029' },
+                { status: 'Sold', client_name: 'Georges Hraoui', vin: 'LDP95C969SY890014', vehicle_type: 'EV', color: 'WHITE', model: 'Courage', model_year: 2025, delivery_date: '2025-06-17', vehicle_warranty_expiry: '2030-06-17', battery_warranty_expiry: '2033-06-17', dms_warranty_deadline: 'NOT ON DMS' },
+                { status: 'Sold', client_name: 'Tarek Darwish', vin: 'LDP95H964SE900267', vehicle_type: 'REEV', color: 'GREY', model: 'Free', model_year: 2025, delivery_date: '2025-06-19', vehicle_warranty_expiry: '2030-06-19', battery_warranty_expiry: '2033-06-19', dms_warranty_deadline: '08/20/2030' },
+                { status: 'Sold', client_name: 'Ramzi Abdo Zidan', vin: 'LDP95H961SE900257', vehicle_type: 'REEV', color: 'GREY', model: 'Free', model_year: 2025, delivery_date: '2025-06-20', vehicle_warranty_expiry: '2030-06-20', battery_warranty_expiry: '2033-06-20', dms_warranty_deadline: '08/21/2030' },
+                { status: 'Sold', client_name: 'Fadi Jiji', vin: 'LDP95H966SE900254', vehicle_type: 'REEV', color: 'GREY', model: 'Free', model_year: 2025, delivery_date: '2025-06-24', vehicle_warranty_expiry: '2030-06-24', battery_warranty_expiry: '2033-06-24', dms_warranty_deadline: '08/21/2030' },
+                { status: 'Sold', client_name: 'Mhamad Kassem Saleh', vin: 'LDP95H961SE900260', vehicle_type: 'REEV', color: 'GREY', model: 'Free', model_year: 2025, delivery_date: '2025-06-27', vehicle_warranty_expiry: '2030-06-27', battery_warranty_expiry: '2033-06-27', dms_warranty_deadline: '08/21/2030' },
+                { status: 'Sold', client_name: 'Hilal Saab', vin: 'LDP91E966SE100256', vehicle_type: 'REEV', color: 'BLACK', model: 'Passion', model_year: 2025, delivery_date: '2025-06-28', vehicle_warranty_expiry: '2030-06-28', battery_warranty_expiry: '2033-06-28', dms_warranty_deadline: '10/07/2030' },
+                { status: 'Sold', client_name: 'Faysal Abdallah', vin: 'LDP91E967RE201901', vehicle_type: 'REEV', color: 'BLACK', model: 'Passion', model_year: 2024, delivery_date: '2025-06-27', vehicle_warranty_expiry: '2030-06-27', battery_warranty_expiry: '2033-06-27', dms_warranty_deadline: '10/01/2029' },
+                { status: 'Sold', client_name: 'Roni Abou Khalil', vin: 'LDP95H963SE900275', vehicle_type: 'REEV', color: 'BLACK', model: 'Free', model_year: 2025, delivery_date: '2025-06-28', vehicle_warranty_expiry: '2030-06-28', battery_warranty_expiry: '2033-06-28', dms_warranty_deadline: '08/20/2030' },
+                { status: 'Sold', client_name: 'kareem subra', vin: 'LDP95H965RE301744', vehicle_type: 'REEV', color: 'WHITE', model: 'Free', model_year: 2024, delivery_date: '2025-07-11', vehicle_warranty_expiry: '2030-07-11', battery_warranty_expiry: '2033-07-11', dms_warranty_deadline: '10/01/2029' },
+                // Available vehicles
+                { status: 'Available', client_name: null, vin: 'LDP91E963SE100280', vehicle_type: 'REEV', color: 'WHITE', model: 'PASSION', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: '10/7/2030' },
+                { status: 'Available', client_name: null, vin: 'LDP91E965SE100278', vehicle_type: 'REEV', color: 'WHITE', model: 'PASSION', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: '10/7/2030' },
+                { status: 'Available', client_name: null, vin: 'LDP91E962SE100268', vehicle_type: 'REEV', color: 'BLACK', model: 'PASSION', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: '10/7/2030' },
+                { status: 'Available', client_name: null, vin: 'LDP95C966SY890018', vehicle_type: 'EV', color: 'WHITE', model: 'COURAGE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: 'NOT ON DMS' },
+                { status: 'Available', client_name: null, vin: 'LDP95C965SY890009', vehicle_type: 'EV', color: 'WHITE', model: 'COURAGE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: 'NOT ON DMS' },
+                { status: 'Available', client_name: null, vin: 'LDP95C962SY890016', vehicle_type: 'EV', color: 'WHITE', model: 'COURAGE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: 'NOT ON DMS' },
+                { status: 'Available', client_name: null, vin: 'LGB320H80SW800064', vehicle_type: 'EV', color: 'WHITE', model: 'COURAGE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: 'NOT ON DMS' },
+                { status: 'Available', client_name: null, vin: 'LDP95C960SY890094', vehicle_type: 'EV', color: 'BLACK', model: 'COURAGE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: 'NOT ON DMS' },
+                { status: 'Available', client_name: null, vin: 'LDP95C962SY890095', vehicle_type: 'EV', color: 'BLACK', model: 'COURAGE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: 'NOT ON DMS' },
+                { status: 'Available', client_name: null, vin: 'LDP95C964SY890096', vehicle_type: 'EV', color: 'BLACK', model: 'COURAGE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: 'NOT ON DMS' },
+                { status: 'Available', client_name: null, vin: 'LDP95H962SE900266', vehicle_type: 'REEV', color: 'BLACK', model: 'FREE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: '8/20/2030' },
+                { status: 'Available', client_name: null, vin: 'LDP95H963SE009001', vehicle_type: 'REEV', color: 'BLACK', model: 'FREE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: 'NOT ON DMS' },
+                { status: 'Available', client_name: null, vin: 'LDP95H964SE900270', vehicle_type: 'REEV', color: 'BLACK', model: 'FREE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: '8/20/2030' },
+                { status: 'Available', client_name: null, vin: 'LDP95H960SE900248', vehicle_type: 'REEV', color: 'GREEN', model: 'FREE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: '8/20/2030' },
+                { status: 'Available', client_name: null, vin: 'LDP95H960SE900251', vehicle_type: 'REEV', color: 'GREEN', model: 'FREE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: '8/21/2030' },
+                { status: 'Available', client_name: null, vin: 'LDP95H969SE900250', vehicle_type: 'REEV', color: 'GREEN', model: 'FREE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: '8/20/2030' },
+                { status: 'Available', client_name: null, vin: 'LDP95H962SE900252', vehicle_type: 'REEV', color: 'GREEN', model: 'FREE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: '8/20/2030' },
+                { status: 'Available', client_name: null, vin: 'LDP95H963SE900261', vehicle_type: 'REEV', color: 'GREY', model: 'FREE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: '8/21/2030' },
+                { status: 'Available', client_name: null, vin: 'LDP95H964SE900253', vehicle_type: 'REEV', color: 'GREY', model: 'FREE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: '8/20/2030' },
+                { status: 'Available', client_name: null, vin: 'LDP95H966SE900271', vehicle_type: 'REEV', color: 'GREY', model: 'FREE', model_year: 2025, delivery_date: null, vehicle_warranty_expiry: null, battery_warranty_expiry: null, dms_warranty_deadline: '8/20/2030' }
+            ];
+
+            function getSellingPrice(model) {
+                const prices = {
+                    'Free': 50000, 'Dream': 55000, 'Passion': 52000, 'Courage': 58000, 'Mhero': 48000,
+                    'FREE': 50000, 'PASSION': 52000, 'COURAGE': 58000
+                };
+                return prices[model] || 50000;
+            }
+
+            let sql = `-- ======================================================
+-- MONZA TECH COMPLETE INVENTORY FIX
+-- This single command fixes everything and uploads all data
+-- ======================================================
+
+-- 1. Clean slate - remove any problematic tables
+DROP TABLE IF EXISTS public.car_inventory CASCADE;
+
+-- 2. Create the perfect car_inventory table
+CREATE TABLE public.car_inventory (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    vin text UNIQUE NOT NULL,
+    model text NOT NULL,
+    brand text DEFAULT 'Voyah',
+    year integer NOT NULL,
+    color text NOT NULL,
+    vehicle_type text NOT NULL,
+    status text CHECK (status IN ('in_stock', 'sold', 'reserved', 'maintenance')) DEFAULT 'in_stock',
+    current_floor text DEFAULT 'Inventory',
+    client_name text,
+    selling_price decimal(10,2),
+    delivery_date date,
+    vehicle_warranty_expiry date,
+    battery_warranty_expiry date,
+    dms_warranty_deadline text,
+    notes text,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
+
+-- 3. Create indexes for performance
+CREATE INDEX idx_car_inventory_vin ON public.car_inventory(vin);
+CREATE INDEX idx_car_inventory_status ON public.car_inventory(status);
+CREATE INDEX idx_car_inventory_model ON public.car_inventory(model);
+
+-- 4. Set up simple, working permissions
+ALTER TABLE public.car_inventory ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all operations" ON public.car_inventory FOR ALL USING (true) WITH CHECK (true);
+GRANT ALL ON public.car_inventory TO authenticated;
+GRANT ALL ON public.car_inventory TO anon;
+
+-- 5. Insert all your stock data
+`;
+
+            stockData.forEach((item, index) => {
+                const status = item.status === 'Available' ? 'in_stock' : 'sold';
+                const currentFloor = item.status === 'Available' ? 'Inventory' : 'Delivered';
+                const price = getSellingPrice(item.model);
+                const clientName = item.client_name ? `'${item.client_name.replace(/'/g, "''")}'` : 'NULL';
+                const deliveryDate = item.delivery_date ? `'${item.delivery_date}'` : 'NULL';
+                const vehicleWarranty = item.vehicle_warranty_expiry ? `'${item.vehicle_warranty_expiry}'` : 'NULL';
+                const batteryWarranty = item.battery_warranty_expiry ? `'${item.battery_warranty_expiry}'` : 'NULL';
+                
+                sql += `INSERT INTO public.car_inventory (vin, model, brand, year, color, vehicle_type, status, current_floor, client_name, selling_price, delivery_date, vehicle_warranty_expiry, battery_warranty_expiry, dms_warranty_deadline) VALUES ('${item.vin}', '${item.model}', 'Voyah', ${item.model_year}, '${item.color}', '${item.vehicle_type}', '${status}', '${currentFloor}', ${clientName}, ${price}, ${deliveryDate}, ${vehicleWarranty}, ${batteryWarranty}, '${item.dms_warranty_deadline || 'NOT ON DMS'}');\n`;
+            });
+
+            sql += `
+-- 6. Verification query
+SELECT 
+    COUNT(*) as total_vehicles,
+    COUNT(*) FILTER (WHERE status = 'in_stock') as available,
+    COUNT(*) FILTER (WHERE status = 'sold') as sold
+FROM public.car_inventory;
+
+-- ======================================================
+-- SUCCESS! You should see: 40 total, 20 available, 20 sold
+-- Now refresh your Car Inventory page!
+-- ======================================================`;
+
+            sqlOutput.value = sql;
+            
+            // Auto-select all text for easy copying
+            sqlOutput.select();
+            sqlOutput.setSelectionRange(0, sqlOutput.value.length);
+            
+            alert(`✅ Complete fix generated! 
+            
+${stockData.length} vehicles ready to upload.
+            
+The SQL is already selected - just press Ctrl+C to copy, then paste and run in Supabase SQL Editor.`);
+        }
+    </script>
+</body>
+</html>

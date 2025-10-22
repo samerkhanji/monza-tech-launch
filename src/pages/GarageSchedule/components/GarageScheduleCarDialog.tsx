@@ -184,7 +184,7 @@ const GarageScheduleCarDialog: React.FC<GarageScheduleCarDialogProps> = ({
                   setFormData(prev => ({ ...prev, workType: value }))
                 }
               >
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger id="workType" className="col-span-3">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -205,7 +205,7 @@ const GarageScheduleCarDialog: React.FC<GarageScheduleCarDialogProps> = ({
                   setFormData(prev => ({ ...prev, priority: value }))
                 }
               >
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger id="priority" className="col-span-3">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

@@ -54,17 +54,14 @@ const ShowroomFloor2Page = () => {
   const loadCars = async () => {
     try {
       setIsLoading(true);
-      // Load cars from localStorage as fallback
-      const savedCars = localStorage.getItem('carInventory');
-      if (savedCars) {
-        const parsedCars = JSON.parse(savedCars);
-        setCars(parsedCars);
-      }
+      // Always start with empty state - no mock data
+      setCars([]);
+      console.log('Showroom Floor 2: Initialized with empty state (no mock data)');
     } catch (error) {
       console.error('Error loading cars:', error);
       toast({
         title: "Error",
-        description: "Failed to load car inventory",
+        description: "Failed to load showroom floor 2 cars",
         variant: "destructive",
       });
     } finally {

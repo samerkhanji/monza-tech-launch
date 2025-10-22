@@ -8,19 +8,24 @@ export const useRepairStageManagement = (
 ) => {
   const moveToNextStage = (car: GarageCar) => {
     let nextStatus: GarageCarStatus;
+    let workTypeChange: string;
     
     switch (car.status) {
       case 'in_diagnosis':
         nextStatus = 'in_repair';
+        workTypeChange = 'Diagnosis → Repair';
         break;
       case 'in_repair':
         nextStatus = 'in_quality_check';
+        workTypeChange = 'Repair → Quality Check';
         break;
       case 'in_quality_check':
         nextStatus = 'ready';
+        workTypeChange = 'Quality Check → Ready';
         break;
       case 'ready':
         nextStatus = 'delivered';
+        workTypeChange = 'Ready → Delivered';
         break;
       default:
         return;
@@ -46,6 +51,9 @@ export const useRepairStageManagement = (
     // Save to localStorage
     localStorage.setItem('garageCars', JSON.stringify(updatedCars));
     
+    // Record work type change in repair history
+    recordWorkTypeChange(car, car.status, nextStatus, workTypeChange, nowISOString);
+    
     // If delivered, handle the delivery workflow
     if (nextStatus === 'delivered') {
       handleCarDelivery(car, nowISOString);
@@ -60,6 +68,9 @@ export const useRepairStageManagement = (
   const changeCarStatus = (car: GarageCar, newStatus: GarageCarStatus) => {
     const now = new Date();
     const nowISOString = now.toISOString();
+    
+    // Determine work type change description
+    const workTypeChange = `${car.status.replace('_', ' ').toUpperCase()} → ${newStatus.replace('_', ' ').toUpperCase()}`;
     
     const updatedCars = cars.map(c => {
       if (c.id === car.id) {
@@ -77,6 +88,9 @@ export const useRepairStageManagement = (
     
     // Save to localStorage
     localStorage.setItem('garageCars', JSON.stringify(updatedCars));
+    
+    // Record work type change in repair history
+    recordWorkTypeChange(car, car.status, newStatus, workTypeChange, nowISOString);
     
     // If delivered, handle the delivery workflow
     if (newStatus === 'delivered') {
@@ -184,6 +198,168 @@ export const useRepairStageManagement = (
       });
 
       localStorage.setItem('inventoryHistory', JSON.stringify(history));
+    }
+  };
+
+  const recordWorkTypeChange = (
+    car: GarageCar, 
+    fromStatus: string, 
+    toStatus: string, 
+    workTypeChange: string, 
+    timestamp: string
+  ) => {
+    const workTypeHistoryEntry = {
+      id: `worktype-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      carCode: car.carCode,
+      carModel: car.carModel,
+      customerName: car.customerName,
+      fromWorkType: fromStatus,
+      toWorkType: toStatus,
+      workTypeChange: workTypeChange,
+      timestamp: timestamp,
+      assignedEmployee: car.assignedEmployee,
+      mechanics: car.mechanics || [],
+      notes: `Work type changed from ${fromStatus.replace('_', ' ')} to ${toStatus.replace('_', ' ')}`,
+      duration: calculateDurationInStage(car, fromStatus, timestamp),
+      partsUsed: car.partsUsed || [],
+      partsUsedInStage: getPartsUsedInStage(car, fromStatus),
+      totalPartsCost: calculatePartsCost(car.partsUsed || []),
+      toolsUsed: car.toolsUsed || [],
+      toolsUsedInStage: getToolsUsedInStage(car, fromStatus),
+      totalToolsCost: calculateToolsCost(car.toolsUsed || []),
+      workNotes: car.workNotes,
+      issueDescription: car.issueDescription
+    };
+
+    // Save to repair history
+    const savedHistory = localStorage.getItem('repairHistory');
+    const history = savedHistory ? JSON.parse(savedHistory) : [];
+    
+    // Add work type change entry
+    history.unshift({
+      ...workTypeHistoryEntry,
+      type: 'work_type_change',
+      date: new Date(timestamp).toLocaleDateString(),
+      description: workTypeChange,
+      technician: car.assignedEmployee,
+      notes: workTypeHistoryEntry.notes,
+      workTypeTransition: workTypeChange,
+      fromStage: fromStatus,
+      toStage: toStatus,
+      transitionTimestamp: timestamp,
+      partsUsed: workTypeHistoryEntry.partsUsed,
+      partsUsedInStage: workTypeHistoryEntry.partsUsedInStage,
+      totalPartsCost: workTypeHistoryEntry.totalPartsCost,
+      toolsUsed: workTypeHistoryEntry.toolsUsed,
+      toolsUsedInStage: workTypeHistoryEntry.toolsUsedInStage,
+      totalToolsCost: workTypeHistoryEntry.totalToolsCost
+    });
+    
+    localStorage.setItem('repairHistory', JSON.stringify(history));
+    
+    // Also save to a dedicated work type history
+    const savedWorkTypeHistory = localStorage.getItem('workTypeHistory');
+    const workTypeHistory = savedWorkTypeHistory ? JSON.parse(savedWorkTypeHistory) : [];
+    workTypeHistory.unshift(workTypeHistoryEntry);
+    localStorage.setItem('workTypeHistory', JSON.stringify(workTypeHistory));
+  };
+
+  const getPartsUsedInStage = (car: GarageCar, stage: string): string[] => {
+    // This function would track parts used specifically in each stage
+    // For now, we'll return all parts used, but in a real system you'd track stage-specific parts
+    return car.partsUsed || [];
+  };
+
+  const getToolsUsedInStage = (car: GarageCar, stage: string): string[] => {
+    // This function would track tools used specifically in each stage
+    // For now, we'll return all tools used, but in a real system you'd track stage-specific tools
+    return car.toolsUsed || [];
+  };
+
+  const calculatePartsCost = (parts: string[]): number => {
+    // This is a simplified calculation - in a real system you'd have actual part costs
+    // For now, we'll estimate based on part count and type
+    let totalCost = 0;
+    
+    parts.forEach(part => {
+      // Simplified cost estimation based on part type
+      if (part.toLowerCase().includes('battery')) {
+        totalCost += 1500; // Battery cost
+      } else if (part.toLowerCase().includes('brake')) {
+        totalCost += 200; // Brake parts
+      } else if (part.toLowerCase().includes('filter')) {
+        totalCost += 50; // Filters
+      } else if (part.toLowerCase().includes('sensor')) {
+        totalCost += 300; // Sensors
+      } else if (part.toLowerCase().includes('motor')) {
+        totalCost += 800; // Motors
+      } else {
+        totalCost += 100; // Default part cost
+      }
+    });
+    
+    return totalCost;
+  };
+
+  const calculateToolsCost = (tools: string[]): number => {
+    // This is a simplified calculation - in a real system you'd have actual tool costs
+    // For now, we'll estimate based on tool count and type
+    let totalCost = 0;
+    
+    tools.forEach(tool => {
+      // Simplified cost estimation based on tool type
+      if (tool.toLowerCase().includes('diagnostic')) {
+        totalCost += 500; // Diagnostic tools
+      } else if (tool.toLowerCase().includes('lift')) {
+        totalCost += 200; // Lift usage
+      } else if (tool.toLowerCase().includes('scanner')) {
+        totalCost += 300; // Scanner tools
+      } else if (tool.toLowerCase().includes('welder')) {
+        totalCost += 150; // Welding tools
+      } else if (tool.toLowerCase().includes('tester')) {
+        totalCost += 250; // Testing equipment
+      } else if (tool.toLowerCase().includes('meter')) {
+        totalCost += 100; // Meters and gauges
+      } else if (tool.toLowerCase().includes('torque')) {
+        totalCost += 80; // Torque wrenches
+      } else if (tool.toLowerCase().includes('socket')) {
+        totalCost += 50; // Socket sets
+      } else {
+        totalCost += 75; // Default tool cost
+      }
+    });
+    
+    return totalCost;
+  };
+
+  const calculateDurationInStage = (car: GarageCar, stage: string, endTimestamp: string): string => {
+    let startTime: Date;
+    
+    // Determine start time based on the stage
+    switch (stage) {
+      case 'in_diagnosis':
+        startTime = car.startTimestamp ? new Date(car.startTimestamp) : new Date(car.entryDate);
+        break;
+      case 'in_repair':
+        // Find when diagnosis ended (approximate)
+        startTime = car.startTimestamp ? new Date(car.startTimestamp) : new Date(car.entryDate);
+        break;
+      case 'in_quality_check':
+        // Find when repair ended (approximate)
+        startTime = car.startTimestamp ? new Date(car.startTimestamp) : new Date(car.entryDate);
+        break;
+      default:
+        startTime = new Date(car.entryDate);
+    }
+    
+    const endTime = new Date(endTimestamp);
+    const durationHours = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60));
+    const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
+    
+    if (durationHours > 0) {
+      return `${durationHours}h ${durationMinutes % 60}m`;
+    } else {
+      return `${durationMinutes}m`;
     }
   };
 

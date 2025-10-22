@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Clock, User, Phone, Car, Briefcase, Eye, UserCheck, Shield, AlertTriangle, Calendar, MapPin, FileText, Activity } from 'lucide-react';
+import { Clock, User, Phone, Car, Briefcase, Eye, UserCheck, Shield, AlertTriangle, MapPin, FileText, Activity } from 'lucide-react';
 import { TestDriveInfo } from '../types';
 import { format } from 'date-fns';
 

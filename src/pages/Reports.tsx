@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { Bug, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { safeLocalStorageGet } from '@/utils/errorHandling';
 
 type ReportType = 'bug' | 'improvement' | 'feature';
 
@@ -73,7 +74,7 @@ const Reports: React.FC = () => {
       };
 
       // Save to localStorage for now (in real app, would send to backend)
-      const existingReports = JSON.parse(localStorage.getItem('appReports') || '[]');
+      const existingReports = safeLocalStorageGet<any[]>('appReports', []);
       existingReports.unshift(report);
       localStorage.setItem('appReports', JSON.stringify(existingReports));
       
@@ -111,7 +112,7 @@ const Reports: React.FC = () => {
                       Report Title <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Brief summary of the issue" {...field} required className="focus-visible:ring-monza-yellow" />
+                      <Input id="reportSummary" placeholder="Brief summary of the issue" {...field} required className="focus-visible:ring-monza-yellow" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

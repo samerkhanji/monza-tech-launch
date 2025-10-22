@@ -41,7 +41,7 @@ export const DateTimeInput: React.FC<DateTimeInputProps> = ({
             onChange(dateValue);
             console.log(`✅ ${label} selected:`, dateValue);
           }}
-          className={`w-full px-4 py-3 border-2 ${isReservation ? 'border-blue-300 hover:border-blue-500 focus:border-blue-600 focus:ring-blue-200' : 'border-green-300 hover:border-green-500 focus:border-green-600 focus:ring-green-200'} rounded-lg bg-white text-gray-900 text-base font-medium cursor-pointer focus:ring-2 transition-all`}
+          className={`w-full px-4 py-3 border-2 ${isReservation ? 'border-blue-300 hover:border-blue-500 focus:border-blue-600 focus:ring-blue-200' : 'border-green-300 hover:border-green-500 focus:border-green-600 focus:ring-green-200'} rounded-lg bg-white text-gray-900 text-base font-medium cursor-pointer focus:ring-2 transition-all calendar-fix`}
           style={{ 
             minHeight: '48px', 
             fontSize: '16px'

@@ -1,0 +1,42 @@
+/* Shared professional table styles */
+.pdi-prof-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
+.pdi-prof-table thead th{background:#f3f4f6;font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid #e5e7eb}
+.pdi-prof-table td{border-top:1px solid #e5e7eb;padding:10px 12px;vertical-align:middle}
+.pdi-prof-table td.c{text-align:center;width:90px}
+.pdi-prof-table input[type=checkbox]{width:18px;height:18px;cursor:pointer}
+.pdi-prof-table tfoot td{background:#f8fafc}
+
+/* Optional “section frame” (same feel as the pro form headers) */
+.pdi-sec{background:#fff;border:1px solid #e5e7eb;border-radius:10px;margin:16px 0}
+.pdi-sec .pdi-head{background:#e8f1ff;border-bottom:1px solid #e5e7eb;padding:10px 14px;font-weight:700}
+.pdi-sec .pdi-body{padding:0}
+
+/* Scoped, professional date input styling for PDI only */
+.pdi-form-container input[type="date"],
+.pdi-form-container input[type="datetime-local"]{
+  background:#fff; color:#000; height:32px; line-height:1.2;
+  border:1px solid #d1d5db; border-radius:6px; padding-right:2rem;
+  -webkit-appearance:none; appearance:textfield;
+}
+.pdi-form-container input[type="date"]::-webkit-calendar-picker-indicator,
+.pdi-form-container input[type="datetime-local"]::-webkit-calendar-picker-indicator{
+  display:block !important; opacity:1 !important; cursor:pointer !important;
+  width:20px !important; height:20px !important; margin:0 4px 0 0 !important; padding:2px !important;
+  border:1px solid #d1d5db !important; border-radius:3px !important;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='18' rx='2' ry='2'></rect><line x1='16' y1='2' x2='16' y2='6'></line><line x1='8' y1='2' x2='8' y2='6'></line><line x1='3' y1='10' x2='21' y2='10'></line></svg>") no-repeat center !important;
+  background-size:16px 16px !important;
+}
+.pdi-form-container input[type="date"]:hover,
+.pdi-form-container input[type="datetime-local"]:hover{ border-color:#94a3b8; }
+.pdi-form-container input[type="date"]:focus,
+.pdi-form-container input[type="datetime-local"]:focus{ outline:2px solid #3b82f6; outline-offset:2px; border-color:#3b82f6; }
+.pdi-form-container input[type="date"]::-webkit-inner-spin-button,
+.pdi-form-container input[type="date"]::-webkit-clear-button,
+.pdi-form-container input[type="datetime-local"]::-webkit-inner-spin-button,
+.pdi-form-container input[type="datetime-local"]::-webkit-clear-button{ display:none; }
+
+/* Radix Select inside the dialog/pdi container */
+.pdi-form-container [data-radix-select-content],
+.pdi-form-container [data-radix-popper-content-wrapper]{ z-index:9999 !important; }
+.pdi-form-container [data-radix-dialog-content]{ overflow:visible !important; }
+

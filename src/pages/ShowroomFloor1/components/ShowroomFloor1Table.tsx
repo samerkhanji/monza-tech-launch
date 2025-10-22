@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Edit, MapPin, FileText } from 'lucide-react';
+import { Eye, Edit, MapPin, FileText, Download } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -17,21 +17,29 @@ import EditCarDialog from './EditCarDialog';
 import MoveCarDialog from './MoveCarDialog';
 import PdiViewDialog from './PdiViewDialog';
 import SimpleTestDriveDialog from '@/components/SimpleTestDriveDialog';
-import ActionDropdown from '@/components/ui/ActionDropdown';
+import PortalActionDropdown from '@/components/ui/PortalActionDropdown';
 import ITSoftwareUpdateDialog from '@/components/ITSoftwareUpdateDialog';
 import KilometersUpdateDialog from '@/components/KilometersUpdateDialog';
 import { kilometersService } from '@/services/kilometersService';
+import { useToast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
+import EnhancedWarrantyBadge from '@/components/EnhancedWarrantyBadge';
+import WarrantyFormDialog from '@/components/WarrantyFormDialog';
+import { useWarrantyEditor } from '@/hooks/useWarrantyEditor';
+import SoftwareModelColumn from '@/components/SoftwareModelColumn';
 
 interface ShowroomFloor1TableProps {
   cars: ShowroomCar[];
   onRemoveFromShowroom: (car: ShowroomCar) => void;
   onManageCar: (car: ShowroomCar) => void;
+  onMoveCar: (car: ShowroomCar, destination: string, notes?: string) => void;
 }
 
 const ShowroomFloor1Table: React.FC<ShowroomFloor1TableProps> = ({
   cars,
   onRemoveFromShowroom,
-  onManageCar
+  onManageCar,
+  onMoveCar
 }) => {
   const [selectedCar, setSelectedCar] = useState<ShowroomCar | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -42,6 +50,14 @@ const ShowroomFloor1Table: React.FC<ShowroomFloor1TableProps> = ({
   const [softwareSelectedCar, setSoftwareSelectedCar] = useState<ShowroomCar | null>(null);
   const [showKilometersDialog, setShowKilometersDialog] = useState(false);
   const [kilometersSelectedCar, setKilometersSelectedCar] = useState<ShowroomCar | null>(null);
+  const { toast } = useToast();
+
+  // Warranty editor hook
+  const warrantyEditor = useWarrantyEditor((carId: string, warrantyData: any) => {
+    // Handle warranty updates
+    console.log('Warranty updated for car:', carId, warrantyData);
+    // You can add logic here to refresh the car data or update local state
+  });
 
   const handleEditCar = (carId: string, updates: Partial<ShowroomCar>) => {
     // This would be handled by the parent component
@@ -51,7 +67,8 @@ const ShowroomFloor1Table: React.FC<ShowroomFloor1TableProps> = ({
   const handleMoveCar = (destination: string, notes?: string) => {
     if (selectedCar) {
       console.log('Move car:', selectedCar.id, 'to:', destination, 'notes:', notes);
-      onRemoveFromShowroom(selectedCar);
+      // Call the actual move car function from parent
+      onMoveCar(selectedCar, destination, notes);
     }
     setShowMoveDialog(false);
     setSelectedCar(null);
@@ -155,8 +172,10 @@ const ShowroomFloor1Table: React.FC<ShowroomFloor1TableProps> = ({
                 <TableHead className="font-semibold text-white">Category</TableHead>
                 <TableHead className="font-semibold text-white">Year</TableHead>
                 <TableHead className="font-semibold text-white">Color</TableHead>
+                <TableHead className="font-semibold text-white">Color interior</TableHead>
                 <TableHead className="font-semibold text-white">Price</TableHead>
                 <TableHead className="font-semibold text-white">Status</TableHead>
+                <TableHead className="font-semibold text-white">Warranty Life</TableHead>
                 <TableHead className="font-semibold text-white">Battery</TableHead>
                 <TableHead className="font-semibold text-white">Range Capacity</TableHead>
                 <TableHead className="font-semibold text-white">Km Driven</TableHead>
@@ -184,6 +203,7 @@ const ShowroomFloor1Table: React.FC<ShowroomFloor1TableProps> = ({
                     </TableCell>
                     <TableCell className="text-gray-700">{car.year}</TableCell>
                     <TableCell className="text-gray-700">{car.color}</TableCell>
+                    <TableCell className="text-gray-700">{(car as any).interiorColor || (car as any).interior_color || '-'}</TableCell>
                     <TableCell className="text-gray-900">${car.price.toLocaleString()}</TableCell>
                     <TableCell>
                       {car.testDriveInfo?.isOnTestDrive ? (
@@ -195,6 +215,29 @@ const ShowroomFloor1Table: React.FC<ShowroomFloor1TableProps> = ({
                           {getStatusDisplayName(car.status)}
                         </Badge>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <EnhancedWarrantyBadge
+                        warranty_life={(car as any).warranty_life}
+                        delivery_date={(car as any).delivery_date}
+                        vehicle_expiry_date={(car as any).vehicle_expiry_date}
+                        battery_expiry_date={(car as any).battery_expiry_date}
+                        dms_deadline_date={(car as any).dms_deadline_date}
+                        compact={true}
+                        onClick={() => {
+                          warrantyEditor.openWarrantyDialog(
+                            car.id,
+                            'cars',
+                            {
+                              warranty_life: (car as any).warranty_life,
+                              delivery_date: (car as any).delivery_date,
+                              vehicle_expiry_date: (car as any).vehicle_expiry_date,
+                              battery_expiry_date: (car as any).battery_expiry_date,
+                              dms_deadline_date: (car as any).dms_deadline_date
+                            }
+                          );
+                        }}
+                      />
                     </TableCell>
                     <TableCell className="text-gray-700">
                       {car.batteryPercentage ? `${car.batteryPercentage}%` : '-'}
@@ -265,35 +308,26 @@ const ShowroomFloor1Table: React.FC<ShowroomFloor1TableProps> = ({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-gray-700">
-                      <div 
-                        className="flex items-center gap-1 text-xs cursor-pointer"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleSoftwareClick(car);
+                      <SoftwareModelColumn
+                        softwareVersion={(car as any).softwareVersion}
+                        softwareLastUpdated={(car as any).softwareLastUpdated}
+                        softwareUpdateBy={(car as any).softwareUpdateBy}
+                        softwareUpdateNotes={(car as any).softwareUpdateNotes}
+                        compact={true}
+                        editable={true}
+                        carId={car.id}
+                        onSave={(softwareData) => {
+                          handleEditCar(car.id, {
+                            softwareVersion: softwareData.softwareVersion,
+                            softwareLastUpdated: softwareData.softwareLastUpdated,
+                            softwareUpdateBy: softwareData.softwareUpdateBy,
+                            softwareUpdateNotes: softwareData.softwareUpdateNotes
+                          });
                         }}
-                        title="Click to manage software updates"
-                      >
-                        {(car as any).softwareVersion ? (
-                          <>
-                            <Badge variant="outline" className="text-xs hover:bg-blue-50 transition-colors">
-                              v{(car as any).softwareVersion}
-                            </Badge>
-                            {(car as any).softwareLastUpdated && (
-                              <span className="text-gray-500">
-                                {new Date((car as any).softwareLastUpdated).toLocaleDateString()}
-                              </span>
-                            )}
-                          </>
-                        ) : (
-                          <Badge variant="secondary" className="text-xs text-yellow-700 bg-yellow-100 hover:bg-yellow-200 transition-colors">
-                            Update Needed
-                          </Badge>
-                        )}
-                      </div>
+                      />
                     </TableCell>
                     <TableCell>
-                      <ActionDropdown
+                      <PortalActionDropdown
                         options={[
                           { value: 'edit', label: 'Edit Car' },
                           ...((!car.testDriveInfo?.isOnTestDrive && car.status === 'in_stock') 
@@ -321,6 +355,7 @@ const ShowroomFloor1Table: React.FC<ShowroomFloor1TableProps> = ({
                             onRemoveFromShowroom(car);
                           }
                         }}
+                        id={`actions-${car.id}`}
                         ariaLabel={`Actions for ${car.model} ${car.vinNumber}`}
                       />
                     </TableCell>
@@ -418,6 +453,16 @@ const ShowroomFloor1Table: React.FC<ShowroomFloor1TableProps> = ({
           currentKilometers: (kilometersSelectedCar as any).kilometersDriven
         } : null}
         onUpdate={handleKilometersUpdate}
+      />
+
+      {/* Warranty Form Dialog */}
+      <WarrantyFormDialog
+        isOpen={warrantyEditor.isWarrantyDialogOpen}
+        onClose={warrantyEditor.closeWarrantyDialog}
+        carId={warrantyEditor.selectedCarId || ''}
+        tableName={warrantyEditor.selectedTableName || 'cars'}
+        currentWarranty={warrantyEditor.selectedCarWarranty || undefined}
+        onSave={warrantyEditor.handleWarrantySave}
       />
     </>
   );

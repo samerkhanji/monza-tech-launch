@@ -43,7 +43,6 @@ const PdiViewDialog: React.FC<PdiViewDialogProps> = ({
       <DialogContent 
         className="max-w-6xl w-full h-[90vh] flex flex-col bg-white"
         style={{ 
-          zIndex: 50000,
           maxHeight: '90vh',
           height: '90vh'
         }}
@@ -64,7 +63,7 @@ const PdiViewDialog: React.FC<PdiViewDialogProps> = ({
           </div>
         </DialogHeader>
         
-        <div className="flex-1 overflow-y-auto mt-4 pdi-scroll-container pdi-content-wrapper">
+        <div id="pdi-pro" className="flex-1 overflow-y-auto mt-4 pdi-scroll-container pdi-content-wrapper">
           <PdiChecklistPdf car={car} onSave={handlePdiSave} />
         </div>
       </DialogContent>

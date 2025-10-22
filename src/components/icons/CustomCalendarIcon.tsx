@@ -21,33 +21,9 @@ export const CustomCalendarIcon: React.FC<CustomCalendarIconProps> = ({
       strokeLinejoin="round" 
       className={className}
     >
-      {/* Calendar frame */}
-      <path d="M3 4h18c1.1 0 2 0.9 2 2v14c0 1.1-0.9 2-2 2H3c-1.1 0-2-0.9-2-2V6c0-1.1 0.9-2 2-2z" />
-      
-      {/* Top rings */}
-      <path d="M8 2v4" />
-      <path d="M16 2v4" />
-      
-      {/* Header line */}
-      <path d="M1 9h22" />
-      
-      {/* Calendar grid */}
-      <rect x="4" y="11" width="2" height="2" fill="currentColor" />
-      <rect x="8" y="11" width="2" height="2" fill="currentColor" />
-      <rect x="12" y="11" width="2" height="2" fill="currentColor" />
-      <rect x="16" y="11" width="2" height="2" fill="currentColor" />
-      
-      <rect x="4" y="15" width="2" height="2" fill="currentColor" />
-      <rect x="8" y="15" width="2" height="2" fill="currentColor" />
-      <rect x="12" y="15" width="2" height="2" fill="currentColor" />
-      <rect x="16" y="15" width="2" height="2" fill="currentColor" />
-      
-      <rect x="4" y="19" width="2" height="2" fill="currentColor" />
-      <rect x="8" y="19" width="2" height="2" fill="currentColor" />
-      <rect x="12" y="19" width="2" height="2" fill="currentColor" />
-      
-      {/* Torn corner effect */}
-      <path d="M17 19l2-2v2z" fill="currentColor" />
+      {/* Clock icon instead of calendar */}
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12,6 12,12 16,14" />
     </svg>
   );
 };

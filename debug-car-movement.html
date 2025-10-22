@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Car Movement</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Debug Car Movement</h1>
+    <button onclick="debugCarMovement()">Debug Car Movement</button>
+    <div id="output"></div>
+
+    <script>
+        const supabaseUrl = 'https://wunqntfreyezylvbzvxc.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1bnFudGZyZXlleXpsdnhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5NzE5NzQsImV4cCI6MjA1MDU0Nzk3NH0.Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8';
+        
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function debugCarMovement() {
+            const output = document.getElementById('output');
+            output.innerHTML = 'Debugging car movement...';
+
+            try {
+                // Check what cars exist in the database
+                const { data: allCars, error: allCarsError } = await supabase
+                    .from('cars')
+                    .select('id, vin, model, current_floor')
+                    .limit(5);
+
+                if (allCarsError) {
+                    output.innerHTML = `Error fetching cars: ${allCarsError.message}`;
+                    return;
+                }
+
+                output.innerHTML = '<h3>All Cars in Database:</h3>';
+                allCars.forEach(car => {
+                    output.innerHTML += `<div>ID: ${car.id} | VIN: ${car.vin} | Model: ${car.model} | Floor: ${car.current_floor}</div>`;
+                });
+
+                // Check cars in inventory (not on floors)
+                const { data: inventoryCars, error: invError } = await supabase
+                    .from('cars')
+                    .select('id, vin, model, current_floor')
+                    .not('current_floor', 'in', ['SHOWROOM_1', 'SHOWROOM_2', 'GARAGE'])
+                    .limit(3);
+
+                if (invError) {
+                    output.innerHTML += `<h3>Error checking inventory: ${invError.message}</h3>`;
+                    return;
+                }
+
+                output.innerHTML += '<h3>Cars in Inventory (available to move):</h3>';
+                if (inventoryCars.length > 0) {
+                    inventoryCars.forEach(car => {
+                        output.innerHTML += `<div>ID: ${car.id} | VIN: ${car.vin} | Model: ${car.model} | Floor: ${car.current_floor}</div>`;
+                    });
+
+                    // Try to move the first car to Floor 1
+                    const testCar = inventoryCars[0];
+                    output.innerHTML += `<h3>Testing Move: ${testCar.model} to SHOWROOM_1</h3>`;
+                    
+                    const { error: moveError } = await supabase
+                        .from('cars')
+                        .update({ 
+                            current_floor: 'SHOWROOM_1',
+                            notes: `Debug test move on ${new Date().toLocaleDateString()}`,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', testCar.id);
+                    
+                    if (moveError) {
+                        output.innerHTML += `<div style="color: red;">Move failed: ${moveError.message}</div>`;
+                    } else {
+                        output.innerHTML += `<div style="color: green;">Move successful! ${testCar.model} moved to SHOWROOM_1</div>`;
+                        
+                        // Check if it's now on Floor 1
+                        setTimeout(async () => {
+                            const { data: floor1Check, error: checkError } = await supabase
+                                .from('cars')
+                                .select('id, vin, model, current_floor')
+                                .eq('id', testCar.id);
+                            
+                            if (checkError) {
+                                output.innerHTML += `<div style="color: red;">Check failed: ${checkError.message}</div>`;
+                            } else if (floor1Check.length > 0) {
+                                output.innerHTML += `<div style="color: green;">Verified: ${floor1Check[0].model} is now on ${floor1Check[0].current_floor}</div>`;
+                            }
+                        }, 1000);
+                    }
+                } else {
+                    output.innerHTML += '<div style="color: orange;">No cars in inventory to test with</div>';
+                }
+
+            } catch (error) {
+                output.innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

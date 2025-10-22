@@ -1,0 +1,59 @@
+/* Z-index hierarchy - single source of truth */
+:root {
+  --z-base: 0;
+  --z-nav: 100;
+  --z-sidebar: 200;
+  --z-dropdown: 300;
+  --z-toast: 400;
+  --z-dialog: 500;
+  --z-tooltip: 600;
+}
+
+/* Apply consistent z-index values */
+.header, .navbar { 
+  z-index: var(--z-nav); 
+  position: relative; 
+}
+
+.sidebar { 
+  z-index: var(--z-sidebar); 
+  position: relative; 
+}
+
+.dropdown, .popover { 
+  z-index: var(--z-dropdown); 
+}
+
+.toast, .notification { 
+  z-index: var(--z-toast); 
+}
+
+#modals-root, 
+.DialogOverlay, 
+.DialogContent,
+.dialog,
+.modal { 
+  z-index: var(--z-dialog); 
+}
+
+.tooltip { 
+  z-index: var(--z-tooltip); 
+}
+
+/* Prevent extreme z-index values that cause click blocking */
+* {
+  /* Reset any extreme z-index values */
+  z-index: unset;
+}
+
+/* Force modals portal to be inert when empty */
+#modals-root:empty {
+  position: static !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+
+/* Ensure click-through when no active modals */
+#modals-root:not(.modal-active) {
+  pointer-events: none !important;
+}

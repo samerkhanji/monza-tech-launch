@@ -19,8 +19,13 @@ import MoveCarDialog from './MoveCarDialog';
 import PdiViewDialog from './PdiViewDialog';
 import SimpleTestDriveDialog from '@/components/SimpleTestDriveDialog';
 import ShowroomFloor2TableActions from './ShowroomFloor2TableActions';
+import PortalActionDropdown from '@/components/ui/PortalActionDropdown';
 import ITSoftwareUpdateDialog from '@/components/ITSoftwareUpdateDialog';
 import { kilometersService } from '@/services/kilometersService';
+import EnhancedWarrantyBadge from '@/components/EnhancedWarrantyBadge';
+import WarrantyFormDialog from '@/components/WarrantyFormDialog';
+import { useWarrantyEditor } from '@/hooks/useWarrantyEditor';
+import SoftwareModelColumn from '@/components/SoftwareModelColumn';
 
 interface CarData {
   id: string;
@@ -241,6 +246,7 @@ const MobileCarCard = memo(({
       {/* Actions */}
       <div className="flex gap-2 pt-2 border-t">
         <select
+          id={`mobileActions-${car.id}`}
           onChange={(e) => {
             const action = e.target.value;
             if (action === 'view') onViewDetails(car);
@@ -281,6 +287,7 @@ const ShowroomFloor2Table = memo(({
 }: ShowroomFloor2TableProps) => {
   const [showSoftwareDialog, setShowSoftwareDialog] = useState(false);
   const [softwareSelectedCar, setSoftwareSelectedCar] = useState<CarData | null>(null);
+  const warrantyEditor = useWarrantyEditor();
 
   const handleSoftwareClick = useCallback((car: CarData) => {
     setSoftwareSelectedCar(car);
@@ -313,11 +320,11 @@ const ShowroomFloor2Table = memo(({
   }, []);
 
   const getCategoryColor = useCallback((category: string) => {
-    switch (category) {
+    switch (String(category)) {
       case 'EV': return 'category-ev';
       case 'REV': return 'category-rev';
       case 'ICEV': return 'category-icev';
-      default: return 'bg-gray-400 text-white';
+      default: return 'category-ev';
     }
   }, []);
 
@@ -334,6 +341,7 @@ const ShowroomFloor2Table = memo(({
               <TableHead className="font-semibold">Category</TableHead>
               <TableHead className="font-semibold">Year</TableHead>
               <TableHead className="font-semibold">Color</TableHead>
+              <TableHead className="font-semibold">Color interior</TableHead>
               <TableHead className="font-semibold">Price</TableHead>
               <TableHead className="font-semibold">Status</TableHead>
               <TableHead className="font-semibold">Battery</TableHead>
@@ -347,6 +355,7 @@ const ShowroomFloor2Table = memo(({
               <TableHead className="font-semibold">PDI</TableHead>
               <TableHead className="font-semibold">Customs</TableHead>
               <TableHead className="font-semibold">Software Model</TableHead>
+              <TableHead className="font-semibold">Warranty Life</TableHead>
               <TableHead className="font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -362,6 +371,7 @@ const ShowroomFloor2Table = memo(({
                 </TableCell>
                 <TableCell>{car.year}</TableCell>
                 <TableCell>{car.color}</TableCell>
+                <TableCell>{(car as any).interiorColor || (car as any).interior_color || '-'}</TableCell>
                 <TableCell className="font-medium">${car.price.toLocaleString()}</TableCell>
                 <TableCell>
                   <Badge 
@@ -473,33 +483,43 @@ const ShowroomFloor2Table = memo(({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex gap-1">
-                    <div className="relative">
-                      <select
-                        onChange={(e) => {
-                          const action = e.target.value;
-                          if (action === 'view') onViewDetails(car);
-                          else if (action === 'edit') onEditCar(car);
-                          else if (action === 'move') onMoveCar(car);
-                          e.target.value = '';
-                        }}
-                        className="w-28 h-9 px-3 border-2 border-gray-300 rounded-lg bg-white cursor-pointer text-sm font-medium hover:bg-gray-50 hover:border-monza-yellow focus:ring-2 focus:ring-monza-yellow focus:border-monza-yellow transition-all duration-200 shadow-sm"
-                        style={{ 
-                          appearance: 'none',
-                          backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23374151' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                          backgroundPosition: 'right 8px center',
-                          backgroundRepeat: 'no-repeat',
-                          backgroundSize: '20px'
-                        }}
-                        aria-label={`Actions for ${car.model} ${car.vinNumber}`}
-                      >
-                        <option value="">Actions</option>
-                        <option value="view">View Details</option>
-                        <option value="edit">Edit</option>
-                        <option value="move">Move</option>
-                      </select>
-                    </div>
-                  </div>
+                  <EnhancedWarrantyBadge
+                    warranty_life={(car as any).warranty_life}
+                    delivery_date={(car as any).delivery_date}
+                    vehicle_expiry_date={(car as any).vehicle_expiry_date}
+                    battery_expiry_date={(car as any).battery_expiry_date}
+                    dms_deadline_date={(car as any).dms_deadline_date}
+                    compact={true}
+                    onClick={() => {
+                      warrantyEditor.openWarrantyDialog(
+                        car.id,
+                        'cars',
+                        {
+                          warranty_life: (car as any).warranty_life,
+                          delivery_date: (car as any).delivery_date,
+                          vehicle_expiry_date: (car as any).vehicle_expiry_date,
+                          battery_expiry_date: (car as any).battery_expiry_date,
+                          dms_deadline_date: (car as any).dms_deadline_date
+                        }
+                      );
+                    }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <PortalActionDropdown
+                    options={[
+                      { value: 'details', label: 'View Details' },
+                      { value: 'edit', label: 'Edit Car' },
+                      { value: 'move', label: 'Move Car' }
+                    ]}
+                    onAction={(action) => {
+                      if (action === 'details') onViewDetails(car);
+                      else if (action === 'edit') onEditCar(car);
+                      else if (action === 'move') onMoveCar(car);
+                    }}
+                    id={`actions-${car.id}`}
+                    ariaLabel={`Actions for ${car.model} ${car.vinNumber}`}
+                  />
                 </TableCell>
               </TableRow>
             ))}
@@ -543,6 +563,16 @@ const ShowroomFloor2Table = memo(({
           priority: !(softwareSelectedCar as any).softwareVersion ? 'critical' : 'medium'
         } : null}
         onUpdateComplete={handleSoftwareUpdateComplete}
+      />
+
+      {/* Warranty Form Dialog */}
+      <WarrantyFormDialog
+        isOpen={warrantyEditor.isWarrantyDialogOpen}
+        onClose={warrantyEditor.closeWarrantyDialog}
+        carId={warrantyEditor.selectedCarId || ''}
+        tableName={warrantyEditor.selectedTableName || 'cars'}
+        currentWarranty={warrantyEditor.selectedCarWarranty || undefined}
+        onSave={warrantyEditor.handleWarrantySave}
       />
     </>
   );

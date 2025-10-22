@@ -1,0 +1,10 @@
+email,role,name,department,phone
+houssam@monza.com,OWNER,Houssam,Management,+961-xxx-xxxx
+samer@monza.com,OWNER,Samer,Management,+961-xxx-xxxx
+kareem@monza.com,OWNER,Kareem,Management,+961-xxx-xxxx
+mark@monza.com,GARAGE_MANAGER,Mark,Garage Operations,+961-xxx-xxxx
+lara@monza.com,ASSISTANT,Lara,Administration,+961-xxx-xxxx
+samaya@monza.com,ASSISTANT,Samaya,Administration,+961-xxx-xxxx
+khalil@monza.com,SALES_MANAGER,Khalil,Sales & Marketing,+961-xxx-xxxx
+tamara@monza.com,MARKETING_MANAGER,Tamara,Sales & Marketing,+961-xxx-xxxx
+elie@monza.com,TECHNICIAN,Elie,Technical Services,+961-xxx-xxxx

@@ -13,7 +13,7 @@ import { Car } from '../types';
 import { RepairRecord } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { FileText, Calendar, Wrench, CheckCircle } from 'lucide-react';
+import { FileText, Wrench, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface CarRepairHistoryModalProps {
@@ -111,12 +111,12 @@ const CarRepairHistoryModal: React.FC<CarRepairHistoryModalProps> = ({
                   
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
+                      <Clock className="h-3 w-3" />
                       <span>Started: {dateUtils.formatDateTime(repair.startTimestamp)}</span>
                     </div>
                     
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
+                      <Clock className="h-3 w-3" />
                       <span>Completed: {dateUtils.formatDateTime(repair.endTimestamp)}</span>
                     </div>
                   </div>

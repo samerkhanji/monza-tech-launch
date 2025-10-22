@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monza TECH - Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Monza TECH Debug Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+        
+        log('🚀 Debug test started', 'info');
+        
+        // Test 1: Basic JavaScript
+        try {
+            log('✅ JavaScript is working', 'success');
+        } catch (e) {
+            log('❌ JavaScript error: ' + e.message, 'error');
+        }
+        
+        // Test 2: Check if we can access localhost:5173
+        fetch('http://localhost:5173')
+            .then(response => {
+                log('✅ Can connect to localhost:5173', 'success');
+                return response.text();
+            })
+            .then(html => {
+                if (html.includes('Monza TECH')) {
+                    log('✅ HTML contains Monza TECH title', 'success');
+                } else {
+                    log('❌ HTML does not contain expected content', 'error');
+                }
+            })
+            .catch(error => {
+                log('❌ Cannot connect to localhost:5173: ' + error.message, 'error');
+            });
+        
+        // Test 3: Check environment variables
+        log('🔍 Checking if this is running in browser vs Electron', 'info');
+        if (typeof window !== 'undefined') {
+            log('✅ Window object exists', 'success');
+            if (window.location) {
+                log('📍 Current URL: ' + window.location.href, 'info');
+            }
+        }
+        
+        // Test 4: Try to load React
+        setTimeout(() => {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/react@18/umd/react.development.js';
+            script.onload = () => log('✅ React loaded successfully', 'success');
+            script.onerror = () => log('❌ Failed to load React', 'error');
+            document.head.appendChild(script);
+        }, 1000);
+        
+        log('🎯 Debug test completed. Check results above.', 'info');
+    </script>
+</body>
+</html>

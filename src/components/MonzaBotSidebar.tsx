@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, FileText, Bell, X, Brain, HelpCircle, Volume2, VolumeX, Zap, Settings, Car, Wrench, BarChart3, Camera } from 'lucide-react';
+import { MessageSquare, FileText, Bell, X, Brain, Volume2, VolumeX, Zap, Settings, Car, Wrench, BarChart3, Camera } from 'lucide-react';
 import MonzaBotRequestBox from '@/pages/NewCarArrivals/components/MonzaBotRequestBox';
 import MonzaBotFormReview from './MonzaBotFormReview';
-import MonzaBotTour from './MonzaBotTour';
+
 import VinScannerDialog from './VinScannerDialog';
 import { useMonzaBotSubmissions } from '@/hooks/useMonzaBotSubmissions';
 import { useMonzaBotNotifications } from '@/hooks/useMonzaBotNotifications';
@@ -31,7 +31,7 @@ const MonzaBotSidebar: React.FC<MonzaBotSidebarProps> = ({ isOpen, onClose }) =>
   const { getCarByVIN, moveCarToLocation } = useCentralCarData();
   
   const [activeTab, setActiveTab] = useState('chat');
-  const [showTour, setShowTour] = useState(false);
+
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [showVinScanner, setShowVinScanner] = useState(false);
   const [selectedVIN, setSelectedVIN] = useState('');
@@ -136,9 +136,28 @@ const MonzaBotSidebar: React.FC<MonzaBotSidebarProps> = ({ isOpen, onClose }) =>
 
   const currentCar = selectedVIN ? getCarByVIN(selectedVIN) : null;
 
+  // Add escape key listener for closing
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [isOpen, onClose]);
+
   return (
     <>
-      <Sheet open={isOpen} onOpenChange={onClose}>
+      <Sheet open={isOpen} onOpenChange={(open) => {
+        console.log('Sheet onOpenChange called with:', open);
+        if (!open) {
+          onClose();
+        }
+      }}>
         <SheetContent side="right" className={`${sidebarWidth} p-0 flex flex-col h-full`}>
           <SheetHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
             <div className="flex items-center justify-between">
@@ -168,24 +187,31 @@ const MonzaBotSidebar: React.FC<MonzaBotSidebarProps> = ({ isOpen, onClose }) =>
                     )}
                   </Button>
                 )}
+
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={() => setShowTour(true)}
-                  className="h-8 w-8 p-0"
-                  title="Take a tour"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onClose();
+                  }} 
+                  className={`p-0 ${isMobile ? 'h-10 w-10' : 'h-8 w-8'} relative z-50 pointer-events-auto`}
+                  title="Close MonzaBot"
                 >
-                  <HelpCircle className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
-                  <X className="h-4 w-4" />
+                  <X className={isMobile ? "h-6 w-6" : "h-4 w-4"} />
                 </Button>
               </div>
             </div>
           </SheetHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-            <TabsList className={`grid w-full grid-cols-4 mx-2 sm:mx-4 mt-2 sm:mt-4 ${screenSize === 'small' ? 'h-8' : 'h-10'}`}>
+            <div className="flex items-center justify-center mx-2 sm:mx-4 mt-2 mb-1">
+              <div className="text-xs text-muted-foreground">
+                {isMobile ? 'Use close button below or tap outside' : 'Tap outside or press ESC to close'}
+              </div>
+            </div>
+            <TabsList className={`grid w-full grid-cols-4 mx-2 sm:mx-4 ${screenSize === 'small' ? 'h-8' : 'h-10'}`}>
               <TabsTrigger value="chat" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                 <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Chat</span>
@@ -402,11 +428,25 @@ const MonzaBotSidebar: React.FC<MonzaBotSidebarProps> = ({ isOpen, onClose }) =>
                 </div>
               </TabsContent>
             </div>
+
+          {/* Mobile-only close button at the bottom */}
+          {isMobile && (
+            <div className="p-4 border-t bg-white">
+              <Button 
+                onClick={onClose}
+                variant="outline"
+                className="w-full h-12 text-base font-medium border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
+              >
+                <X className="h-5 w-5 mr-2" />
+                Close MonzaBot
+              </Button>
+            </div>
+          )}
           </Tabs>
         </SheetContent>
       </Sheet>
 
-      <MonzaBotTour isOpen={showTour} onClose={() => setShowTour(false)} />
+
       
       <VinScannerDialog
         isOpen={showVinScanner}

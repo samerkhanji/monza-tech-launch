@@ -10,9 +10,12 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Car, CheckCircle, Clock } from 'lucide-react';
+import { Car, CheckCircle, Clock, Download } from 'lucide-react';
 import { EnhancedVehicle } from '@/types';
-import ActionDropdown from '@/components/ui/ActionDropdown';
+import PortalActionDropdown from '@/components/ui/PortalActionDropdown';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
 
 interface NewCarArrivalsTableProps {
   vehicles: EnhancedVehicle[];
@@ -55,6 +58,7 @@ const NewCarArrivalsTable: React.FC<NewCarArrivalsTableProps> = ({
               <TableHead className="font-semibold text-white">Category</TableHead>
               <TableHead className="font-semibold text-white">Tax Status</TableHead>
               <TableHead className="font-semibold text-white">Battery</TableHead>
+              <TableHead className="font-semibold text-white">Software Model</TableHead>
               <TableHead className="font-semibold text-white">Arrival Date</TableHead>
               <TableHead className="font-semibold text-white">Actions</TableHead>
             </TableRow>
@@ -85,12 +89,40 @@ const NewCarArrivalsTable: React.FC<NewCarArrivalsTableProps> = ({
                   </TableCell>
                   <TableCell className="text-gray-700">
                     {vehicle.batteryPercentage !== undefined ? `${vehicle.batteryPercentage}%` : 'N/A'}
-            </TableCell>
+                  </TableCell>
+                  <TableCell>
+                    <div 
+                      className="flex items-center gap-2 text-xs cursor-pointer hover:scale-105 transition-transform"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Software clicked for vehicle:', vehicle.vinNumber);
+                      }}
+                      title="Click to manage software updates"
+                    >
+                      {(vehicle as any).softwareVersion ? (
+                        <>
+                          <Badge variant="outline" className="text-xs hover:bg-blue-50 transition-colors">
+                            v{(vehicle as any).softwareVersion}
+                          </Badge>
+                          {(vehicle as any).softwareLastUpdated && (
+                            <span className="text-gray-500">
+                              {new Date((vehicle as any).softwareLastUpdated).toLocaleDateString()}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs text-yellow-700 bg-yellow-100 hover:bg-yellow-200 transition-colors">
+                          Update Needed
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-gray-700">
                     {new Date(vehicle.arrivalTimestamp).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <ActionDropdown
+                    <PortalActionDropdown
                       options={[
                         { value: 'view', label: 'View Details' },
                         ...(onEditVehicle ? [{ value: 'edit', label: 'Edit Vehicle' }] : [])
@@ -99,6 +131,7 @@ const NewCarArrivalsTable: React.FC<NewCarArrivalsTableProps> = ({
                         if (action === 'view') onVehicleClick(vehicle);
                         else if (action === 'edit' && onEditVehicle) onEditVehicle(vehicle);
                       }}
+                      id={`actions-${vehicle.id}`}
                       ariaLabel={`Actions for ${vehicle.model} ${vehicle.vinNumber}`}
                     />
             </TableCell>

@@ -33,6 +33,14 @@ class SupabaseStorageService {
   static async uploadFile(options: FileUploadOptions): Promise<FileUploadResult> {
     try {
       const { bucket, path, file, replace = false, metadata = {} } = options;
+      
+      // Check if Supabase is properly configured
+      if (!supabase) {
+        return {
+          success: false,
+          error: 'Supabase client not configured'
+        };
+      }
 
       // Validate file size (max 50MB by default)
       const maxSize = 50 * 1024 * 1024; // 50MB
@@ -185,7 +193,15 @@ class SupabaseStorageService {
       }
 
       return {
-        files: data as StorageFile[]
+        files: data.map(file => ({
+          name: file.name,
+          size: file.metadata?.size || 0,
+          created_at: file.created_at,
+          updated_at: file.updated_at,
+          last_accessed_at: file.last_accessed_at,
+          metadata: file.metadata || {},
+          id: file.id
+        })) as StorageFile[]
       };
 
     } catch (error) {
@@ -208,7 +224,8 @@ class SupabaseStorageService {
       const blob = new Blob([jsonString], { type: 'application/json' });
       const file = new File([blob], fileName, { type: 'application/json' });
 
-      return await this.uploadFile({
+      // Try to upload to Supabase storage
+      const result = await this.uploadFile({
         bucket: 'excel-backups',
         path: `backups/${fileName}`,
         file,
@@ -220,11 +237,46 @@ class SupabaseStorageService {
         }
       });
 
+      // If Supabase upload fails, fall back to localStorage
+      if (!result.success) {
+        console.warn('Supabase backup failed, falling back to localStorage:', result.error);
+        
+        // Store backup in localStorage as fallback
+        const backupKey = `backup_${backupName}_${timestamp}`;
+        localStorage.setItem(backupKey, jsonString);
+        
+        return {
+          success: true,
+          url: 'localStorage',
+          path: backupKey,
+          error: 'Stored in localStorage due to Supabase error'
+        };
+      }
+
+      return result;
+
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Backup failed'
-      };
+      console.error('Backup creation failed:', error);
+      
+      // Fallback to localStorage
+      try {
+        const timestamp = new Date().toISOString().replace(/:/g, '-');
+        const backupKey = `backup_${backupName}_${timestamp}`;
+        const jsonString = JSON.stringify(data, null, 2);
+        localStorage.setItem(backupKey, jsonString);
+        
+        return {
+          success: true,
+          url: 'localStorage',
+          path: backupKey,
+          error: 'Stored in localStorage due to error'
+        };
+      } catch (localError) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Backup failed completely'
+        };
+      }
     }
   }
 

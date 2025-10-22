@@ -103,27 +103,36 @@ export const CarDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Load and merge data from all systems
   const loadAndMergeData = () => {
     try {
-      // Load inventory cars
+      // Check if any data exists before processing
       const inventoryData = localStorage.getItem('carInventory');
+      const garageData = localStorage.getItem('garageCars');
+      const scheduleData = localStorage.getItem('garageSchedule');
+      const repairHistoryData = localStorage.getItem('repairHistory');
+      
+      // If no data exists, return early with empty state
+      if (!inventoryData && !garageData && !scheduleData && !repairHistoryData) {
+        setUnifiedCars([]);
+        return;
+      }
+
+      // Load inventory cars
       const inventory: Car[] = inventoryData ? JSON.parse(inventoryData) : [];
 
       // Load garage cars
-      const garageData = localStorage.getItem('garageCars');
       const garageCars: GarageCar[] = garageData ? JSON.parse(garageData) : [];
 
       // Load scheduled cars
-      const scheduleData = localStorage.getItem('garageSchedules');
       const schedules: GarageSchedule[] = scheduleData ? JSON.parse(scheduleData) : [];
       
       // Load repair history
-      const repairHistoryData = localStorage.getItem('repairHistory');
       const repairHistory: RepairHistoryEntry[] = repairHistoryData ? JSON.parse(repairHistoryData) : [];
 
       // Create unified car data
       const unifiedMap = new Map<string, UnifiedCarData>();
 
       // Process inventory cars
-      inventory.forEach(car => {
+      if (Array.isArray(inventory)) {
+        inventory.forEach(car => {
         const carCode = car.vinNumber || car.id;
         unifiedMap.set(carCode, {
           id: car.id,
@@ -141,9 +150,13 @@ export const CarDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
           financialRecords: []
         });
       });
+      } else {
+        console.warn('Inventory data is not an array:', inventory);
+      }
 
       // Process garage cars
-      garageCars.forEach(car => {
+      if (Array.isArray(garageCars)) {
+        garageCars.forEach(car => {
         const carCode = car.carCode;
         const existing = unifiedMap.get(carCode);
         
@@ -166,85 +179,96 @@ export const CarDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
           });
         }
       });
+      } else {
+        console.warn('Garage cars data is not an array:', garageCars);
+      }
 
-      // Process scheduled cars
-      schedules.forEach(schedule => {
-        if (schedule.scheduledCars) {
-          schedule.scheduledCars.forEach(car => {
-            const carCode = car.carCode;
-            const existing = unifiedMap.get(carCode);
-            
-            const scheduleInfo = {
-              ...car,
-              scheduleDate: schedule.date,
-              scheduleTime: `${schedule.startTime} - ${schedule.endTime}`
-            };
+      // Process scheduled cars - Add type checking to prevent forEach errors
+      if (Array.isArray(schedules)) {
+        schedules.forEach(schedule => {
+          if (schedule && schedule.scheduledCars && Array.isArray(schedule.scheduledCars)) {
+            schedule.scheduledCars.forEach(car => {
+              const carCode = car.carCode;
+              const existing = unifiedMap.get(carCode);
+              
+              const scheduleInfo = {
+                ...car,
+                scheduleDate: schedule.date,
+                scheduleTime: `${schedule.startTime} - ${schedule.endTime}`
+              };
 
-            if (existing) {
-              existing.scheduleData = scheduleInfo;
-              if (existing.currentLocation === 'inventory') {
-                existing.currentLocation = 'scheduled';
+              if (existing) {
+                existing.scheduleData = scheduleInfo;
+                if (existing.currentLocation === 'inventory') {
+                  existing.currentLocation = 'scheduled';
+                }
+              } else {
+                unifiedMap.set(carCode, {
+                  id: car.id,
+                  carCode,
+                  model: car.carModel,
+                  year: new Date().getFullYear(),
+                  color: 'Unknown',
+                  scheduleData: scheduleInfo,
+                  currentLocation: 'scheduled',
+                  clientName: car.customerName,
+                  repairHistory: repairHistory.filter(r => r.carCode === carCode),
+                  financialRecords: []
+                });
               }
-            } else {
-              unifiedMap.set(carCode, {
-                id: car.id,
-                carCode,
-                model: car.carModel,
-                year: new Date().getFullYear(),
-                color: 'Unknown',
-                scheduleData: scheduleInfo,
-                currentLocation: 'scheduled',
-                clientName: car.customerName,
-                repairHistory: repairHistory.filter(r => r.carCode === carCode),
-                financialRecords: []
-              });
-            }
-          });
-        }
-      });
+            });
+          }
+        });
+      } else {
+        console.warn('Schedules data is not an array:', schedules);
+      }
 
       // Add financial records to existing cars
-      repairHistory.forEach(repair => {
-        const car = unifiedMap.get(repair.carCode);
-        if (car && repair.totalCost) {
-          // Convert repair history to financial record format
-          const financialRecord: CarFinancialRecord = {
-            carCode: repair.carCode,
-            carModel: repair.carModel,
-            customerName: repair.customerName,
-            repairType: repair.repairType,
-            startDate: repair.startDate,
-            completionDate: repair.completionDate,
-            laborHours: repair.laborHours,
-            laborCost: repair.totalCost * 0.6, // Estimate 60% labor
-            partsCost: repair.totalCost * 0.3, // Estimate 30% parts
-            electricityCost: repair.totalCost * 0.05, // Estimate 5% electricity
-            equipmentCost: 0,
-            overheadCost: repair.totalCost * 0.05, // Estimate 5% overhead
-            totalCost: repair.totalCost,
-            profit: repair.totalCost * 0.2, // Estimate 20% profit
-            profitMargin: 20,
-            currency: 'USD',
-            exchangeRate: 89500,
-            partsUsed: repair.partsUsed.map(part => ({
-              name: part,
-              quantity: 1,
-              unitCost: 50, // Default estimate
-              isImported: Math.random() > 0.5,
-              supplier: 'Auto Parts Supply'
-            })),
-            employeesWorked: [{
-              name: repair.technician,
-              role: 'Technician',
-              hours: repair.laborHours,
-              hourlyRate: 28
-            }]
-          };
-          
-          if (!car.financialRecords) car.financialRecords = [];
-          car.financialRecords.push(financialRecord);
-        }
-      });
+      if (Array.isArray(repairHistory)) {
+        repairHistory.forEach(repair => {
+          const car = unifiedMap.get(repair.carCode);
+          if (car && repair.totalCost) {
+            // Convert repair history to financial record format
+            const financialRecord: CarFinancialRecord = {
+              carCode: repair.carCode,
+              carModel: repair.carModel,
+              customerName: repair.customerName,
+              repairType: repair.repairType,
+              startDate: repair.startDate,
+              completionDate: repair.completionDate,
+              laborHours: repair.laborHours,
+              laborCost: repair.totalCost * 0.6, // Estimate 60% labor
+              partsCost: repair.totalCost * 0.3, // Estimate 30% parts
+              electricityCost: repair.totalCost * 0.05, // Estimate 5% electricity
+              equipmentCost: 0,
+              overheadCost: repair.totalCost * 0.05, // Estimate 5% overhead
+              totalCost: repair.totalCost,
+              profit: repair.totalCost * 0.2, // Estimate 20% profit
+              profitMargin: 20,
+              currency: 'USD',
+              exchangeRate: 89500,
+              partsUsed: repair.partsUsed.map(part => ({
+                name: part,
+                quantity: 1,
+                unitCost: 50, // Default estimate
+                isImported: Math.random() > 0.5,
+                supplier: 'Auto Parts Supply'
+              })),
+              employeesWorked: [{
+                name: repair.technician,
+                role: 'Technician',
+                hours: repair.laborHours,
+                hourlyRate: 28
+              }]
+            };
+            
+            if (!car.financialRecords) car.financialRecords = [];
+            car.financialRecords.push(financialRecord);
+          }
+        });
+      } else {
+        console.warn('Repair history data is not an array:', repairHistory);
+      }
 
       setUnifiedCars(Array.from(unifiedMap.values()));
     } catch (error) {

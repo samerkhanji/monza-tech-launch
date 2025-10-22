@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock } from 'lucide-react';
 import { CustomCalendarIcon } from '@/components/icons/CustomCalendarIcon';
 import { NewCarArrival } from '../types';
+import { safeParseFloat, safeParseInt } from '@/utils/errorHandling';
 
 interface GarageScheduleDialogProps {
   open: boolean;
@@ -52,7 +53,7 @@ const GarageScheduleDialog: React.FC<GarageScheduleDialogProps> = ({
     e.preventDefault();
     
     // Convert hours and minutes to decimal hours
-    const totalHours = parseFloat(estimatedHours) + (parseFloat(estimatedMinutes) / 60);
+    const totalHours = safeParseFloat(estimatedHours, 0) + (safeParseFloat(estimatedMinutes, 0) / 60);
     const formattedTime = totalHours.toFixed(2);
     
     onSchedule(formattedTime, workType, priority, targetDate, notes);
@@ -68,8 +69,8 @@ const GarageScheduleDialog: React.FC<GarageScheduleDialogProps> = ({
   };
 
   const formatDisplayTime = () => {
-    const hours = parseInt(estimatedHours);
-    const minutes = parseInt(estimatedMinutes);
+    const hours = safeParseInt(estimatedHours, 0);
+    const minutes = safeParseInt(estimatedMinutes, 0);
     
     if (hours === 0 && minutes === 0) return '0 minutes';
     if (hours === 0) return `${minutes} minutes`;
@@ -85,7 +86,6 @@ const GarageScheduleDialog: React.FC<GarageScheduleDialogProps> = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CustomCalendarIcon className="h-5 w-5" />
             Schedule Car for Garage
           </DialogTitle>
           <DialogDescription>
@@ -172,14 +172,17 @@ const GarageScheduleDialog: React.FC<GarageScheduleDialogProps> = ({
               <Label htmlFor="targetDate" className="text-right">
                 Schedule Date
               </Label>
-              <Input
-                id="targetDate"
-                type="date"
-                value={targetDate}
-                onChange={(e) => setTargetDate(e.target.value)}
-                className="col-span-3"
-                required
-              />
+              <div className="col-span-3 relative date-input-wrapper">
+                <Input
+                  id="targetDate"
+                  type="date"
+                  value={targetDate}
+                  onChange={(e) => setTargetDate(e.target.value)}
+                  className="calendar-fix"
+                  style={{ zIndex: 10000 }}
+                  required
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">

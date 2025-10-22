@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>💰 Financial Data Cleaner</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            margin: 20px; 
+            background: #fff8e1;
+        }
+        .container { 
+            max-width: 700px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(255,193,7,0.2);
+            border: 2px solid #ffc107;
+        }
+        .header { 
+            background: #ffc107; 
+            color: #212529; 
+            padding: 20px; 
+            margin: -30px -30px 20px -30px; 
+            border-radius: 12px 12px 0 0; 
+            font-weight: bold;
+            text-align: center;
+            font-size: 18px;
+        }
+        .financial-item {
+            background: #f8f9fa;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .danger {
+            background: #dc3545;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        .success { background: #28a745; color: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .info { background: #17a2b8; color: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            💰 Financial Data Cleaner
+            <br><small>Clear Mock Financial Records</small>
+        </div>
+
+        <p>This will clear all mock financial data including the 8 repair records you're seeing on the Financial Dashboard.</p>
+
+        <div class="financial-item">
+            <h4>🏦 Financial Data to Clear:</h4>
+            <ul>
+                <li><strong>Repair Financial Records</strong> - CAR-000 through CAR-007</li>
+                <li><strong>Customer Revenue Data</strong> - Mock $17,884.15</li>
+                <li><strong>Profit Calculations</strong> - Mock $3,045.65</li>
+                <li><strong>Cost Breakdowns</strong> - All mock repair costs</li>
+            </ul>
+        </div>
+
+        <div class="danger">
+            ⚠️ This will permanently delete all financial records!
+        </div>
+
+        <button onclick="clearFinancialData()">💥 Clear Financial Data</button>
+        <button onclick="refreshFinancialPage()">🔄 Refresh Financial Dashboard</button>
+
+        <div id="results"></div>
+
+        <script>
+            function clearFinancialData() {
+                const results = document.getElementById('results');
+                results.innerHTML = '<div class="info">🔄 Clearing financial data...</div>';
+                
+                try {
+                    // Clear all possible financial data keys
+                    const financialKeys = [
+                        'financialData',
+                        'repairFinancials',
+                        'carFinancialData',
+                        'financialRecords',
+                        'repairRecords',
+                        'garageFinancials',
+                        'financialDashboardData',
+                        'carFinancialRecords',
+                        'repairFinancialData',
+                        'customerRevenue',
+                        'profitData',
+                        'costBreakdown',
+                        'financialMetrics',
+                        'revenueData',
+                        'repairProfits'
+                    ];
+
+                    let clearedCount = 0;
+                    let foundData = [];
+
+                    financialKeys.forEach(key => {
+                        const data = localStorage.getItem(key);
+                        if (data) {
+                            try {
+                                const parsed = JSON.parse(data);
+                                const count = Array.isArray(parsed) ? parsed.length : 'object';
+                                localStorage.removeItem(key);
+                                foundData.push(`${key}: ${count} items`);
+                                clearedCount++;
+                            } catch (e) {
+                                localStorage.removeItem(key);
+                                foundData.push(`${key}: text data`);
+                                clearedCount++;
+                            }
+                        }
+                    });
+
+                    // Fire financial data refresh events
+                    const events = [
+                        'clearFinancialData',
+                        'financialDataCleared',
+                        'repairFinancialsCleared',
+                        'financialDashboardRefresh',
+                        'clearRepairRecords'
+                    ];
+
+                    events.forEach(eventName => {
+                        try {
+                            window.dispatchEvent(new CustomEvent(eventName, {
+                                detail: { cleared: true, timestamp: new Date().toISOString() }
+                            }));
+                        } catch (e) {
+                            console.error('Event failed:', eventName, e);
+                        }
+                    });
+
+                    let resultHtml = '<div class="success">✅ Financial Data Cleared Successfully!</div>';
+                    resultHtml += `<div class="info">📊 Cleared ${clearedCount} storage keys</div>`;
+                    
+                    if (foundData.length > 0) {
+                        resultHtml += '<div class="info"><h4>🗑️ Cleared Data:</h4><ul>';
+                        foundData.forEach(item => {
+                            resultHtml += `<li>${item}</li>`;
+                        });
+                        resultHtml += '</ul></div>';
+                    }
+
+                    resultHtml += '<div class="info">🔄 Please refresh your Financial Dashboard page now!</div>';
+                    results.innerHTML = resultHtml;
+
+                } catch (error) {
+                    results.innerHTML = '<div class="danger">❌ Error clearing financial data: ' + error.message + '</div>';
+                }
+            }
+
+            function refreshFinancialPage() {
+                try {
+                    if (window.parent && window.parent !== window) {
+                        window.parent.location.reload();
+                    } else {
+                        window.location.href = 'http://localhost:5173';
+                    }
+                } catch (e) {
+                    document.getElementById('results').innerHTML += 
+                        '<div class="info">🔄 Please manually refresh your Financial Dashboard page.</div>';
+                }
+            }
+
+            // Auto-run on load
+            window.onload = () => {
+                document.getElementById('results').innerHTML = 
+                    '<div class="info">💡 Ready to clear mock financial data. Click the button above!</div>';
+            };
+        </script>
+    </div>
+</body>
+</html>

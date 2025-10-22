@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profiles System Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { margin: 5px; padding: 8px 15px; }
+    </style>
+</head>
+<body>
+    <h1>Profiles System Test</h1>
+    <div id="results"></div>
+
+    <script>
+        // Your Supabase credentials
+        const SUPABASE_URL = 'https://wunqntfreyezylvbzvxc.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1bnFudGZyZXllenlsdmJ6dnhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NDE4MDIsImV4cCI6MjA2MzMxNzgwMn0.AphXufXZef_wAvVT3TXl2s_JQwbI9wK6KN2uCQgVc5o';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const resultsDiv = document.getElementById('results');
+
+        function addResult(title, content, type = 'info') {
+            const section = document.createElement('div');
+            section.className = `test-section ${type}`;
+            section.innerHTML = `<h3>${title}</h3><p>${content}</p>`;
+            resultsDiv.appendChild(section);
+        }
+
+        async function testProfilesSystem() {
+            addResult('🔍 Testing Profiles System', 'Starting comprehensive test...', 'info');
+
+            try {
+                // Test 1: Check if profiles table exists
+                const { data: profiles, error: profilesError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .limit(1);
+
+                if (profilesError) {
+                    if (profilesError.message.includes('relation "profiles" does not exist')) {
+                        addResult('❌ Profiles Table', 'Table does not exist - Run supabase-profiles-complete.sql', 'error');
+                        return;
+                    } else {
+                        addResult('⚠️ Profiles Table', `Error: ${profilesError.message}`, 'error');
+                    }
+                } else {
+                    addResult('✅ Profiles Table', `Table exists with ${profiles?.length || 0} records`, 'success');
+                }
+
+                // Test 2: Check profile_accounts view
+                const { data: accounts, error: accountsError } = await supabase
+                    .from('profile_accounts')
+                    .select('*')
+                    .limit(1);
+
+                if (accountsError) {
+                    addResult('❌ Profile Accounts View', `Error: ${accountsError.message}`, 'error');
+                } else {
+                    addResult('✅ Profile Accounts View', 'View exists and accessible', 'success');
+                }
+
+                // Test 3: Check storage bucket
+                const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+                
+                if (bucketsError) {
+                    addResult('⚠️ Storage Check', `Error checking buckets: ${bucketsError.message}`, 'error');
+                } else {
+                    const avatarBucket = buckets.find(b => b.name === 'avatars');
+                    if (avatarBucket) {
+                        addResult('✅ Avatar Storage', 'Avatars bucket exists and configured', 'success');
+                    } else {
+                        addResult('❌ Avatar Storage', 'Avatars bucket not found - Create it in Supabase Storage', 'error');
+                    }
+                }
+
+                // Test 4: Check sample data
+                const { data: sampleProfiles, error: sampleError } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, role')
+                    .order('created_at');
+
+                if (sampleError) {
+                    addResult('❌ Sample Data', `Error: ${sampleError.message}`, 'error');
+                } else {
+                    addResult('✅ Sample Data', `Found ${sampleProfiles?.length || 0} sample profiles`, 'success');
+                    
+                    if (sampleProfiles && sampleProfiles.length > 0) {
+                        const roleCount = {};
+                        sampleProfiles.forEach(p => {
+                            roleCount[p.role] = (roleCount[p.role] || 0) + 1;
+                        });
+                        addResult('📊 Roles Distribution', `Roles: ${JSON.stringify(roleCount)}`, 'info');
+                    }
+                }
+
+                // Test 5: Check helper functions
+                const { data: ownerCheck, error: ownerError } = await supabase
+                    .rpc('is_owner');
+
+                if (ownerError) {
+                    addResult('❌ Helper Functions', `Error: ${ownerError.message}`, 'error');
+                } else {
+                    addResult('✅ Helper Functions', 'Role checking functions available', 'success');
+                }
+
+                // Test 6: Check audit logging
+                const { data: auditEntries, error: auditError } = await supabase
+                    .from('audit_log')
+                    .select('*')
+                    .eq('table_name', 'profiles')
+                    .limit(5);
+
+                if (auditError) {
+                    addResult('⚠️ Audit Logging', `Error: ${auditError.message}`, 'error');
+                } else {
+                    addResult('✅ Audit Logging', `Found ${auditEntries?.length || 0} profile audit entries`, 'success');
+                }
+
+                // Summary
+                addResult('🎉 Test Complete', 'Profiles system test completed. Check results above.', 'success');
+
+            } catch (error) {
+                addResult('❌ Test Failed', `Unexpected error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run test when page loads
+        testProfilesSystem();
+    </script>
+
+    <div class="test-section">
+        <h3>📋 Manual Tests</h3>
+        <p>After fixing any issues above, test these manually in your React app:</p>
+        <ul>
+            <li>✅ Open dashboard and click "Profile" button</li>
+            <li>✅ Upload an avatar image</li>
+            <li>✅ Update name, phone, and preferences</li>
+            <li>✅ Check role badge displays correctly</li>
+            <li>✅ Verify changes persist after refresh</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>🔧 Next Steps</h3>
+        <p>If you see any errors above:</p>
+        <ol>
+            <li><strong>Missing profiles table:</strong> Run <code>supabase-profiles-complete.sql</code> in Supabase SQL Editor</li>
+            <li><strong>Missing avatars bucket:</strong> Create it in Supabase Storage dashboard</li>
+            <li><strong>Storage policies:</strong> Set read/write policies for the avatars bucket</li>
+            <li><strong>Sample data:</strong> The sample profiles should auto-create</li>
+        </ol>
+    </div>
+</body>
+</html>

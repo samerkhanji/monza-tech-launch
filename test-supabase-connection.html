@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supabase Connection Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    <div id="results"></div>
+
+    <script>
+        // Your Supabase credentials
+        const SUPABASE_URL = 'https://wunqntfreyezylvbzvxc.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1bnFudGZyZXllenlsdmJ6dnhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NDE4MDIsImV4cCI6MjA2MzMxNzgwMn0.AphXufXZef_wAvVT3TXl2s_JQwbI9wK6KN2uCQgVc5o';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const resultsDiv = document.getElementById('results');
+
+        async function testConnection() {
+            resultsDiv.innerHTML = '<p>Testing Supabase connection...</p>';
+
+            try {
+                // Test 1: Basic connection
+                resultsDiv.innerHTML += '<p>✅ Supabase client created successfully</p>';
+
+                // Test 2: Check if cars table exists
+                const { data: cars, error: carsError } = await supabase
+                    .from('cars')
+                    .select('*')
+                    .limit(1);
+
+                if (carsError) {
+                    if (carsError.message.includes('relation "cars" does not exist')) {
+                        resultsDiv.innerHTML += '<p>❌ CARS table does not exist - Database schema not applied</p>';
+                        resultsDiv.innerHTML += '<p>🔧 SOLUTION: Apply monza-complete-schema.sql in Supabase SQL Editor</p>';
+                    } else {
+                        resultsDiv.innerHTML += '<p>⚠️ Error accessing cars table: ' + carsError.message + '</p>';
+                    }
+                } else {
+                    resultsDiv.innerHTML += '<p>✅ CARS table exists (' + (cars?.length || 0) + ' records)</p>';
+                }
+
+                // Test 3: Check other tables
+                const tablesToCheck = ['threads', 'pdi_inspections', 'test_drives', 'audit_log'];
+                for (const table of tablesToCheck) {
+                    const { error } = await supabase.from(table).select('*').limit(1);
+                    if (error && error.message.includes('does not exist')) {
+                        resultsDiv.innerHTML += '<p>❌ ' + table.toUpperCase() + ' table missing</p>';
+                    } else {
+                        resultsDiv.innerHTML += '<p>✅ ' + table.toUpperCase() + ' table exists</p>';
+                    }
+                }
+
+                // Test 4: Check RLS
+                const { error: rlsError } = await supabase.from('cars').select('id').limit(1);
+                if (rlsError && rlsError.message.includes('RLS')) {
+                    resultsDiv.innerHTML += '<p>⚠️ RLS might be blocking access</p>';
+                }
+
+            } catch (error) {
+                resultsDiv.innerHTML += '<p>❌ Connection failed: ' + error.message + '</p>';
+            }
+        }
+
+        // Run test when page loads
+        testConnection();
+    </script>
+</body>
+</html>

@@ -158,7 +158,7 @@ const ClientInfoDialog: React.FC<ClientInfoDialogProps> = ({
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-gray-400" />
+                                          <Clock className="h-4 w-4 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-600">Year</p>
                     <p className="font-medium">{car.year || 'N/A'}</p>
@@ -204,7 +204,7 @@ const ClientInfoDialog: React.FC<ClientInfoDialogProps> = ({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Calendar className="h-5 w-5 text-orange-600" />
+                                        <Clock className="h-5 w-5 text-orange-600" />
                 Transaction Timeline
               </CardTitle>
             </CardHeader>

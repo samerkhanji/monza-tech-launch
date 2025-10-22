@@ -11,18 +11,22 @@ import TestDriveSelectionDialog from '@/components/TestDriveSelectionDialog';
 import SimpleTestDriveDialog from '@/components/SimpleTestDriveDialog';
 import EditCarDialog from '@/pages/ShowroomFloor1/components/EditCarDialog';
 import MoveCarDialog from '@/pages/ShowroomFloor1/components/MoveCarDialog';
-import PdiViewDialog from '@/pages/ShowroomFloor1/components/PdiViewDialog';
+import PdiViewDialog from '@/pages/ShowroomFloor2/components/PdiViewDialog';
 import { CarStatusSelectionDialog } from '@/components/CarStatusSelectionDialog';
 import EnhancedCarDetailDialog from '@/components/EnhancedCarDetailDialog';
+import CustomsManagementDialog from '@/components/CustomsManagementDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCaption, TableHead, TableHeader, TableRow, TableCell } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import SmartActionDropdown from '@/components/ui/SmartActionDropdown';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// Removed custom Select in favor of native <select> for dialog stability
 import ITSoftwareUpdateDialog from '@/components/ITSoftwareUpdateDialog';
 import TableSearch from '@/components/ui/table-search';
+import WarrantyInfoColumn from '@/components/WarrantyInfoColumn';
+import StandardWarrantyButton from '@/components/StandardWarrantyButton';
+import { safeParseInt } from '@/utils/errorHandling';
 
 interface CarData {
   id: string;
@@ -42,7 +46,7 @@ interface CarData {
   pdiDate?: string;
   pdiNotes?: string;
   testDriveInfo?: any;
-  customs?: 'paid' | 'not paid';
+  customs?: 'paid' | 'not paid' | string;
   brand?: string;
   currentFloor?: "Inventory" | "Garage" | "Showroom 1" | "Showroom 2" | "New Arrivals";
   purchasePrice?: number;
@@ -57,6 +61,15 @@ interface CarData {
   softwareLastUpdated?: string;
   softwareUpdateBy?: string;
   softwareUpdateNotes?: string;
+  // Warranty tracking fields
+  warrantyStartDate?: string;
+  warrantyEndDate?: string;
+  warrantyMonthsRemaining?: number;
+  warrantyDaysRemaining?: number;
+  warrantyStatus?: 'active' | 'expiring_soon' | 'expired';
+  lastWarrantyUpdate?: string;
+  // New simple warranty field
+  warranty_life?: string | null;
 }
 
 const ShowroomFloor2Page: React.FC = () => {
@@ -64,7 +77,7 @@ const ShowroomFloor2Page: React.FC = () => {
   const [selectedCar, setSelectedCar] = useState<CarData | null>(null);
   const [showTestDriveDialog, setShowTestDriveDialog] = useState(false);
   const [showTestDriveSelectionDialog, setShowTestDriveSelectionDialog] = useState(false);
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  // Use enhanced details dialog instead of legacy details view
   const [showManualAddDialog, setShowManualAddDialog] = useState(false);
   const [showVinScanner, setShowVinScanner] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -77,6 +90,8 @@ const ShowroomFloor2Page: React.FC = () => {
   const [selectedCarForDetails, setSelectedCarForDetails] = useState<CarData | null>(null);
   const [showSoftwareDialog, setShowSoftwareDialog] = useState(false);
   const [selectedCarForSoftware, setSelectedCarForSoftware] = useState<CarData | null>(null);
+  const [showCustomsDialog, setShowCustomsDialog] = useState(false);
+  const [customsCar, setCustomsCar] = useState<CarData | null>(null);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -133,85 +148,127 @@ const ShowroomFloor2Page: React.FC = () => {
 
   const { toast: useToastFn } = useToast();
 
-  useEffect(() => {
-    // Updated sample data with Voyah vehicles for showroom floor 2
-    const sampleCars: CarData[] = [
-      {
-        id: 'floor2-1',
-        vinNumber: 'LVGBB22E5NG000001',
-        model: 'Voyah FREE',
-        brand: 'Voyah',
-        year: 2024,
-        color: 'Pearl White',
-        price: 89000,
-        status: 'in_stock',
-        category: 'REV',
-        batteryPercentage: 95,
-        range: 860,
-        currentFloor: 'Showroom 2',
-        features: ['Premium Audio', 'Air Suspension', 'Panoramic Roof'],
-        arrivalDate: new Date().toISOString(),
-        pdiCompleted: true,
-        pdiTechnician: 'Mike Johnson',
-        pdiDate: new Date().toISOString(),
-        pdiNotes: 'Vehicle passed all inspection points. Ready for display.'
-      },
-      {
-        id: 'floor2-2',
-        vinNumber: 'LVGBB22E5NG000002',
-        model: 'Voyah DREAM',
-        brand: 'Voyah',
-        year: 2024,
-        color: 'Midnight Black',
-        price: 125000,
-        status: 'reserved',
-        category: 'EV',
-        batteryPercentage: 88,
-        range: 605,
-        currentFloor: 'Showroom 2',
-        features: ['Executive Package', 'Massage Seats', 'Premium Sound'],
-        arrivalDate: new Date().toISOString(),
-        pdiCompleted: false,
-        clientName: 'Ahmed Al-Mansouri',
-        clientPhone: '+971-50-123-4567'
+  // Function to save cars to localStorage
+  const saveCarsToStorage = (updatedCars: CarData[]) => {
+    // 🚫 DISABLED: No more data saving to prevent mock data persistence
+    console.log('🚫 ShowroomFloor2: Data saving disabled - no mock data will be stored');
+    return;
+  };
+
+  const loadCarsFromDatabase = async () => {
+    try {
+      console.log('Showroom Floor 2: Loading cars from DatabaseManager...');
+      
+      const { DatabaseManager } = await import('@/database/DatabaseManager');
+      
+      const data = await DatabaseManager.getFloor2Cars();
+      
+      if (data && data.length > 0) {
+        // Map the data to match our interface
+        const mappedCars = data.map((car: any) => ({
+          id: car.id,
+          vinNumber: car.vin,
+          model: car.model,
+          year: car.year,
+          color: car.color,
+          brand: car.brand,
+          category: car.vehicle_type || 'EV',
+          price: car.selling_price || 0,
+          status: car.status || 'in_stock',
+          batteryPercentage: car.battery_percentage || 100,
+          range: car.range || 520,
+          features: [],
+          arrivalDate: car.delivery_date || car.created_at,
+          pdiCompleted: car.pdi_completed || false,
+          pdiStatus: car.pdi_completed ? 'completed' : 'pending',
+          pdiTechnician: car.pdi_technician,
+          pdiDate: car.pdi_date,
+          pdiNotes: car.pdi_notes,
+          customs: car.custom_duty === 'paid' ? 'paid' : 'not paid',
+          currentFloor: car.current_floor,
+          notes: car.notes,
+          lastModified: car.updated_at,
+          warrantyStartDate: car.warranty_start_date,
+          warrantyEndDate: car.warranty_end_date,
+          warrantyMonthsRemaining: car.warranty_months_remaining,
+          warrantyDaysRemaining: car.warranty_days_remaining,
+          warrantyStatus: car.warranty_status,
+          lastWarrantyUpdate: car.last_warranty_update,
+          warranty_life: car.warranty_life
+        }));
+        
+        setCars(mappedCars);
+        console.log(`Showroom Floor 2: Loaded ${mappedCars.length} cars from DatabaseManager`);
+      } else {
+        console.log('Showroom Floor 2: No cars found in DatabaseManager for Floor 2');
+        setCars([]);
       }
-    ];
-    setCars(sampleCars);
+    } catch (error) {
+      console.error('Error loading cars from DatabaseManager:', error);
+      setCars([]);
+    }
+  };
+
+  useEffect(() => {
+    // Load cars when component mounts
+    loadCarsFromDatabase();
+  }, []); // Empty dependency array - only runs once
+
+  // Add real-time updates for car movements
+  useEffect(() => {
+    const setupSubscription = async () => {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Set up real-time subscription to car_inventory table
+      const channel = supabase
+        .channel('floor2-cars-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'car_inventory'
+          },
+          (payload) => {
+            console.log('🔌 Floor 2: Real-time change detected:', payload);
+            
+            // Refresh cars when any change occurs
+            if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT' || payload.eventType === 'DELETE') {
+              console.log('🔄 Floor 2: Refreshing cars due to real-time change...');
+              loadCarsFromDatabase();
+            }
+          }
+        )
+        .subscribe();
+
+      console.log('✅ Floor 2: Real-time subscription established');
+      return channel;
+    };
+
+    let channel: any = null;
+    setupSubscription().then((ch) => {
+      channel = ch;
+    });
+
+    return () => {
+      if (channel) {
+        import('@/integrations/supabase/client').then(({ supabase }) => {
+          supabase.removeChannel(channel);
+          console.log('🔌 Floor 2: Real-time subscription cleaned up');
+        });
+      }
+    };
   }, []);
 
   const handleVinScanned = (vin: string) => {
-    const existingCar = cars.find(c => c.vinNumber === vin);
-    if (existingCar) {
-      toast({
-        title: "Car Exists",
-        description: `Car with VIN ${vin} already exists on Floor 2 (${existingCar.model})`,
-      });
-      return;
-    }
-
-    // Create new car from scanned VIN
-    const newScannedCar: CarData = {
-      id: `floor2-${Date.now()}`,
-      vinNumber: vin,
-      model: `Vehicle (VIN: ${vin.slice(-4)})`,
-      year: new Date().getFullYear(),
-      color: 'Unknown',
-      price: 0,
-      status: 'in_stock',
-      category: 'EV',
-      batteryPercentage: 100,
-      range: 0,
-      features: [],
-      arrivalDate: new Date().toISOString(),
-      pdiCompleted: false
-    };
-
-    setCars(prev => [...prev, newScannedCar]);
-    setShowVinScanner(false);
+    console.log('VIN scanned on Floor 2:', vin);
+    
+    // Refresh the floor data to show the moved car
+    loadCarsFromDatabase();
     
     toast({
-      title: "Vehicle Added",
-      description: `Vehicle with VIN ${vin} added to Floor 2`,
+      title: "VIN Scanned Successfully",
+      description: `VIN ${vin} has been processed for Floor 2.`,
     });
   };
 
@@ -264,7 +321,11 @@ const ShowroomFloor2Page: React.FC = () => {
       pdiNotes: allFieldsFilled ? 'PDI auto-completed - all required fields filled during registration' : undefined
     };
 
-    setCars(prev => [...prev, manualCar]);
+    setCars(prev => {
+      const updatedCars = [...prev, manualCar];
+      saveCarsToStorage(updatedCars);
+      return updatedCars;
+    });
     setShowManualAddDialog(false);
 
     // Reset form
@@ -297,19 +358,24 @@ const ShowroomFloor2Page: React.FC = () => {
   };
 
   const handleScheduleTestDrive = (car: CarData) => {
+    // Ensure schedule dialog is closed before opening selection
+    setShowTestDriveDialog(false);
     setSelectedCar(car);
     setShowTestDriveSelectionDialog(true);
   };
 
   const handleTestDriveTypeSelection = (isClientTestDrive: boolean) => {
     setIsClientTestDrive(isClientTestDrive);
+    // Close selection first, then open the schedule dialog on the next frame
     setShowTestDriveSelectionDialog(false);
-    setShowTestDriveDialog(true);
+    requestAnimationFrame(() => {
+      setShowTestDriveDialog(true);
+    });
   };
 
   const handleActualTestDriveSchedule = (carId: string, testDriveInfo: any) => {
-    setCars(prevCars => 
-      prevCars.map(car => 
+    setCars(prevCars => {
+      const updatedCars = prevCars.map(car => 
         car.id === carId 
           ? { 
               ...car, 
@@ -319,8 +385,10 @@ const ShowroomFloor2Page: React.FC = () => {
               }
             }
           : car
-      )
-    );
+      );
+      saveCarsToStorage(updatedCars);
+      return updatedCars;
+    });
     
     toast({
       title: "Test Drive Scheduled",
@@ -332,13 +400,15 @@ const ShowroomFloor2Page: React.FC = () => {
   };
 
   const handleTestDriveEnd = (carId: string) => {
-    setCars(prevCars => 
-      prevCars.map(car => 
+    setCars(prevCars => {
+      const updatedCars = prevCars.map(car => 
         car.id === carId 
           ? { ...car, testDriveInfo: undefined }
           : car
-      )
-    );
+      );
+      saveCarsToStorage(updatedCars);
+      return updatedCars;
+    });
     
     toast({
       title: "Test Drive Ended",
@@ -347,7 +417,11 @@ const ShowroomFloor2Page: React.FC = () => {
   };
 
   const handleRemoveCar = (carId: string) => {
-    setCars(prev => prev.filter(car => car.id !== carId));
+    setCars(prev => {
+      const updatedCars = prev.filter(car => car.id !== carId);
+      saveCarsToStorage(updatedCars);
+      return updatedCars;
+    });
     toast({
       title: "Car Removed",
       description: "Car removed from Floor 2",
@@ -355,44 +429,103 @@ const ShowroomFloor2Page: React.FC = () => {
   };
 
   const handleEditCar = (carId: string, updates: Partial<CarData>) => {
-    setCars(prev => 
-      prev.map(car => 
+    setCars(prev => {
+      const updatedCars = prev.map(car => 
         car.id === carId ? { ...car, ...updates } : car
-      )
-    );
+      );
+      saveCarsToStorage(updatedCars);
+      return updatedCars;
+    });
   };
 
   const handleMoveCar = (destination: string, notes?: string) => {
     if (!selectedCar) return;
 
-    toast({
-      title: "Car Moving",
-      description: `${selectedCar.model} is being moved to ${destination}`,
-    });
+    const nowIso = new Date().toISOString();
+    const byVinFilter = (arr: any[]) => arr.filter((c: any) => c.vinNumber !== selectedCar.vinNumber);
 
-    // In a real app, you would update the car's location in the database
-    // and potentially add a record to a car_movements table.
-    // For this example, we'll just remove it from this floor.
-    setCars(prev => prev.filter(car => car.id !== selectedCar.id));
+    const removeFromCurrent = () => {
+      const updatedCars = cars.filter(car => car.id !== selectedCar.id);
+      setCars(updatedCars);
+      saveCarsToStorage(updatedCars);
+    };
+
+    if (destination === 'garage-schedule') {
+      // Only add to schedule (not inventory) until moved elsewhere
+      const existingSchedule = localStorage.getItem('garageSchedule');
+      const schedule = existingSchedule ? JSON.parse(existingSchedule) : { scheduledCars: [] };
+
+      const scheduledCar = {
+        id: Date.now().toString(),
+        vinNumber: selectedCar.vinNumber,
+        model: selectedCar.model,
+        brand: selectedCar.brand,
+        year: selectedCar.year,
+        color: selectedCar.color,
+        status: 'waiting' as const,
+        priority: 'normal' as const,
+        estimatedDuration: 120,
+        notes: notes || `Moved from Showroom Floor 2`,
+        clientName: selectedCar.clientName || '',
+        clientPhone: selectedCar.clientPhone || '',
+        arrivalTime: nowIso,
+        scheduledTime: nowIso
+      };
+
+      schedule.scheduledCars = byVinFilter(schedule.scheduledCars || []);
+      schedule.scheduledCars.push(scheduledCar);
+      localStorage.setItem('garageSchedule', JSON.stringify(schedule));
+
+      toast({ title: 'Car Added to Garage Schedule', description: `${selectedCar.model} added to schedule.` });
+      removeFromCurrent();
+    } else if (destination === 'garage') {
+      const existingGarageCars = JSON.parse(localStorage.getItem('garageCars') || '[]');
+      const garageCars = byVinFilter(existingGarageCars);
+      garageCars.push({ ...selectedCar, id: `garage-${Date.now()}`, currentFloor: 'Garage', lastModified: nowIso });
+      localStorage.setItem('garageCars', JSON.stringify(garageCars));
+      toast({ title: 'Car Moved', description: `${selectedCar.model} moved to Garage Inventory.` });
+      removeFromCurrent();
+    } else if (destination === 'inventory') {
+      const inventory = JSON.parse(localStorage.getItem('carInventory') || '[]');
+      const updated = byVinFilter(inventory);
+      updated.push({ ...selectedCar, id: `inventory-${Date.now()}`, lastModified: nowIso });
+      localStorage.setItem('carInventory', JSON.stringify(updated));
+      toast({ title: 'Car Moved', description: `${selectedCar.model} moved to Car Inventory.` });
+      removeFromCurrent();
+    } else if (destination === 'floor1') {
+      const floor1 = JSON.parse(localStorage.getItem('showroomFloor1Cars') || '[]');
+      const updated = byVinFilter(floor1);
+      updated.push({ ...selectedCar, id: `floor1-${Date.now()}`, currentFloor: 'Showroom Floor 1', lastModified: nowIso });
+      localStorage.setItem('showroomFloor1Cars', JSON.stringify(updated));
+      toast({ title: 'Car Moved', description: `${selectedCar.model} moved to Showroom Floor 1.` });
+      removeFromCurrent();
+    } else if (destination === 'new-arrivals') {
+      toast({ title: 'Not Allowed', description: 'Existing cars cannot be moved to New Arrivals.', variant: 'destructive' });
+      setShowMoveDialog(false);
+      setSelectedCar(null);
+      return;
+    } else {
+      toast({ title: 'Move Failed', description: 'Unknown destination.', variant: 'destructive' });
+    }
+
     setShowMoveDialog(false);
     setSelectedCar(null);
-
-    // You might also want to add the car to the destination list if it's another floor
-    // or update its status if it's moved to service/sold etc.
   };
 
   const handlePdiSaved = (carId: string, pdiCompleted: boolean) => {
-    setCars(prevCars =>
-      prevCars.map(car =>
+    setCars(prevCars => {
+      const updatedCars = prevCars.map(car =>
         car.id === carId ? { ...car, pdiCompleted: pdiCompleted } : car
-      )
-    );
+      );
+      saveCarsToStorage(updatedCars);
+      return updatedCars;
+    });
     // PDI status updated
   };
 
   const handlePdiComplete = (carId: string, pdiData: { technician: string, notes: string, photos: string[] }) => {
-    setCars(prev => 
-      prev.map(car => 
+    setCars(prev => {
+      const updatedCars = prev.map(car => 
         car.id === carId 
           ? { 
               ...car, 
@@ -403,18 +536,22 @@ const ShowroomFloor2Page: React.FC = () => {
               pdiDate: new Date().toISOString()
             }
           : car
-      )
-    );
+      );
+      saveCarsToStorage(updatedCars);
+      return updatedCars;
+    });
   };
 
   const handleViewDetails = (car: CarData) => {
-    setSelectedCar(car);
-    setShowDetailsDialog(true);
+    setSelectedCarForDetails(car);
+    setShowEnhancedDetailsDialog(true);
   };
 
   const handleViewPdi = (car: CarData) => {
+    console.log('PDI button clicked for car:', car.model, car.vinNumber);
     setSelectedCar(car);
     setShowPdiDialog(true);
+    console.log('showPdiDialog set to true');
   };
 
   const handleStatusClick = (car: CarData) => {
@@ -423,8 +560,8 @@ const ShowroomFloor2Page: React.FC = () => {
   };
 
   const handleStatusUpdate = (carId: string, status: 'in_stock' | 'sold' | 'reserved', clientInfo?: any) => {
-    setCars(prev => 
-      prev.map(car => 
+    setCars(prev => {
+      const updatedCars = prev.map(car => 
         car.id === carId 
           ? { 
               ...car, 
@@ -433,8 +570,10 @@ const ShowroomFloor2Page: React.FC = () => {
               lastUpdated: new Date().toISOString()
             }
           : car
-      )
-    );
+      );
+      saveCarsToStorage(updatedCars);
+      return updatedCars;
+    });
 
     const carModel = cars.find(c => c.id === carId)?.model;
     toast({
@@ -444,16 +583,27 @@ const ShowroomFloor2Page: React.FC = () => {
   };
 
   const handleCustomsClick = (car: CarData) => {
-    setSelectedCarForDetails(car);
-    setShowEnhancedDetailsDialog(true);
+    setCustomsCar(car);
+    setShowCustomsDialog(true);
+  };
+
+  const handleCustomsUpdate = (carId: string, customsData: any) => {
+    setCars(prev => {
+      const updatedCars = prev.map(c => c.id === carId ? { ...c, ...customsData, lastModified: new Date().toISOString() } : c);
+      try { localStorage.setItem('showroomFloor2Cars', JSON.stringify(updatedCars)); } catch {}
+      return updatedCars;
+    });
+    toast({ title: 'Customs Updated', description: 'Customs information updated successfully' });
   };
 
   const handleCarUpdate = (carId: string, updates: any) => {
-    setCars(prev => 
-      prev.map(car => 
+    setCars(prev => {
+      const updatedCars = prev.map(car => 
         car.id === carId ? { ...car, ...updates } : car
-      )
-    );
+      );
+      saveCarsToStorage(updatedCars);
+      return updatedCars;
+    });
   };
 
   const handleOpenSoftwareDialog = (car: CarData) => {
@@ -462,15 +612,17 @@ const ShowroomFloor2Page: React.FC = () => {
   };
 
   const handleSoftwareUpdate = (carId: string, softwareData: any) => {
-    setCars(prev => 
-      prev.map(car => 
+    setCars(prev => {
+      const updatedCars = prev.map(car => 
         car.id === carId ? { 
           ...car, 
           ...softwareData,
           lastUpdated: new Date().toISOString()
         } : car
-      )
-    );
+      );
+      saveCarsToStorage(updatedCars);
+      return updatedCars;
+    });
     
     toast({
       title: "Software Updated",
@@ -558,6 +710,7 @@ const ShowroomFloor2Page: React.FC = () => {
               Cars on Display ({filteredCars.length} {searchQuery ? `of ${cars.length}` : ''})
             </CardTitle>
             <TableSearch
+              id="showroom-floor2-search"
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Search VINs, models, clients, colors..."
@@ -575,8 +728,10 @@ const ShowroomFloor2Page: React.FC = () => {
                   <TableHead className="font-semibold">Category</TableHead>
                   <TableHead className="font-semibold">Year</TableHead>
                   <TableHead className="font-semibold">Color</TableHead>
+                  <TableHead className="font-semibold">Color interior</TableHead>
                   <TableHead className="font-semibold">Price</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold">Warranty Life</TableHead>
                   <TableHead className="font-semibold">Battery</TableHead>
                   <TableHead className="font-semibold">Range</TableHead>
                   <TableHead className="font-semibold">Test Drive</TableHead>
@@ -598,6 +753,7 @@ const ShowroomFloor2Page: React.FC = () => {
                     </TableCell>
                     <TableCell>{car.year}</TableCell>
                     <TableCell>{car.color}</TableCell>
+                    <TableCell>{(car as any).interiorColor || (car as any).interior_color || '-'}</TableCell>
                     <TableCell className="font-medium">${car.price.toLocaleString()}</TableCell>
                     <TableCell>
                       <Badge 
@@ -612,6 +768,7 @@ const ShowroomFloor2Page: React.FC = () => {
                         {getStatusDisplayName(car.status)}
                       </Badge>
                     </TableCell>
+                    <StandardWarrantyButton car={car} />
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Battery className="h-4 w-4" />
@@ -702,41 +859,27 @@ const ShowroomFloor2Page: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-1">
-                        {/* Enhanced Actions Dropdown */}
-                        <div className="relative">
-                          <select
-                            onChange={(e) => {
-                              const action = e.target.value;
-                              if (action === 'view') {
-                                handleViewDetails(car);
-                              } else if (action === 'edit') {
-                                setSelectedCar(car);
-                                setShowEditDialog(true);
-                              } else if (action === 'move') {
-                                setSelectedCar(car);
-                                setShowMoveDialog(true);
-                              }
-                              // Reset select
-                              e.target.value = '';
-                            }}
-                            className="w-28 h-9 px-3 border-2 border-gray-300 rounded-lg bg-white cursor-pointer text-sm font-medium hover:bg-gray-50 hover:border-monza-yellow focus:ring-2 focus:ring-monza-yellow focus:border-monza-yellow transition-all duration-200 shadow-sm"
-                            style={{ 
-                              appearance: 'none',
-                              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23374151' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                              backgroundPosition: 'right 8px center',
-                              backgroundRepeat: 'no-repeat',
-                              backgroundSize: '20px'
-                            }}
-                            aria-label={`Actions for ${car.model} ${car.vinNumber}`}
-                          >
-                            <option value="">Actions</option>
-                            <option value="view">View Details</option>
-                            <option value="edit">Edit</option>
-                            <option value="move">Move</option>
-                          </select>
-                        </div>
-                      </div>
+                      <SmartActionDropdown
+                        options={[
+                          { value: 'details', label: 'View Details' },
+                          { value: 'edit', label: 'Edit Car' },
+                          { 
+                            value: 'move', 
+                            label: 'Move Car',
+                            isMoveAction: true,
+                            carId: car.id,
+                            currentFloor: 'SHOWROOM_2' as const,
+                            tableContext: 'FLOOR_2' as const
+                          }
+                        ]}
+                        onAction={(action) => {
+                          if (action === 'details') handleViewDetails(car);
+                          else if (action === 'edit') { setSelectedCar(car); setShowEditDialog(true); }
+                          else if (action === 'move') { setSelectedCar(car); setShowMoveDialog(true); }
+                        }}
+                        id={`actions-${car.id}`}
+                        ariaLabel={`Actions for ${car.model} ${car.vinNumber}`}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -763,208 +906,7 @@ const ShowroomFloor2Page: React.FC = () => {
         onCarAdded={handleCarAdded}
       />
 
-      {/* Car Details Dialog */}
-      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Car className="h-5 w-5" />
-              Vehicle Details - {selectedCar?.model}
-            </DialogTitle>
-          </DialogHeader>
-          {selectedCar && (
-            <div className="space-y-6">
-              {/* Vehicle Overview */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <Label className="text-xs text-gray-500">VIN Number</Label>
-                    <p className="font-mono text-sm font-medium">{selectedCar.vinNumber}</p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-500">Model</Label>
-                    <p className="font-medium">{selectedCar.model}</p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-500">Brand</Label>
-                    <p className="font-medium">{(selectedCar as any).brand || 'Voyah'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-500">Year</Label>
-                    <p className="font-medium">{selectedCar.year}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Basic Information */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg border-b pb-2">Basic Information</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-sm text-gray-600">Color</Label>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div 
-                          className="w-4 h-4 rounded-full border border-gray-300"
-                          style={{ backgroundColor: selectedCar.color?.toLowerCase() }}
-                        />
-                        <p className="font-medium">{selectedCar.color}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">Category</Label>
-                      <Badge className="mt-1" variant="outline">{selectedCar.category}</Badge>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">Current Location</Label>
-                      <p className="font-medium mt-1">Showroom Floor 2</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">Arrival Date</Label>
-                      <p className="font-medium mt-1">{(selectedCar as any).arrivalDate || 'N/A'}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Technical Specifications */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg border-b pb-2">Technical Specifications</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-sm text-gray-600">Battery Level</Label>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex-1 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${selectedCar.batteryPercentage}%` }}
-                          />
-                        </div>
-                        <span className="text-sm font-medium">{selectedCar.batteryPercentage}%</span>
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">Range</Label>
-                      <p className="font-medium mt-1">{selectedCar.range} km</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">Horsepower</Label>
-                      <p className="font-medium mt-1">{(selectedCar as any).horsePower || (selectedCar as any).horse_power || 'N/A'} HP</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">Torque</Label>
-                      <p className="font-medium mt-1">{(selectedCar as any).torque || 'N/A'} Nm</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pricing Information */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg border-b pb-2">Pricing Information</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-sm text-gray-600">Selling Price</Label>
-                      <p className="font-bold text-lg text-green-600">${selectedCar.price.toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">Purchase Price</Label>
-                      <p className="font-medium">${((selectedCar as any).purchasePrice || 0).toLocaleString()}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Features & Equipment */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg border-b pb-2">Features & Equipment</h3>
-                  {selectedCar.features && selectedCar.features.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {selectedCar.features.map((feature: string, index: number) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {feature}
-                        </Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 italic">No features listed</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Client Information (if applicable) */}
-              {(selectedCar as any).clientName && (
-                <div className="space-y-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-lg border-b border-amber-200 pb-2">Client Information</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm text-gray-600">Client Name</Label>
-                      <p className="font-medium">{(selectedCar as any).clientName}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">Phone Number</Label>
-                      <p className="font-medium">{(selectedCar as any).clientPhone || 'N/A'}</p>
-                    </div>
-                    {(selectedCar as any).clientLicensePlate && (
-                      <div>
-                        <Label className="text-sm text-gray-600">License Plate</Label>
-                        <p className="font-medium">{(selectedCar as any).clientLicensePlate}</p>
-                      </div>
-                    )}
-                    {(selectedCar as any).expectedDeliveryDate && (
-                      <div>
-                        <Label className="text-sm text-gray-600">Expected Delivery</Label>
-                        <p className="font-medium">{(selectedCar as any).expectedDeliveryDate}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Performance Specifications */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-lg border-b pb-2">Performance Specifications</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-sm text-gray-600">Acceleration (0-100 km/h)</Label>
-                    <p className="font-medium">{(selectedCar as any).acceleration || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm text-gray-600">Top Speed</Label>
-                    <p className="font-medium">{(selectedCar as any).topSpeed || 'N/A'} km/h</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm text-gray-600">Charging Time</Label>
-                    <p className="font-medium">{(selectedCar as any).chargingTime || 'N/A'}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Warranty Information */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-lg border-b pb-2">Warranty & Service</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm text-gray-600">Warranty Period</Label>
-                    <p className="font-medium">{(selectedCar as any).warranty || 'Standard warranty applies'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm text-gray-600">Service Due</Label>
-                    <p className="font-medium">{(selectedCar as any).nextServiceDate || 'N/A'}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Additional Notes */}
-              {(selectedCar as any).notes && (
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg border-b pb-2">Additional Notes</h3>
-                  <div className="bg-gray-50 border rounded-lg p-4">
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{(selectedCar as any).notes}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Using EnhancedCarDetailDialog below for View Details */}
 
       {/* Simplified Manual Add Dialog */}
       <Dialog open={showManualAddDialog} onOpenChange={setShowManualAddDialog}>
@@ -991,19 +933,13 @@ const ShowroomFloor2Page: React.FC = () => {
               </div>
               <div>
                 <Label htmlFor="model">Model *</Label>
-                <select
+                <Input
                   id="model"
                   value={newCar.model}
                   onChange={(e) => setNewCar(prev => ({ ...prev, model: e.target.value }))}
-                  className="w-full h-10 rounded-md border border-input bg-background px-3 py-2"
+                  placeholder="Enter model name"
                   required
-                >
-                  <option value="Voyah Dream">Voyah Dream</option>
-                  <option value="Voyah Free">Voyah Free</option>
-                  <option value="Voyah Passion">Voyah Passion</option>
-                  <option value="Voyah Free 318">Voyah Free 318</option>
-                  <option value="Mhero">Mhero</option>
-                </select>
+                />
               </div>
             </div>
 
@@ -1016,7 +952,7 @@ const ShowroomFloor2Page: React.FC = () => {
                   min="2020"
                   max="2030"
                   value={newCar.year}
-                  onChange={(e) => setNewCar(prev => ({ ...prev, year: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewCar(prev => ({ ...prev, year: safeParseInt(e.target.value, 2024) }))}
                   required
                 />
               </div>
@@ -1035,16 +971,17 @@ const ShowroomFloor2Page: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="category">Category *</Label>
-                <Select value={newCar.category} onValueChange={(value) => setNewCar(prev => ({ ...prev, category: value as 'EV' | 'REV' | 'ICEV' }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="EV">EV (Electric Vehicle)</SelectItem>
-                    <SelectItem value="REV">REV (Range Extended Vehicle)</SelectItem>
-                    <SelectItem value="ICEV">ICEV (Internal Combustion Engine)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select
+                  id="category"
+                  value={newCar.category}
+                  onChange={(e) => setNewCar(prev => ({ ...prev, category: e.target.value as 'EV' | 'REV' | 'ICEV' }))}
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 py-2"
+                  required
+                >
+                  <option value="EV">EV (Electric Vehicle)</option>
+                  <option value="REV">REV (Range Extended Vehicle)</option>
+                  <option value="ICEV">ICEV (Internal Combustion Engine)</option>
+                </select>
               </div>
               <div>
                 <Label htmlFor="price">Price (USD) *</Label>
@@ -1053,7 +990,7 @@ const ShowroomFloor2Page: React.FC = () => {
                   type="number"
                   min="0"
                   value={newCar.price}
-                  onChange={(e) => setNewCar(prev => ({ ...prev, price: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewCar(prev => ({ ...prev, price: safeParseInt(e.target.value, 0) }))}
                   placeholder="e.g., 85000"
                   required
                 />
@@ -1083,7 +1020,7 @@ const ShowroomFloor2Page: React.FC = () => {
                   min="0"
                   max="100"
                   value={newCar.batteryPercentage}
-                  onChange={(e) => setNewCar(prev => ({ ...prev, batteryPercentage: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewCar(prev => ({ ...prev, batteryPercentage: safeParseInt(e.target.value, 85) }))}
                 />
               </div>
             </div>
@@ -1096,7 +1033,7 @@ const ShowroomFloor2Page: React.FC = () => {
                   type="number"
                   min="0"
                   value={newCar.range}
-                  onChange={(e) => setNewCar(prev => ({ ...prev, range: parseInt(e.target.value) }))}
+                  onChange={(e) => setNewCar(prev => ({ ...prev, range: safeParseInt(e.target.value, 520) }))}
                   placeholder="e.g., 520"
                 />
               </div>
@@ -1113,8 +1050,8 @@ const ShowroomFloor2Page: React.FC = () => {
                     type="number"
                     min="0"
                     value={newCar.horsePower}
-                    onChange={(e) => setNewCar(prev => ({ ...prev, horsePower: parseInt(e.target.value) }))}
-                    placeholder="e.g., 350"
+                    onChange={(e) => setNewCar(prev => ({ ...prev, horsePower: safeParseInt(e.target.value, 0) }))}
+                    placeholder="e.g., 408"
                   />
                 </div>
                 <div>
@@ -1124,8 +1061,8 @@ const ShowroomFloor2Page: React.FC = () => {
                     type="number"
                     min="0"
                     value={newCar.torque}
-                    onChange={(e) => setNewCar(prev => ({ ...prev, torque: parseInt(e.target.value) }))}
-                    placeholder="e.g., 500"
+                    onChange={(e) => setNewCar(prev => ({ ...prev, torque: safeParseInt(e.target.value, 0) }))}
+                    placeholder="e.g., 700"
                   />
                 </div>
                 <div>
@@ -1144,8 +1081,8 @@ const ShowroomFloor2Page: React.FC = () => {
                     type="number"
                     min="0"
                     value={newCar.topSpeed}
-                    onChange={(e) => setNewCar(prev => ({ ...prev, topSpeed: parseInt(e.target.value) }))}
-                    placeholder="e.g., 250"
+                    onChange={(e) => setNewCar(prev => ({ ...prev, topSpeed: safeParseInt(e.target.value, 0) }))}
+                    placeholder="e.g., 200"
                   />
                 </div>
                 <div>
@@ -1265,6 +1202,16 @@ const ShowroomFloor2Page: React.FC = () => {
           }}
           car={selectedCarForDetails}
           onCarUpdate={handleCarUpdate}
+        />
+      )}
+
+      {/* Customs Management Dialog */}
+      {customsCar && (
+        <CustomsManagementDialog
+          open={showCustomsDialog}
+          onOpenChange={setShowCustomsDialog}
+          car={customsCar as any}
+          onCustomsUpdate={handleCustomsUpdate}
         />
       )}
 

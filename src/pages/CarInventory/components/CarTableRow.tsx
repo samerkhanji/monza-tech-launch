@@ -8,7 +8,9 @@ import { Car } from '../types';
 import TestDriveStatus from './TestDriveStatus';
 import SimpleTestDriveDialog from '@/components/SimpleTestDriveDialog';
 import { CarStatusSelectionDialog } from '@/components/CarStatusSelectionDialog';
-import ActionDropdown from '@/components/ui/ActionDropdown';
+import SmartActionDropdown from '@/components/ui/SmartActionDropdown';
+import { useWarrantyDialog } from '@/components/WarrantyLifeDialog';
+import StandardWarrantyButton from '@/components/StandardWarrantyButton';
 import { CheckCircle, Clock, XCircle, Edit, MapPin, Car as CarIcon, Settings, Truck, DollarSign, Check, X, User, Briefcase, FileText } from 'lucide-react';
 
 interface CarTableRowProps {
@@ -100,6 +102,50 @@ const CarTableRow: React.FC<CarTableRowProps> = ({
     setShowTestDriveDialog(false);
   };
 
+  // Warranty Button Component
+  const WarrantyButton = ({ car }: { car: Car }) => {
+    const { openWarrantyDialog } = useWarrantyDialog();
+    
+    // Get warranty dates from the new fields
+    const warrantyStartDate = (car as any).warranty_start_date;
+    const warrantyEndDate = (car as any).warranty_end_date;
+    
+    const endDate = warrantyEndDate ? new Date(warrantyEndDate) : null;
+    const isValid = endDate && !isNaN(endDate.getTime());
+    const daysRemaining = isValid ? Math.max(0, Math.ceil((endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) : null;
+    
+    const getLabel = () => {
+      if (!isValid) return "Not set";
+      if (daysRemaining === 0) return "Expires today";
+      if (daysRemaining === 1) return "Expires tomorrow";
+      return `Expires ${endDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+    };
+    
+    const getUrgencyStyle = () => {
+      if (!isValid) return "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200";
+      if (daysRemaining === 0) return "bg-red-100 text-red-700 border-red-200 hover:bg-red-200";
+      if (daysRemaining <= 30) return "bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200";
+      return "bg-green-100 text-green-800 border-green-200 hover:bg-green-200";
+    };
+    
+    const getTooltip = () => {
+      if (!isValid) return "Click to set warranty dates";
+      if (daysRemaining === 0) return `Expires today (${endDate.toLocaleDateString()})`;
+      if (daysRemaining === 1) return `Expires tomorrow (${endDate.toLocaleDateString()})`;
+      return `Expires on ${endDate.toLocaleDateString()} (${daysRemaining} days remaining)`;
+    };
+    
+    return (
+      <button
+        className={`inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium transition-colors ${getUrgencyStyle()}`}
+        onClick={() => openWarrantyDialog(car.vinNumber || '')}
+        title={getTooltip()}
+      >
+        {getLabel()}
+      </button>
+    );
+  };
+
   const handleStatusUpdate = (carId: string, status: 'in_stock' | 'sold' | 'reserved', clientInfo?: any) => {
     if (clientInfo) {
       onCarUpdate?.(carId, {
@@ -152,6 +198,9 @@ const CarTableRow: React.FC<CarTableRowProps> = ({
   return (
     <>
       <TableRow className={`hover:bg-monza-yellow/10 transition-colors ${!isDataComplete ? 'bg-red-50/50' : ''}`}>
+        {/* VIN */}
+        <TableCell className="font-mono text-sm text-gray-700">{car.vinNumber || 'N/A'}</TableCell>
+
         {/* Model */}
         <TableCell>
           <div>
@@ -163,39 +212,6 @@ const CarTableRow: React.FC<CarTableRowProps> = ({
           </div>
         </TableCell>
         
-        {/* VIN */}
-        <TableCell className="font-mono text-sm text-gray-700">{car.vinNumber || 'N/A'}</TableCell>
-
-        {/* Shipment Code */}
-        <TableCell className="font-mono text-sm text-gray-700">
-          {car.shipmentCode ? (
-            <div className="flex items-center gap-2">
-              <span>{car.shipmentCode}</span>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  // Navigate to shipping ETA page with the tracking code
-                  if (car.shipmentCode) {
-                    window.open(`/shipping-eta?track=${encodeURIComponent(car.shipmentCode)}`, '_blank');
-                  }
-                }}
-                className="h-6 w-6 p-0 border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
-                title="Track Shipment"
-              >
-                <Truck className="h-3 w-3" />
-              </Button>
-            </div>
-          ) : (
-            <span className="text-gray-500 text-sm">No code</span>
-          )}
-        </TableCell>
-
-        {/* Color */}
-        <TableCell className="text-gray-700">
-          {car.color || 'N/A'}
-        </TableCell>
-        
         {/* Category */}
         <TableCell>
           <StatusBadge variant="info" className="border-gray-300">
@@ -203,9 +219,65 @@ const CarTableRow: React.FC<CarTableRowProps> = ({
           </StatusBadge>
         </TableCell>
         
-        {/* Battery */}
+        {/* Year */}
+        <TableCell className="text-gray-700">{car.year || 'N/A'}</TableCell>
+        
+        {/* Color interior */}
         <TableCell className="text-gray-700">
-          {car.category === 'EV' || car.category === 'REV' ? (car.batteryPercentage !== undefined && car.batteryPercentage !== null ? `${car.batteryPercentage}%` : '0%') : 'N/A'}
+          {car.interiorColor || car.color || 'N/A'}
+        </TableCell>
+        
+        {/* Price */}
+        <TableCell>
+          {isEditingPrice ? (
+            <div className="flex items-center gap-1">
+              <DollarSign className="h-4 w-4 text-gray-500" />
+              <Input
+                id={`price-${car.id}`}
+                name={`price-${car.id}`}
+                type="number"
+                step="0.01"
+                value={priceValue}
+                onChange={(e) => setPriceValue(e.target.value)}
+                onKeyDown={handlePriceKeyDown}
+                className="w-24 h-8"
+                placeholder="0.00"
+                autoFocus
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handlePriceSave}
+                className="h-6 w-6 p-0 border-green-300 text-green-700 hover:bg-green-50"
+                title="Save Price"
+              >
+                <Check className="h-3 w-3" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handlePriceCancel}
+                className="h-6 w-6 p-0 border-red-300 text-red-700 hover:bg-red-50"
+                title="Cancel"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          ) : (
+            <div 
+              className="flex items-center gap-1 cursor-pointer hover:bg-gray-50 p-1 rounded"
+              onClick={handlePriceEdit}
+              title="Click to edit price"
+            >
+              <DollarSign className="h-4 w-4 text-gray-500" />
+              <span className="text-gray-700 font-medium">
+                {car.sellingPrice ? car.sellingPrice.toLocaleString('en-US', { 
+                  minimumFractionDigits: 0, 
+                  maximumFractionDigits: 0 
+                }) : 'Set Price'}
+              </span>
+            </div>
+          )}
         </TableCell>
         
         {/* Status */}
@@ -220,6 +292,24 @@ const CarTableRow: React.FC<CarTableRowProps> = ({
           </StatusBadge>
         </TableCell>
 
+        {/* Warranty Life */}
+        <StandardWarrantyButton car={car} />
+        
+        {/* Battery */}
+        <TableCell className="text-gray-700">
+          {car.category === 'EV' || car.category === 'REV' ? (car.batteryPercentage !== undefined && car.batteryPercentage !== null ? `${car.batteryPercentage}%` : '0%') : 'N/A'}
+        </TableCell>
+        
+        {/* Range Capacity */}
+        <TableCell className="text-gray-700">
+          {(car as any).range ? `${(car as any).range} km` : 'N/A'}
+        </TableCell>
+        
+        {/* Km Driven */}
+        <TableCell className="text-gray-700">
+          {car.kilometersDriven || (car as any).mileage || 'N/A'} km
+        </TableCell>
+        
         {/* Test Drive */}
         <TableCell>
           {car.testDriveInfo?.isOnTestDrive ? (
@@ -267,77 +357,14 @@ const CarTableRow: React.FC<CarTableRowProps> = ({
             className="cursor-pointer"
             onClick={() => onOpenPdi(car)}
           >
-                    <StatusBadge variant={getPdiStatusVariant(car.pdiCompleted)}>
-          {car.pdiCompleted ? (
-            <><span className="mr-1 text-lg">☺</span> Complete</>
-          ) : (
-            <><span className="mr-1 text-lg">☹</span> Pending</>
-          )}
-        </StatusBadge>
+            <StatusBadge variant={getPdiStatusVariant(car.pdiCompleted)}>
+              {car.pdiCompleted ? (
+                <><span className="mr-1 text-lg">☺</span> Complete</>
+              ) : (
+                <><span className="mr-1 text-lg">☹</span> Pending</>
+              )}
+            </StatusBadge>
           </div>
-        </TableCell>
-        
-        {/* Price */}
-        <TableCell>
-          {isEditingPrice ? (
-            <div className="flex items-center gap-1">
-              <DollarSign className="h-4 w-4 text-gray-500" />
-              <Input
-                type="number"
-                step="0.01"
-                value={priceValue}
-                onChange={(e) => setPriceValue(e.target.value)}
-                onKeyDown={handlePriceKeyDown}
-                className="w-24 h-8"
-                placeholder="0.00"
-                autoFocus
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handlePriceSave}
-                className="h-6 w-6 p-0 border-green-300 text-green-700 hover:bg-green-50"
-                title="Save Price"
-              >
-                <Check className="h-3 w-3" />
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handlePriceCancel}
-                className="h-6 w-6 p-0 border-red-300 text-red-700 hover:bg-red-50"
-                title="Cancel"
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-          ) : (
-            <div 
-              className="flex items-center gap-1 cursor-pointer hover:bg-gray-50 p-1 rounded"
-              onClick={handlePriceEdit}
-              title="Click to edit price"
-            >
-              <DollarSign className="h-4 w-4 text-gray-500" />
-              <span className="text-gray-700 font-medium">
-                {car.sellingPrice ? car.sellingPrice.toLocaleString('en-US', { 
-                  minimumFractionDigits: 0, 
-                  maximumFractionDigits: 0 
-                }) : 'Set Price'}
-              </span>
-            </div>
-          )}
-        </TableCell>
-        
-        {/* Arrival Date */}
-        <TableCell className="text-gray-700">
-          {car.arrivalDate ? new Date(car.arrivalDate).toLocaleDateString() : 'N/A'}
-        </TableCell>
-        
-        {/* Location */}
-        <TableCell>
-          <StatusBadge variant="info" className="border-gray-300">
-            {getLocationDisplay(car) || 'N/A'}
-          </StatusBadge>
         </TableCell>
         
         {/* Customs */}
@@ -351,38 +378,24 @@ const CarTableRow: React.FC<CarTableRowProps> = ({
           </StatusBadge>
         </TableCell>
         
-        {/* Notes */}
-        <TableCell>
-          <div className="max-w-[400px] whitespace-normal">
-            {car.notes ? (
-              <p className="text-sm text-gray-700" title={car.notes}>
-                  {car.notes}
-                </p>
-            ) : (
-              <span className="text-gray-500 text-sm">No notes</span>
-              )}
-            </div>
-        </TableCell>
-        
-        {/* Client Info */}
-        <TableCell>
-          {car.clientName ? (
-            <div className="text-sm text-gray-700">
-              <div className="font-medium text-gray-900">{car.clientName}</div>
-              {car.clientPhone && <div className="text-gray-500">{formatPhoneNumber(car.clientPhone)}</div>}
-              {car.clientLicensePlate && <div className="text-gray-500">{car.clientLicensePlate}</div>}
-            </div>
-          ) : (
-            <span className="text-gray-500 text-sm">Not assigned</span>
-          )}
+        {/* Software Model */}
+        <TableCell className="text-gray-700">
+          {car.softwareVersion || 'N/A'}
         </TableCell>
         
         {/* Actions */}
         <TableCell className="text-right">
-          <ActionDropdown
+          <SmartActionDropdown
             options={[
               { value: 'edit', label: 'Edit Car' },
-              { value: 'move', label: 'Move Car' },
+              { 
+                value: 'move', 
+                label: 'Move Car',
+                isMoveAction: true,
+                carId: car.id,
+                currentFloor: 'CAR_INVENTORY' as const,
+                tableContext: 'CAR_INVENTORY' as const
+              },
               { value: 'pdi', label: 'PDI Checklist' },
               ...(onOpenTechSpecs ? [{ value: 'tech', label: 'Tech Specs' }] : [])
             ]}
@@ -392,6 +405,7 @@ const CarTableRow: React.FC<CarTableRowProps> = ({
               else if (action === 'pdi') onOpenPdi(car);
               else if (action === 'tech' && onOpenTechSpecs) onOpenTechSpecs(car);
             }}
+            id={`actions-${car.id}`}
             ariaLabel={`Actions for ${car.model} ${car.vinNumber}`}
           />
         </TableCell>

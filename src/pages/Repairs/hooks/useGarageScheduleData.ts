@@ -13,14 +13,21 @@ export const useGarageScheduleData = () => {
 
   useEffect(() => {
     const loadScheduleData = () => {
-      const savedSchedules = localStorage.getItem('garageSchedules');
+      // Try both keys for backward compatibility
+      let savedSchedules = localStorage.getItem('garageSchedules');
+      if (!savedSchedules) {
+        savedSchedules = localStorage.getItem('garageSchedule');
+      }
+      
       if (savedSchedules) {
         try {
           const schedulesData: GarageSchedule[] = JSON.parse(savedSchedules);
-          setSchedules(schedulesData);
+          // Ensure it's an array
+          const schedulesArray = Array.isArray(schedulesData) ? schedulesData : [schedulesData];
+          setSchedules(schedulesArray);
 
           // Flatten all scheduled cars with schedule context
-          const flattenedCars = schedulesData.flatMap(schedule => 
+          const flattenedCars = schedulesArray.flatMap(schedule => 
             (schedule.scheduledCars || []).map(car => ({
               ...car,
               scheduleDate: schedule.date,
@@ -31,9 +38,12 @@ export const useGarageScheduleData = () => {
           );
 
           setAllScheduledCars(flattenedCars);
+          console.log(`Garage Schedule Data: Loaded ${flattenedCars.length} scheduled cars`);
         } catch (error) {
           console.error('Error loading garage schedules:', error);
         }
+      } else {
+        console.log('Garage Schedule Data: No schedules found in localStorage');
       }
     };
 
@@ -41,7 +51,7 @@ export const useGarageScheduleData = () => {
 
     // Listen for schedule changes
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'garageSchedules') {
+      if (e.key === 'garageSchedules' || e.key === 'garageSchedule') {
         loadScheduleData();
       }
     };

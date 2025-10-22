@@ -39,7 +39,7 @@ interface SoftwareUpdateRecord {
   newVersion: string;
   updateDate: string;
   updatedBy: string;
-  updateType: 'infotainment' | 'navigation' | 'battery' | 'autonomous' | 'system' | 'security';
+  updateType: string; // Changed from union type to allow any string
   updateNotes: string;
   updateDuration: number; // minutes
   rollbackAvailable: boolean;
@@ -77,7 +77,7 @@ const ITSoftwareUpdateDialog: React.FC<ITSoftwareUpdateDialogProps> = ({
   // Update form state
   const [updateForm, setUpdateForm] = useState({
     newVersion: '',
-    updateType: 'system' as const,
+    updateType: 'System Update' as string,
     updateNotes: '',
     estimatedDuration: '30',
     itTechnician: 'IT Technician'
@@ -223,7 +223,7 @@ const ITSoftwareUpdateDialog: React.FC<ITSoftwareUpdateDialogProps> = ({
   const resetForm = () => {
     setUpdateForm({
       newVersion: '',
-      updateType: 'system',
+      updateType: 'System Update',
       updateNotes: '',
       estimatedDuration: '30',
       itTechnician: 'IT Technician'
@@ -242,13 +242,13 @@ const ITSoftwareUpdateDialog: React.FC<ITSoftwareUpdateDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] overflow-y-auto px-6 py-5">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Monitor className="h-6 w-6 text-blue-600" />
             IT Software Management - {car.model}
             <Badge variant="outline" className="font-mono text-sm">
-              {car.vinNumber.slice(-6)}
+              {car?.vinNumber ? car.vinNumber.slice(-6) : '------'}
             </Badge>
           </DialogTitle>
         </DialogHeader>
@@ -267,14 +267,14 @@ const ITSoftwareUpdateDialog: React.FC<ITSoftwareUpdateDialogProps> = ({
 
           {/* Update Software Tab */}
           <TabsContent value="update" className="space-y-6">
-            <Card>
-              <CardHeader>
+            <Card className="rounded-none border border-gray-200">
+              <CardHeader className="px-4 py-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Download className="h-5 w-5" />
                   Perform Software Update
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 px-4 pb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="newVersion">New Software Version *</Label>
@@ -288,22 +288,16 @@ const ITSoftwareUpdateDialog: React.FC<ITSoftwareUpdateDialogProps> = ({
 
                   <div className="space-y-2">
                     <Label htmlFor="updateType">Update Type</Label>
-                    <Select 
-                      value={updateForm.updateType} 
-                      onValueChange={(value: any) => setUpdateForm(prev => ({ ...prev, updateType: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="system">System Update</SelectItem>
-                        <SelectItem value="infotainment">Infotainment</SelectItem>
-                        <SelectItem value="navigation">Navigation</SelectItem>
-                        <SelectItem value="battery">Battery Management</SelectItem>
-                        <SelectItem value="autonomous">Autonomous Features</SelectItem>
-                        <SelectItem value="security">Security Patch</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      id="updateType"
+                      value={updateForm.updateType}
+                      onChange={(e) => {
+                        console.log('Update type changed to:', e.target.value);
+                        setUpdateForm(prev => ({ ...prev, updateType: e.target.value }));
+                      }}
+                      placeholder="e.g., System Update, Infotainment, Navigation, etc."
+                      className="w-full"
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -338,7 +332,7 @@ const ITSoftwareUpdateDialog: React.FC<ITSoftwareUpdateDialogProps> = ({
                   />
                 </div>
 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-none p-4">
                   <div className="flex items-center gap-2 text-yellow-800 font-semibold mb-2">
                     <AlertTriangle className="h-5 w-5" />
                     Pre-Update Checklist
@@ -352,7 +346,7 @@ const ITSoftwareUpdateDialog: React.FC<ITSoftwareUpdateDialogProps> = ({
                   </ul>
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3 pt-2">
                   <Button 
                     onClick={handleStartUpdate}
                     className="bg-blue-600 hover:bg-blue-700 text-white"

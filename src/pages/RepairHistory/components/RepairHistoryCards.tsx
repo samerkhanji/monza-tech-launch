@@ -4,7 +4,7 @@ import { dateUtils, numberUtils, stringUtils, validationUtils } from '@/lib/util
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, User, Wrench, FileText } from 'lucide-react';
+import { Clock, User, Wrench, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { GarageCar } from '@/pages/Repairs/types';
 

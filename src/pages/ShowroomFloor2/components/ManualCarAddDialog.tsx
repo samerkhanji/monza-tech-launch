@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
+import { safeParseInt } from '@/utils/errorHandling';
 
 interface ManualCarAddDialogProps {
   isOpen: boolean;
@@ -97,7 +98,7 @@ const ManualCarAddDialog: React.FC<ManualCarAddDialogProps> = ({
                 id="year"
                 type="number"
                 value={formData.year}
-                onChange={(e) => setFormData(prev => ({ ...prev, year: parseInt(e.target.value) }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, year: safeParseInt(e.target.value, 2024) }))}
               />
             </div>
             <div>
@@ -106,7 +107,7 @@ const ManualCarAddDialog: React.FC<ManualCarAddDialogProps> = ({
                 id="price"
                 type="number"
                 value={formData.price}
-                onChange={(e) => setFormData(prev => ({ ...prev, price: parseInt(e.target.value) }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, price: safeParseInt(e.target.value, 0) }))}
                 placeholder="Enter price"
               />
             </div>
@@ -131,7 +132,7 @@ const ManualCarAddDialog: React.FC<ManualCarAddDialogProps> = ({
                 min="0"
                 max="100"
                 value={formData.batteryPercentage}
-                onChange={(e) => setFormData(prev => ({ ...prev, batteryPercentage: parseInt(e.target.value) }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, batteryPercentage: safeParseInt(e.target.value, 85) }))}
               />
             </div>
             <div>
@@ -140,7 +141,7 @@ const ManualCarAddDialog: React.FC<ManualCarAddDialogProps> = ({
                 id="range"
                 type="number"
                 value={formData.range}
-                onChange={(e) => setFormData(prev => ({ ...prev, range: parseInt(e.target.value) }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, range: safeParseInt(e.target.value, 520) }))}
               />
             </div>
           </div>

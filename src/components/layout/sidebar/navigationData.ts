@@ -13,9 +13,15 @@ import {
   Settings, 
   History,
   BarChart3,
+  MapPin,
+  Crown,
   Timer,
   DollarSign,
-  Truck
+  Truck,
+  Upload,
+  MessageSquare,
+  HelpCircle,
+  Shield
 } from 'lucide-react';
 import { CustomCalendarIcon } from '../../icons/CustomCalendarIcon';
 
@@ -26,6 +32,12 @@ export const mainNavItems = [
     label: 'Dashboard',
     href: '/',
     icon: LayoutDashboard,
+  },
+  {
+    title: 'Message Center',
+    label: 'Messages & Requests',
+    href: '/message-center',
+    icon: MessageSquare,
   },
 ];
 
@@ -47,12 +59,6 @@ export const showroomItems = [
 
 export const garageItems = [
   {
-    title: 'Garage View',
-    label: 'Garage View',
-    href: '/repairs',
-    icon: Wrench,
-  },
-  {
     title: 'Schedule',
     label: 'Schedule',
     href: '/garage-schedule',
@@ -68,6 +74,12 @@ export const garageItems = [
     title: 'Garage Inventory',
     label: 'Garage Inventory',
     href: '/inventory-garage',
+    icon: Package,
+  },
+  {
+    title: 'Parts Inventory',
+    label: 'Parts Inventory',
+    href: '/part-management',
     icon: Package,
   },
 ];
@@ -136,13 +148,9 @@ export const ordersItems = [
     href: '/ordered-parts',
     icon: Package,
   },
-  {
-    title: 'Shipping ETA',
-    label: 'Shipping ETA',
-    href: '/shipping-eta',
-    icon: Truck,
-  },
 ];
+
+
 
 // 👥 User & Employee Management - Launch 1.0 Features Only
 export const employeeItems = [
@@ -165,8 +173,8 @@ export const employeeItems = [
     icon: UserCircle,
   },
   {
-    title: 'Wstacy Employee Management',
-    label: 'Wstacy Employee Management',
+    title: 'Employee Management',
+    label: 'Employee Management',
     href: '/wstacy-employee-management',
     icon: Users,
   },
@@ -174,18 +182,7 @@ export const employeeItems = [
 
 // ⚙️ System & Admin - Launch 1.0 Features Only
 export const systemItems = [
-  {
-    title: 'System Settings',
-    label: 'System Settings',
-    href: '/system-settings',
-    icon: Settings,
-  },
-  {
-    title: 'Part Management',
-    label: 'Part Management',
-    href: '/part-management',
-    icon: Package,
-  },
+  // System Settings moved to Admin & Security section
 ];
 
 // 📢 CRM & Scheduling - Launch 1.0 Features Only
@@ -206,6 +203,12 @@ export const crmItems = [
 
 // 🌐 Integrations - Launch 1.0 Features Only
 export const apiItems = [
+  {
+    title: 'Data Upload',
+    label: 'Upload to Supabase',
+    href: '/data-upload',
+    icon: Upload,
+  },
   {
     title: 'API Documentation',
     label: 'API Documentation',
@@ -230,6 +233,46 @@ export const financialItems = [
   },
 ];
 
+// 🛡️ Admin & Security
+export const adminItems = [
+  {
+    title: 'User Management',
+    label: 'Manage Users & Roles',
+    href: '/admin/users',
+    icon: Shield,
+  },
+  {
+    title: 'System Audit Log',
+    label: 'Database Change Tracking',
+    href: '/system-audit-log',
+    icon: History,
+  },
+  {
+    title: 'Employee Audit',
+    label: 'Employee Activity Logs',
+    href: '/audit-log',
+    icon: Users,
+  },
+  {
+    title: 'Login Tracking',
+    label: 'Location & Security Monitoring',
+    href: '/login-tracking',
+    icon: MapPin,
+  },
+  {
+    title: 'Developer Overview',
+    label: 'Complete System Tracking',
+    href: '/developer-overview',
+    icon: Crown,
+  },
+  {
+    title: 'System Settings',
+    label: 'System Configuration',
+    href: '/system-settings',
+    icon: Settings,
+  },
+];
+
 // Launch 1.0 Navigation Data (Only Essential Features)
 export const navigationData = {
   main: mainNavItems,
@@ -243,6 +286,7 @@ export const navigationData = {
   crm: crmItems,
   api: apiItems,
   financial: financialItems,
+  admin: adminItems,
 };
 
 // Legacy aliases for backward compatibility

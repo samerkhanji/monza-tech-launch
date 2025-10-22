@@ -25,4 +25,18 @@ export interface ShowroomCar {
     testDriverName?: string;
     testDriverPhone?: string;
   };
+  // Warranty tracking fields
+  warrantyStartDate?: string;
+  warrantyEndDate?: string;
+  warrantyMonthsRemaining?: number;
+  warrantyDaysRemaining?: number;
+  warrantyStatus?: 'active' | 'expiring_soon' | 'expired';
+  lastWarrantyUpdate?: string;
+  // New simple warranty field
+  warranty_life?: string | null;
+  // Software Model for IT tracking
+  softwareVersion?: string;
+  softwareLastUpdated?: string;
+  softwareUpdateBy?: string;
+  softwareUpdateNotes?: string;
 }

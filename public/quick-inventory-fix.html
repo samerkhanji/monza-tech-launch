@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Car Inventory Fix</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-bottom: 30px; text-align: center; }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .status.info { background-color: #e3f2fd; border-color: #2196f3; color: #1565c0; }
+        .status.success { background-color: #e8f5e8; border-color: #4caf50; color: #2e7d32; }
+        .status.error { background-color: #ffebee; border-color: #f44336; color: #c62828; }
+        .status.warning { background-color: #fff3e0; border-color: #ff9800; color: #e65100; }
+        button {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background-color: #1565c0; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        #log {
+            background-color: #1e1e1e;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Quick Car Inventory Fix</h1>
+        
+        <div class="status info">
+            <strong>🎯 Goal</strong><br>
+            Fix Car Inventory showing (0) by checking tables and moving data if needed.
+        </div>
+
+        <button onclick="diagnoseIssue()">🔍 1. Diagnose Issue</button>
+        <button onclick="fixInventoryData()" id="fixBtn" disabled>🔧 2. Fix Inventory Data</button>
+        <button onclick="verifyFix()" id="verifyBtn" disabled>✅ 3. Verify Fix</button>
+
+        <div id="results"></div>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://wunqntfreyezylvbzvxc.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1bnFudGZyZXllenlsdmJ6dnhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NDE4MDIsImV4cCI6MjA2MzMxNzgwMn0.AphXufXZef_wAvVT3TXl2s_JQwbI9wK6KN2uCQgVc5o';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function showResults(html) {
+            document.getElementById('results').innerHTML = html;
+        }
+
+        async function diagnoseIssue() {
+            log('🔍 Starting Car Inventory diagnosis...');
+            
+            let resultsHtml = '<h3>🔍 Diagnosis Results</h3>';
+            
+            try {
+                // Check cars table
+                log('📊 Checking cars table...');
+                const { data: carsData, error: carsError } = await supabase
+                    .from('cars')
+                    .select('*', { count: 'exact' });
+
+                let carsCount = 0;
+                if (carsError) {
+                    resultsHtml += `<div class="status error">
+                        <strong>❌ cars table</strong><br>
+                        Error: ${carsError.message}
+                    </div>`;
+                    log(`❌ cars table error: ${carsError.message}`);
+                } else {
+                    carsCount = carsData?.length || 0;
+                    resultsHtml += `<div class="status ${carsCount > 0 ? 'success' : 'warning'}">
+                        <strong>📊 cars table</strong><br>
+                        Records: ${carsCount}<br>
+                        Status: ${carsCount > 0 ? 'Has data' : 'Empty - App reads from this table'}
+                    </div>`;
+                    log(`📊 cars table: ${carsCount} records`);
+                }
+
+                // Check car_inventory table
+                log('📦 Checking car_inventory table...');
+                const { data: inventoryData, error: inventoryError } = await supabase
+                    .from('car_inventory')
+                    .select('*', { count: 'exact' });
+
+                let inventoryCount = 0;
+                if (inventoryError) {
+                    resultsHtml += `<div class="status error">
+                        <strong>❌ car_inventory table</strong><br>
+                        Error: ${inventoryError.message}
+                    </div>`;
+                    log(`❌ car_inventory table error: ${inventoryError.message}`);
+                } else {
+                    inventoryCount = inventoryData?.length || 0;
+                    resultsHtml += `<div class="status ${inventoryCount > 0 ? 'success' : 'warning'}">
+                        <strong>📦 car_inventory table</strong><br>
+                        Records: ${inventoryCount}<br>
+                        Status: ${inventoryCount > 0 ? 'Has data - Your uploaded stock' : 'Empty'}
+                    </div>`;
+                    log(`📦 car_inventory table: ${inventoryCount} records`);
+                }
+
+                // Determine the issue
+                if (inventoryCount > 0 && carsCount === 0) {
+                    resultsHtml += `<div class="status warning">
+                        <strong>🎯 Issue Identified</strong><br>
+                        Your ${inventoryCount} vehicles are in car_inventory table, but the app reads from cars table.<br>
+                        Solution: Copy data from car_inventory → cars table.
+                    </div>`;
+                    document.getElementById('fixBtn').disabled = false;
+                    log(`✅ Issue found: ${inventoryCount} vehicles need to be copied to cars table`);
+                } else if (carsCount > 0) {
+                    resultsHtml += `<div class="status success">
+                        <strong>✅ Data Found</strong><br>
+                        cars table has ${carsCount} records. Try refreshing your Car Inventory page.
+                    </div>`;
+                    document.getElementById('verifyBtn').disabled = false;
+                    log(`✅ cars table has data, check if app is displaying it`);
+                } else {
+                    resultsHtml += `<div class="status error">
+                        <strong>❌ No Data Found</strong><br>
+                        Both tables are empty. Please upload your stock data first.
+                    </div>`;
+                    log(`❌ No data found in either table`);
+                }
+
+            } catch (error) {
+                resultsHtml += `<div class="status error">
+                    <strong>❌ Connection Error</strong><br>
+                    ${error.message}
+                </div>`;
+                log(`❌ Diagnosis failed: ${error.message}`);
+            }
+
+            showResults(resultsHtml);
+            log('✅ Diagnosis complete');
+        }
+
+        async function fixInventoryData() {
+            log('🔧 Starting inventory data fix...');
+            document.getElementById('fixBtn').disabled = true;
+            
+            try {
+                // Get data from car_inventory
+                const { data: inventoryData, error: fetchError } = await supabase
+                    .from('car_inventory')
+                    .select('*');
+
+                if (fetchError) {
+                    throw new Error(`Failed to fetch car_inventory: ${fetchError.message}`);
+                }
+
+                if (!inventoryData || inventoryData.length === 0) {
+                    throw new Error('No data found in car_inventory table');
+                }
+
+                log(`📊 Found ${inventoryData.length} vehicles to copy`);
+
+                // Transform data to match cars table structure
+                const carsData = inventoryData.map(item => ({
+                    vin_number: item.vin,
+                    brand: 'Voyah',
+                    model: item.model,
+                    year: item.model_year,
+                    color: item.color,
+                    category: item.vehicle_type === 'EV' ? 'EV' : 'REV',
+                    status: item.status === 'Available' ? 'in_stock' : 
+                           item.status === 'Sold' ? 'sold' : 
+                           item.status === 'Reserved' ? 'reserved' : 'in_stock',
+                    current_location: item.status === 'Available' ? 'Inventory' : 
+                                    item.status === 'Sold' ? 'Delivered' : 'Reserved',
+                    selling_price: item.selling_price || 50000,
+                    battery_percentage: 100,
+                    range_km: 520,
+                    arrival_date: item.created_at || new Date().toISOString(),
+                    customs: 'paid',
+                    notes: [
+                        item.notes,
+                        item.client_name ? `Client: ${item.client_name}` : null,
+                        item.delivery_date ? `Delivery: ${item.delivery_date}` : null,
+                        item.vehicle_warranty_expiry ? `Warranty: ${item.vehicle_warranty_expiry}` : null
+                    ].filter(Boolean).join(' | ') || null,
+                    created_at: item.created_at,
+                    updated_at: item.updated_at || new Date().toISOString()
+                }));
+
+                log(`🔄 Transformed ${carsData.length} records`);
+
+                // Clear existing cars table
+                log('🧹 Clearing cars table...');
+                const { error: deleteError } = await supabase
+                    .from('cars')
+                    .delete()
+                    .neq('id', '00000000-0000-0000-0000-000000000000');
+
+                // Insert in batches
+                const batchSize = 25;
+                let successCount = 0;
+
+                for (let i = 0; i < carsData.length; i += batchSize) {
+                    const batch = carsData.slice(i, i + batchSize);
+                    const batchNum = Math.floor(i/batchSize) + 1;
+                    
+                    log(`📤 Uploading batch ${batchNum} (${batch.length} vehicles)...`);
+                    
+                    const { data, error } = await supabase
+                        .from('cars')
+                        .insert(batch)
+                        .select();
+
+                    if (error) {
+                        log(`❌ Error in batch ${batchNum}: ${error.message}`);
+                    } else {
+                        successCount += batch.length;
+                        log(`✅ Batch ${batchNum} uploaded successfully`);
+                    }
+                }
+
+                log(`🎉 Fix completed! ${successCount} vehicles copied to cars table`);
+                
+                showResults(`<div class="status success">
+                    <strong>✅ Fix Completed!</strong><br>
+                    Successfully copied ${successCount} vehicles to cars table.<br>
+                    Your Car Inventory should now show vehicles instead of (0).
+                </div>`);
+                
+                document.getElementById('verifyBtn').disabled = false;
+
+            } catch (error) {
+                log(`❌ Fix failed: ${error.message}`);
+                showResults(`<div class="status error">
+                    <strong>❌ Fix Failed</strong><br>
+                    ${error.message}
+                </div>`);
+            } finally {
+                document.getElementById('fixBtn').disabled = false;
+            }
+        }
+
+        async function verifyFix() {
+            log('✅ Verifying fix...');
+
+            try {
+                const { data, error } = await supabase
+                    .from('cars')
+                    .select('*', { count: 'exact' });
+
+                if (error) {
+                    throw new Error(`Verification failed: ${error.message}`);
+                }
+
+                const count = data?.length || 0;
+                log(`📊 Verification: cars table now has ${count} records`);
+
+                if (count > 0) {
+                    const soldCount = data.filter(car => car.status === 'sold').length;
+                    const inStockCount = data.filter(car => car.status === 'in_stock').length;
+
+                    showResults(`<div class="status success">
+                        <strong>✅ Verification Successful!</strong><br>
+                        cars table: ${count} vehicles<br>
+                        Sold: ${soldCount} | In Stock: ${inStockCount}<br><br>
+                        <strong>🚀 Next Steps:</strong><br>
+                        1. Go to Car Inventory page<br>
+                        2. Refresh if already open<br>
+                        3. Should show Car Inventory (${count}) instead of (0)
+                    </div>`);
+
+                    log(`🚀 SUCCESS: Go to http://localhost:5173/car-inventory and refresh!`);
+                } else {
+                    showResults(`<div class="status error">
+                        <strong>❌ Verification Failed</strong><br>
+                        cars table is still empty
+                    </div>`);
+                }
+
+            } catch (error) {
+                log(`❌ Verification error: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        log('🚗 Quick Car Inventory Fix Tool Ready');
+        log('Click "1. Diagnose Issue" to start');
+    </script>
+</body>
+</html>

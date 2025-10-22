@@ -24,6 +24,7 @@ import {
   X,
   Percent
 } from 'lucide-react';
+import { safeParseFloat } from '@/utils/errorHandling';
 
 interface CarFinancialData {
   id: string;
@@ -56,7 +57,7 @@ const OwnerFinancesPage: React.FC = () => {
   useEffect(() => {
     // Hook called unconditionally at top level
     // Only load data if user has proper access
-    if (user?.role === 'owner') {
+    if (user?.role?.toUpperCase() === 'OWNER') {
       // Load financial data here
       loadFinancialData();
     }
@@ -64,7 +65,7 @@ const OwnerFinancesPage: React.FC = () => {
   }, [user]);
 
   // Conditional logic after hooks
-  if (user?.role !== 'owner') {
+  if (user?.role?.toUpperCase() !== 'OWNER') {
     toast({
       title: "Access Denied",
       description: "Only owners can access financial data.",
@@ -503,7 +504,7 @@ const PricingRow: React.FC<PricingRowProps> = ({ car, onUpdatePricing, showPrice
               <Input
                 type="number"
                 value={purchasePrice}
-                onChange={(e) => setPurchasePrice(parseFloat(e.target.value) || 0)}
+                onChange={(e) => setPurchasePrice(safeParseFloat(e.target.value, 0))}
                 className="w-32"
               />
             </div>
@@ -512,7 +513,7 @@ const PricingRow: React.FC<PricingRowProps> = ({ car, onUpdatePricing, showPrice
               <Input
                 type="number"
                 value={sellingPrice}
-                onChange={(e) => setSellingPrice(parseFloat(e.target.value) || 0)}
+                onChange={(e) => setSellingPrice(safeParseFloat(e.target.value, 0))}
                 className="w-32"
               />
             </div>

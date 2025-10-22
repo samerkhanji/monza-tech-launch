@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Diagnosis - Monza TECH</title>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .results {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .sql-box {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Database Structure Diagnosis</h1>
+        <p>Let's find out exactly what your database structure looks like!</p>
+        
+        <button onclick="generateDiagnosisSQL()">📋 Generate Diagnosis SQL</button>
+        
+        <div id="sqlOutput"></div>
+        
+        <h3>📊 Copy these SQL commands and run them in Supabase SQL Editor:</h3>
+        
+        <div class="sql-box">
+-- 1. Check if car_inventory table exists and show its structure
+SELECT table_name, table_type 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+AND table_name LIKE '%car%' OR table_name LIKE '%inventory%'
+ORDER BY table_name;
+
+-- 2. Show car_inventory table structure (if it exists)
+SELECT column_name, data_type, is_nullable, column_default 
+FROM information_schema.columns 
+WHERE table_name = 'car_inventory' AND table_schema = 'public'
+ORDER BY ordinal_position;
+
+-- 3. Show cars table structure (if it exists)
+SELECT column_name, data_type, is_nullable, column_default 
+FROM information_schema.columns 
+WHERE table_name = 'cars' AND table_schema = 'public'
+ORDER BY ordinal_position;
+
+-- 4. Check what data is in each table
+SELECT 'car_inventory' as table_name, COUNT(*) as row_count FROM public.car_inventory
+UNION ALL
+SELECT 'cars' as table_name, COUNT(*) as row_count FROM public.cars;
+
+-- 5. Show sample data from car_inventory (if any)
+SELECT * FROM public.car_inventory LIMIT 3;
+
+-- 6. Show sample data from cars (if any)  
+SELECT * FROM public.cars LIMIT 3;
+        </div>
+        
+        <h3>🎯 Based on Results, I'll Create the Right Upload Tool</h3>
+        <p><strong>After running the SQL above, tell me:</strong></p>
+        <ul>
+            <li>What tables exist? (car_inventory, cars, both, or neither?)</li>
+            <li>What columns does car_inventory have?</li>
+            <li>What columns does cars have?</li>
+            <li>How many rows are in each table?</li>
+        </ul>
+        
+        <div id="results" class="results" style="display: none;">
+            Paste your SQL results here and I'll create the perfect upload tool!
+        </div>
+    </div>
+
+    <script>
+        function generateDiagnosisSQL() {
+            const output = document.getElementById('sqlOutput');
+            const results = document.getElementById('results');
+            
+            output.innerHTML = `
+                <div style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 4px; padding: 15px; margin: 15px 0;">
+                    <strong>✅ Diagnosis SQL Ready!</strong><br>
+                    Copy the SQL commands above and run them in your Supabase SQL Editor.<br>
+                    Then paste the results here so I can create the correct upload tool.
+                </div>
+            `;
+            
+            results.style.display = 'block';
+            results.innerHTML = 'Waiting for your SQL results...';
+        }
+    </script>
+</body>
+</html>

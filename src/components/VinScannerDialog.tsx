@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { QrCode, Camera, Car, MapPin, User, FileText, CheckCircle, X, ArrowLeft, Battery, Fuel, Calendar, DollarSign, Settings, Wrench } from 'lucide-react';
+import { QrCode, Camera, Car, MapPin, User, FileText, CheckCircle, X, ArrowLeft, Battery, Fuel, DollarSign, Settings, Wrench } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useCameraPermission } from '@/utils/cameraPermissionManager';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,6 +47,18 @@ interface VinScannerDialogProps {
   onTestDrive?: (car: CarData, isClientTestDrive: boolean) => void;
   onPdiAction?: (car: CarData) => void;
 }
+
+// Map target location to database location
+const mapTargetLocationToDatabase = (targetLocation: string): string => {
+  const mapping: Record<string, string> = {
+    'Inventory': 'CAR_INVENTORY',
+    'Showroom Floor 1': 'SHOWROOM_1',
+    'Showroom Floor 2': 'SHOWROOM_2',
+    'Garage': 'GARAGE_INVENTORY',
+    'External': 'SCHEDULE'
+  };
+  return mapping[targetLocation] || 'CAR_INVENTORY';
+};
 
 const VinScannerDialog: React.FC<VinScannerDialogProps> = ({
   isOpen,
@@ -256,20 +268,20 @@ const VinScannerDialog: React.FC<VinScannerDialogProps> = ({
     try {
       // Get comprehensive car data
       const { data: carData } = await supabase
-        .from('cars')
+        .from('car_inventory')
         .select(`
           *,
           pdi_inspections(*),
           test_drives(*)
         `)
-        .eq('vin_number', scannedVin)
+        .eq('vin', scannedVin)
         .single();
 
       if (carData) {
         // Car exists - show comprehensive information
         const enhancedCarData: CarData = {
           id: carData.id,
-          vin_number: carData.vin_number,
+          vin_number: carData.vin,
           brand: carData.brand || 'Unknown',
           model: carData.model || 'Unknown Model',
           year: carData.year || new Date().getFullYear(),
@@ -291,14 +303,28 @@ const VinScannerDialog: React.FC<VinScannerDialogProps> = ({
           updated_at: carData.updated_at
         };
 
+        // Move the car to the target location using the clean service
+        const targetDatabaseLocation = mapTargetLocationToDatabase(targetLocation);
+        const { moveCarByVin } = await import('@/services/cleanMoveCarService');
+        
+        try {
+          await moveCarByVin(scannedVin, targetDatabaseLocation);
+          toast({
+            title: "Car Moved Successfully!",
+            description: `${enhancedCarData.brand} ${enhancedCarData.model} moved to ${targetLocation}`,
+          });
+        } catch (moveError) {
+          console.error('Error moving car:', moveError);
+          toast({
+            title: "Car Found but Move Failed",
+            description: `Found ${enhancedCarData.brand} ${enhancedCarData.model} but failed to move to ${targetLocation}`,
+            variant: "destructive",
+          });
+        }
+
         setFoundCarData(enhancedCarData);
         setShowCarDetails(true);
         stopCamera(); // Stop camera when showing details
-        
-        toast({
-          title: "Car Found!",
-          description: `${enhancedCarData.brand} ${enhancedCarData.model} information loaded.`,
-        });
 
         onVinScanned(scannedVin);
 
@@ -312,7 +338,7 @@ const VinScannerDialog: React.FC<VinScannerDialogProps> = ({
           color: 'To be determined',
           category: 'EV' as "EV" | "REV" | "ICEV",
           status: 'in_stock' as "in_stock" | "reserved" | "sold",
-          current_location: targetLocation,
+          current_floor: mapTargetLocationToDatabase(targetLocation),
           selling_price: 0,
           arrival_date: new Date().toISOString(),
           showroom_entry_date: targetLocation.includes('Showroom') ? new Date().toISOString() : null,
@@ -324,7 +350,7 @@ const VinScannerDialog: React.FC<VinScannerDialogProps> = ({
         };
 
         const { data: newCar, error: insertError } = await supabase
-          .from('cars')
+          .from('car_inventory')
           .insert(newCarData)
           .select()
           .single();
@@ -578,7 +604,7 @@ const VinScannerDialog: React.FC<VinScannerDialogProps> = ({
                 {/* Important dates */}
                 <div className="bg-white border border-gray-200 rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-3">
-                    <Calendar className="h-4 w-4 text-gray-600" />
+                                            <Clock className="h-4 w-4 text-gray-600" />
                     <span className="text-sm font-medium text-gray-700">Important Dates</span>
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">

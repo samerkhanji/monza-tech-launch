@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔥 Nuclear Clear Floor 2 Data</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            margin: 20px; 
+            background: #f8f9fa;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .danger { 
+            background: #fee; 
+            border: 2px solid #dc3545; 
+            padding: 20px; 
+            margin: 15px 0; 
+            border-radius: 8px; 
+            font-weight: bold;
+        }
+        .success { 
+            background: #d4edda; 
+            border: 2px solid #28a745; 
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 8px; 
+        }
+        .info { 
+            background: #d1ecf1; 
+            border: 2px solid #17a2b8; 
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 8px; 
+        }
+        button { 
+            padding: 15px 30px; 
+            margin: 10px; 
+            font-size: 16px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .data-item { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border-left: 4px solid #007bff; 
+            font-family: monospace;
+        }
+        .count { 
+            background: #ffc107; 
+            color: #212529; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-weight: bold; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Nuclear Clear Showroom Floor 2 Data</h1>
+        
+        <div class="danger">
+            <h3>⚠️ NUCLEAR DATA DESTRUCTION</h3>
+            <p>This will completely eliminate ALL Floor 2 car data from every possible storage location!</p>
+        </div>
+
+        <button onclick="scanFloor2Data()" class="btn-primary">
+            🔍 Scan Current Floor 2 Data
+        </button>
+
+        <button onclick="nuclearClearFloor2()" class="btn-danger">
+            💥 NUCLEAR CLEAR EVERYTHING
+        </button>
+
+        <button onclick="refreshMainApp()" class="btn-success">
+            🔄 Refresh Main App
+        </button>
+
+        <div id="results"></div>
+
+        <script>
+        function logResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+
+        function scanFloor2Data() {
+            logResult('<h3>📊 Scanning ALL Floor 2 Data Sources...</h3>', 'info');
+            
+            const allKeys = Object.keys(localStorage);
+            const floor2Keys = allKeys.filter(key => 
+                key.toLowerCase().includes('floor2') ||
+                key.toLowerCase().includes('showroom') ||
+                key.toLowerCase().includes('car') ||
+                key.toLowerCase().includes('voyah')
+            );
+
+            logResult(`<h4>🔍 Found ${floor2Keys.length} potential Floor 2 keys:</h4>`, 'info');
+
+            floor2Keys.forEach(key => {
+                try {
+                    const data = localStorage.getItem(key);
+                    if (data) {
+                        const parsed = JSON.parse(data);
+                        const count = Array.isArray(parsed) ? parsed.length : 'object';
+                        logResult(`<div class="data-item">🔑 ${key}: <span class="count">${count} items</span></div>`, 'info');
+                    }
+                } catch (e) {
+                    logResult(`<div class="data-item">🔑 ${key}: <span class="count">text data</span></div>`, 'info');
+                }
+            });
+
+            // Also check for the specific key we know about
+            const mainKey = localStorage.getItem('showroomFloor2Cars');
+            if (mainKey) {
+                try {
+                    const parsed = JSON.parse(mainKey);
+                    logResult(`<div class="danger">🚨 MAIN FLOOR 2 DATA FOUND: ${parsed.length} cars!</div>`, 'danger');
+                    
+                    // Show first few VINs
+                    if (parsed.length > 0) {
+                        const vins = parsed.slice(0, 5).map(car => car.vinNumber || car.vin || 'No VIN').join(', ');
+                        logResult(`<div class="info">📋 Sample VINs: ${vins}${parsed.length > 5 ? '...' : ''}</div>`, 'info');
+                    }
+                } catch (e) {
+                    logResult(`<div class="danger">🚨 FLOOR 2 DATA EXISTS (parsing error)</div>`, 'danger');
+                }
+            }
+        }
+
+        function nuclearClearFloor2() {
+            if (!confirm('⚠️ NUCLEAR OPTION: This will permanently delete ALL Floor 2 data. Are you absolutely sure?')) {
+                return;
+            }
+
+            logResult('<h3>💥 NUCLEAR CLEARING ALL FLOOR 2 DATA...</h3>', 'danger');
+            
+            // All possible Floor 2 related keys
+            const allPossibleKeys = [
+                'showroomFloor2Cars',
+                'showroomFloor2_cache', 
+                'floor2Cars',
+                'showroom_floor_2_cars',
+                'showroomFloor2Data',
+                'showroom_floor_2_data',
+                'showroomFloor2',
+                'floor2Data',
+                'showroomFloor2CarsData',
+                'floor2_inventory',
+                'showroom_floor2_inventory',
+                'floor2CarData',
+                'showroomFloor2CarList',
+                'floor2CarList',
+                'voyahFloor2Cars',
+                'floor2VoyahCars'
+            ];
+
+            let clearedCount = 0;
+            
+            // Clear all Floor 2 keys
+            allPossibleKeys.forEach(key => {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        const count = Array.isArray(parsed) ? parsed.length : 'object';
+                        localStorage.removeItem(key);
+                        logResult(`✅ CLEARED: ${key} (had ${count} items)`, 'success');
+                        clearedCount++;
+                    } catch (e) {
+                        localStorage.removeItem(key);
+                        logResult(`✅ CLEARED: ${key} (text data)`, 'success');
+                        clearedCount++;
+                    }
+                } else {
+                    logResult(`❌ NOT FOUND: ${key}`, 'info');
+                }
+            });
+
+            // Also clear any other keys that might contain Floor 2 data
+            const allKeys = Object.keys(localStorage);
+            allKeys.forEach(key => {
+                if ((key.toLowerCase().includes('floor2') || 
+                     key.toLowerCase().includes('showroom') ||
+                     key.toLowerCase().includes('voyah')) && 
+                    !allPossibleKeys.includes(key)) {
+                    
+                    localStorage.removeItem(key);
+                    logResult(`🧹 EXTRA CLEAR: ${key}`, 'success');
+                    clearedCount++;
+                }
+            });
+
+            // Fire all possible refresh events
+            const events = [
+                'clearShowroomFloor2Data',
+                'showroomFloor2CarsCleared',
+                'floor2DataCleared',
+                'showroomFloor2Cleared',
+                'floor2CarsUpdated',
+                'showroomFloor2Updated',
+                'carInventoryUpdated',
+                'dataCleared'
+            ];
+
+            events.forEach(eventName => {
+                try {
+                    window.dispatchEvent(new CustomEvent(eventName, {
+                        detail: { 
+                            cleared: true, 
+                            timestamp: new Date().toISOString(),
+                            source: 'nuclear-clear'
+                        }
+                    }));
+                    logResult(`📡 EVENT FIRED: ${eventName}`, 'success');
+                } catch (e) {
+                    logResult(`❌ EVENT FAILED: ${eventName}`, 'danger');
+                }
+            });
+
+            logResult(`<div class="success"><h3>🎯 NUCLEAR CLEAR COMPLETE!</h3><p><strong>${clearedCount}</strong> storage keys cleared<br><strong>${events.length}</strong> refresh events fired</p></div>`, 'success');
+        }
+
+        function refreshMainApp() {
+            logResult('<h3>🔄 Refreshing Main Application...</h3>', 'info');
+            
+            try {
+                // Try to refresh parent window if this is in an iframe
+                if (window.parent && window.parent !== window) {
+                    window.parent.location.reload();
+                    logResult('✅ Parent window refreshed', 'success');
+                } else {
+                    // Try to open the main app in a new tab
+                    window.open('http://localhost:5173', '_blank');
+                    logResult('✅ Main app opened in new tab', 'success');
+                }
+            } catch (e) {
+                logResult('❌ Could not refresh automatically. Please manually refresh your main app.', 'danger');
+            }
+        }
+
+        // Auto-scan on load
+        window.onload = () => {
+            scanFloor2Data();
+        };
+        </script>
+    </div>
+</body>
+</html>

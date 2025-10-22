@@ -42,13 +42,15 @@ export interface CentralCarRecord extends Omit<Car, 'status' | 'photos'> {
 }
 
 // Supporting interfaces for complete data tracking
+import { CarMovementReason } from '@/types/purposeReason';
+
 export interface LocationHistoryEntry {
   id: string;
   fromLocation: string;
   toLocation: string;
   movedAt: string;
   movedBy: string;
-  reason: string;
+  reason: CarMovementReason;
   notes?: string;
 }
 
@@ -58,7 +60,7 @@ export interface StatusHistoryEntry {
   toStatus: string;
   changedAt: string;
   changedBy: string;
-  reason: string;
+  reason: CarMovementReason;
   notes?: string;
 }
 
@@ -170,7 +172,6 @@ class CentralCarService {
 
   constructor() {
     this.loadFromStorage();
-    this.initializeWithMockData();
   }
 
   // Core VIN-based operations
@@ -288,293 +289,7 @@ class CentralCarService {
     }
   }
 
-  private initializeWithMockData(): void {
-    // Only initialize if no data exists
-    if (this.cars.size === 0) {
-      this.loadMockData();
-    }
-  }
 
-  private loadMockData(): void {
-    const now = new Date().toISOString();
-    
-    // Comprehensive mock data with full VIN linking
-    const mockCars: CentralCarRecord[] = [
-      {
-        id: 'central-001',
-        vinNumber: 'VF1VOY123456789012',
-        model: 'Voyah Free',
-        year: 2024,
-        color: 'Pearl White',
-        brand: 'Voyah',
-        category: 'EV',
-        status: 'in_stock',
-        arrivalDate: '2024-12-01T08:00:00Z',
-        batteryPercentage: 95,
-        sellingPrice: 75000,
-        customs: 'paid',
-        shipmentCode: 'VF-2024-1201-001',
-        currentLocation: 'car_inventory',
-        locationHistory: [{
-          id: crypto.randomUUID(),
-          fromLocation: 'factory',
-          toLocation: 'car_inventory',
-          movedAt: '2024-12-01T08:00:00Z',
-          movedBy: 'System',
-          reason: 'Initial arrival from factory'
-        }],
-        statusHistory: [{
-          id: crypto.randomUUID(),
-          fromStatus: 'in_transit',
-          toStatus: 'in_stock',
-          changedAt: '2024-12-01T08:00:00Z',
-          changedBy: 'System',
-          reason: 'Arrival processed'
-        }],
-        pdiHistory: [],
-        testDriveHistory: [],
-        financialHistory: [{
-          id: crypto.randomUUID(),
-          type: 'price_change',
-          amount: 75000,
-          currency: 'USD',
-          date: '2024-12-01T08:00:00Z',
-          processedBy: 'System',
-          reference: 'Initial pricing'
-        }],
-        clientInteractions: [],
-        documents: [],
-        photos: [],
-        serviceHistory: [],
-        tags: ['new_arrival', 'premium'],
-        priority: 'medium',
-        pdiCompleted: false,
-        createdAt: now,
-        updatedAt: now,
-        lastModifiedBy: 'System',
-
-      },
-      {
-        id: 'central-002',
-        vinNumber: 'VF1VOY234567890123',
-        model: 'Voyah Dream',
-        year: 2024,
-        color: 'Midnight Silver',
-        brand: 'Voyah',
-        category: 'REV',
-        status: 'reserved',
-        arrivalDate: '2024-12-05T10:30:00Z',
-        batteryPercentage: 88,
-        sellingPrice: 95000,
-        customs: 'paid',
-        shipmentCode: 'VF-2024-1205-002',
-        currentLocation: 'showroom_floor_1',
-        clientName: 'Ahmed Al-Rashid',
-        clientPhone: '+971-50-123-4567',
-        clientEmail: 'ahmed@example.com',
-        locationHistory: [
-          {
-            id: crypto.randomUUID(),
-            fromLocation: 'factory',
-            toLocation: 'car_inventory',
-            movedAt: '2024-12-05T10:30:00Z',
-            movedBy: 'System',
-            reason: 'Initial arrival from factory'
-          },
-          {
-            id: crypto.randomUUID(),
-            fromLocation: 'car_inventory',
-            toLocation: 'showroom_floor_1',
-            movedAt: '2024-12-08T14:00:00Z',
-            movedBy: 'Sales Manager',
-            reason: 'Client interest - moved for display'
-          }
-        ],
-        statusHistory: [
-          {
-            id: crypto.randomUUID(),
-            fromStatus: 'in_transit',
-            toStatus: 'in_stock',
-            changedAt: '2024-12-05T10:30:00Z',
-            changedBy: 'System',
-            reason: 'Arrival processed'
-          },
-          {
-            id: crypto.randomUUID(),
-            fromStatus: 'in_stock',
-            toStatus: 'reserved',
-            changedAt: '2024-12-10T16:30:00Z',
-            changedBy: 'Sales Rep',
-            reason: 'Client reservation received'
-          }
-        ],
-        pdiHistory: [{
-          id: crypto.randomUUID(),
-          type: 'initial',
-          completedAt: '2024-12-07T09:00:00Z',
-          technician: 'Tech-001',
-          status: 'passed',
-          checklist: [
-            { category: 'Exterior', item: 'Paint Quality', status: 'pass' },
-            { category: 'Interior', item: 'Seat Condition', status: 'pass' },
-            { category: 'Electrical', item: 'Battery Status', status: 'pass' }
-          ],
-          photos: [],
-          notes: 'All systems verified and operational'
-        }],
-        testDriveHistory: [{
-          id: crypto.randomUUID(),
-          startTime: '2024-12-09T14:00:00Z',
-          endTime: '2024-12-09T14:30:00Z',
-          duration: 30,
-          driverName: 'Ahmed Al-Rashid',
-          driverPhone: '+971-50-123-4567',
-          driverLicense: 'DL123456789',
-          isClientTestDrive: true,
-          route: 'City Center - Highway - Return',
-          feedback: 'Excellent performance and comfort',
-          outcome: 'purchased',
-          notes: 'Client very satisfied with performance'
-        }],
-        financialHistory: [
-          {
-            id: crypto.randomUUID(),
-            type: 'price_change',
-            amount: 95000,
-            currency: 'USD',
-            date: '2024-12-05T10:30:00Z',
-            processedBy: 'System',
-            reference: 'Initial pricing'
-          },
-          {
-            id: crypto.randomUUID(),
-            type: 'deposit_received',
-            amount: 10000,
-            currency: 'USD',
-            date: '2024-12-10T16:30:00Z',
-            processedBy: 'Sales Rep',
-            reference: 'Reservation deposit'
-          }
-        ],
-        clientInteractions: [
-          {
-            id: crypto.randomUUID(),
-            clientName: 'Ahmed Al-Rashid',
-            clientPhone: '+971-50-123-4567',
-            clientEmail: 'ahmed@example.com',
-            interactionType: 'inquiry',
-            date: '2024-12-08T11:00:00Z',
-            handledBy: 'Sales Rep',
-            summary: 'Initial inquiry about Voyah Dream features and pricing',
-            outcome: 'Scheduled test drive'
-          },
-          {
-            id: crypto.randomUUID(),
-            clientName: 'Ahmed Al-Rashid',
-            clientPhone: '+971-50-123-4567',
-            clientEmail: 'ahmed@example.com',
-            interactionType: 'test_drive',
-            date: '2024-12-09T14:00:00Z',
-            handledBy: 'Sales Rep',
-            summary: 'Test drive completed successfully',
-            outcome: 'Client very interested, negotiating price'
-          },
-          {
-            id: crypto.randomUUID(),
-            clientName: 'Ahmed Al-Rashid',
-            clientPhone: '+971-50-123-4567',
-            clientEmail: 'ahmed@example.com',
-            interactionType: 'purchase',
-            date: '2024-12-10T16:30:00Z',
-            handledBy: 'Sales Manager',
-            summary: 'Purchase agreement signed, deposit received',
-            outcome: 'Purchase confirmed'
-          }
-        ],
-        documents: [{
-          id: crypto.randomUUID(),
-          type: 'contract',
-          fileName: 'purchase_agreement_ahmed.pdf',
-          fileUrl: '/documents/purchase_agreement_ahmed.pdf',
-          uploadedAt: '2024-12-10T16:30:00Z',
-          uploadedBy: 'Sales Manager',
-          description: 'Signed purchase agreement'
-        }],
-        photos: [],
-        serviceHistory: [],
-        tags: ['reserved', 'premium', 'test_driven'],
-        priority: 'high',
-        pdiCompleted: true,
-        pdiDate: '2024-12-07T09:00:00Z',
-        pdiTechnician: 'Tech-001',
-        pdiNotes: 'All systems verified and operational',
-        createdAt: now,
-        updatedAt: now,
-        lastModifiedBy: 'Sales Manager'
-      },
-      {
-        id: 'central-003',
-        vinNumber: 'MOCKVIN000000001',
-        model: 'Test Vehicle',
-        year: 2024,
-        color: 'White',
-        brand: 'Mock',
-        category: 'EV',
-        status: 'in_stock',
-        arrivalDate: '2024-12-21T10:00:00Z',
-        batteryPercentage: 85,
-        sellingPrice: 50000,
-        customs: 'paid',
-        shipmentCode: 'MOCK-2024-1221-001',
-        currentLocation: 'car_inventory',
-        locationHistory: [{
-          id: crypto.randomUUID(),
-          fromLocation: 'external',
-          toLocation: 'car_inventory',
-          movedAt: '2024-12-21T10:00:00Z',
-          movedBy: 'System',
-          reason: 'Test vehicle for VIN scanner functionality'
-        }],
-        statusHistory: [{
-          id: crypto.randomUUID(),
-          fromStatus: 'new',
-          toStatus: 'in_stock',
-          changedAt: '2024-12-21T10:00:00Z',
-          changedBy: 'System',
-          reason: 'Test vehicle setup'
-        }],
-        pdiHistory: [],
-        testDriveHistory: [],
-        financialHistory: [{
-          id: crypto.randomUUID(),
-          type: 'price_change',
-          amount: 50000,
-          currency: 'USD',
-          date: '2024-12-21T10:00:00Z',
-          processedBy: 'System',
-          reference: 'Initial test pricing'
-        }],
-        clientInteractions: [],
-        documents: [],
-        photos: [],
-        serviceHistory: [],
-        tags: ['test_vehicle', 'vin_scanner'],
-        priority: 'low',
-        pdiCompleted: false,
-        createdAt: now,
-        updatedAt: now,
-        lastModifiedBy: 'System'
-      }
-    ];
-
-    // Add all mock cars to the system
-    mockCars.forEach(car => {
-      this.cars.set(car.vinNumber, car);
-    });
-
-    this.saveToStorage();
-    console.log(`Loaded ${mockCars.length} comprehensive mock cars with full VIN linking`);
-  }
 
   // Car lifecycle management
   addCar(carData: Partial<Car>, addedBy: string): string {
@@ -598,7 +313,7 @@ class CentralCarService {
         toLocation: 'car_inventory',
         movedAt: now,
         movedBy: addedBy,
-        reason: 'Initial arrival',
+        reason: CarMovementReason.INITIAL_ARRIVAL,
         notes: 'Car added to inventory system'
       }],
       statusHistory: [{
@@ -607,7 +322,7 @@ class CentralCarService {
         toStatus: carData.status || 'in_stock',
         changedAt: now,
         changedBy: addedBy,
-        reason: 'Initial status assignment'
+        reason: CarMovementReason.INITIAL_STATUS_ASSIGNMENT
       }],
       pdiHistory: [],
       testDriveHistory: [],
@@ -652,7 +367,7 @@ class CentralCarService {
         toStatus: updates.status,
         changedAt: now,
         changedBy: modifiedBy,
-        reason: updates.notes || 'Status updated'
+        reason: CarMovementReason.OTHER
       });
     }
 
@@ -664,7 +379,7 @@ class CentralCarService {
         toLocation: updates.currentLocation,
         movedAt: now,
         movedBy: modifiedBy,
-        reason: updates.notes || 'Location changed'
+        reason: CarMovementReason.INVENTORY_MANAGEMENT
       });
     }
 
@@ -805,10 +520,7 @@ class CentralCarService {
     localStorage.removeItem(this.storageKey);
   }
 
-  resetToMockData(): void {
-    this.clearAllData();
-    this.loadMockData();
-  }
+
 }
 
 // Supporting interfaces for reports

@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tool } from '@/services/toolsEquipmentService';
 import { DollarSign, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { safeParseFloat } from '@/utils/errorHandling';
+import { toast } from '@/hooks/use-toast';
 
 interface SellToolDialogProps {
   isOpen: boolean;
@@ -36,13 +38,21 @@ const SellToolDialog: React.FC<SellToolDialogProps> = ({ isOpen, tool, onClose, 
     e.preventDefault();
     
     if (!formData.salePrice || !formData.soldTo || !formData.soldBy) {
-      alert('Please fill in all required fields');
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
       return;
     }
 
-    const salePrice = parseFloat(formData.salePrice);
+    const salePrice = safeParseFloat(formData.salePrice, 0);
     if (isNaN(salePrice) || salePrice <= 0) {
-      alert('Please enter a valid sale price');
+      toast({
+        title: "Invalid Price",
+        description: "Please enter a valid sale price",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -88,7 +98,7 @@ const SellToolDialog: React.FC<SellToolDialogProps> = ({ isOpen, tool, onClose, 
 
   const calculateProfitLoss = () => {
     if (!formData.salePrice || !tool) return null;
-    const salePrice = parseFloat(formData.salePrice);
+    const salePrice = safeParseFloat(formData.salePrice, 0);
     const currentValue = tool.currentValue;
     const originalPrice = tool.purchasePrice;
     
@@ -195,20 +205,13 @@ const SellToolDialog: React.FC<SellToolDialogProps> = ({ isOpen, tool, onClose, 
 
               <div className="space-y-2">
                 <Label htmlFor="saleReason">Reason for Sale</Label>
-                <Select value={formData.saleReason} onValueChange={(value) => setFormData(prev => ({ ...prev, saleReason: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="upgrade">Upgrade to newer model</SelectItem>
-                    <SelectItem value="redundant">No longer needed</SelectItem>
-                    <SelectItem value="maintenance">High maintenance costs</SelectItem>
-                    <SelectItem value="space">Need space for new equipment</SelectItem>
-                    <SelectItem value="cash_flow">Cash flow needs</SelectItem>
-                    <SelectItem value="damaged">Damaged beyond repair</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="saleReason"
+                  value={formData.saleReason}
+                  onChange={(e) => setFormData(prev => ({ ...prev, saleReason: e.target.value }))}
+                  placeholder="Enter the reason for selling this tool"
+                  required
+                />
               </div>
             </div>
 

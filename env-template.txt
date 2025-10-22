@@ -1,0 +1,36 @@
+# =============================================
+# SUPABASE ENVIRONMENT CONFIGURATION FOR MONZA
+# =============================================
+# Create a file called ".env.local" in the project root and copy these lines:
+# (Replace the placeholder values with your actual Supabase credentials)
+
+# Supabase Project URL (get from Supabase Dashboard > Settings > API)
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+
+# Supabase Anonymous Key (public, safe for frontend)
+VITE_SUPABASE_ANON_KEY=your_anon_key_here
+
+# 🚨 SECURITY NOTE: Service role key should NEVER be in frontend
+# Keep service role key only in server/Edge Functions for admin operations
+
+# =============================================
+# HOW TO GET YOUR CREDENTIALS:
+# =============================================
+# 1. Go to https://supabase.com/dashboard
+# 2. Select your project
+# 3. Go to Settings > API
+# 4. Copy ONLY these for frontend:
+#    - Project URL → VITE_SUPABASE_URL
+#    - anon/public key → VITE_SUPABASE_ANON_KEY  
+#    ⚠️  DO NOT copy service_role key to frontend!
+#
+# 5. Create .env.local file with these values
+# 6. Run: npm run upload:monza-inventory
+
+# =============================================
+# AFTER SETUP:
+# =============================================
+# ✅ Your 107 cars will upload automatically
+# ✅ Car inventory page will show all vehicles
+# ✅ Search, filter, and manage inventory
+# ✅ Complete warranty and client tracking

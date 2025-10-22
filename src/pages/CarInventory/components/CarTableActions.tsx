@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ActionDropdown from '@/components/ui/ActionDropdown';
+import PortalActionDropdown from '@/components/ui/PortalActionDropdown';
 import { Car as CarType } from '../types';
 import TestDriveDialog from './TestDriveDialog';
 import TestDriveHistoryDialog from './TestDriveHistoryDialog';
@@ -42,7 +42,7 @@ const CarTableActions: React.FC<CarTableActionsProps> = ({
 
   return (
     <>
-      <ActionDropdown
+      <PortalActionDropdown
         options={[
           { value: 'edit', label: 'Edit Car' },
           { value: 'history', label: 'Test Drive History' },
@@ -55,6 +55,7 @@ const CarTableActions: React.FC<CarTableActionsProps> = ({
           else if (action === 'move') onOpenMoveDialog(car);
           else if (action === 'tech' && onOpenTechSpecs) onOpenTechSpecs(car);
         }}
+        id={`actions-${car.id}`}
         ariaLabel={`Actions for ${car.model} ${car.vinNumber}`}
       />
 

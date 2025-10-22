@@ -3,6 +3,25 @@ export type UserRole = 'owner' | 'garage_manager' | 'assistant' | 'sales';
 
 export type HybridRole = 'sales_garage_marketing' | 'sales_assistant_marketing';
 
+// Notification system types
+export type NotificationType = "message" | "car" | "request";
+
+export interface NotificationRow {
+  id: string;
+  created_at: string;
+  type: NotificationType;
+  title: string;
+  body: string | null;
+  entity_id: string | null;
+  route: string | null;
+  read_at: string | null;
+  meta: Record<string, any> | null;
+  actor_id: string | null;
+  recipient_id: string;
+  action_required: boolean;
+  action_state: "pending" | "accepted" | "denied";
+}
+
 export interface User {
   id: string;
   name: string;
@@ -138,6 +157,13 @@ export interface Car {
   }>;
   photos?: string[];
   shipmentCode?: string;
+  // Warranty tracking fields
+  warrantyStartDate?: string;
+  warrantyEndDate?: string;
+  warrantyMonthsRemaining?: number;
+  warrantyDaysRemaining?: number;
+  warrantyStatus?: 'active' | 'expiring_soon' | 'expired';
+  lastWarrantyUpdate?: string;
 }
 
 // Ordered Parts type - Adding the missing type
@@ -158,7 +184,7 @@ export interface OrderedPart {
   notes?: string;
   created_at: string;
   updated_at: string;
-  category: 'voyah' | 'normal_engine';
+  category: 'ev_erev' | 'normal_engine';
 }
 
 // Form types for MonzaBot
@@ -207,21 +233,36 @@ export interface EnhancedRepairHistory {
   solution_description: string;
   repair_steps: string[];
   parts_used: PartUsed[];
+  tools_used: string[];
   labor_hours?: number;
   total_cost?: number;
   technician_name: string;
+  assigned_mechanic?: string;
   repair_date: string;
   completion_date?: string;
+  start_time?: string;
+  end_time?: string;
+  actual_duration?: string;
+  estimated_duration?: string;
   photos?: string[];
   before_photos?: string[];
   after_photos?: string[];
   repair_category?: string;
+  work_type?: string;
   difficulty_level?: 'easy' | 'medium' | 'hard' | 'expert';
   quality_rating?: number;
   client_satisfaction?: number;
   warranty_period?: number;
   follow_up_required?: boolean;
   follow_up_notes?: string;
+  mechanic_notes?: string;
+  recommendation?: string;
+  schedule_details?: {
+    scheduledDate?: string;
+    timeSlot?: string;
+    priority?: string;
+    location?: string;
+  };
   created_at: string;
   updated_at: string;
 }
@@ -332,16 +373,22 @@ export interface ScheduledCar {
   carModel: string;
   customerName: string;
   priority: 'high' | 'medium' | 'low';
-  estimatedDuration: string; // in hours
+  estimatedDuration: number; // in minutes
   workType: 'electrical' | 'painter' | 'detailer' | 'mechanic' | 'body_work';
   assignedMechanic?: string;
   notes?: string;
   status: 'pending' | 'scheduled' | 'in_progress' | 'completed' | 'delayed';
+  vin?: string; // VIN number for tracking
   // Test drive properties
   testDriveStatus?: 'available' | 'on_test_drive' | 'not_available';
   testDriveStartTime?: string;
   testDriveDriver?: string;
   testDriveDuration?: number; // in minutes
+  // New properties for enhanced scheduling
+  workTitle?: string;
+  scheduledDate?: string;
+  startTime?: string;
+  requiredSkills?: string[];
 }
 
 // Car history tracking

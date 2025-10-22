@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🗃️ Supabase Floor 2 Database Cleaner</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            margin: 20px; 
+            background: #f1f3f4;
+        }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .critical { 
+            background: #dc3545; 
+            color: white; 
+            padding: 20px; 
+            margin: 15px 0; 
+            border-radius: 8px; 
+            font-weight: bold;
+            text-align: center;
+        }
+        .warning { 
+            background: #fff3cd; 
+            border: 2px solid #ffc107; 
+            color: #856404;
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 8px; 
+        }
+        .success { 
+            background: #d4edda; 
+            border: 2px solid #28a745; 
+            color: #155724;
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 8px; 
+        }
+        .info { 
+            background: #d1ecf1; 
+            border: 2px solid #17a2b8; 
+            color: #0c5460;
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 8px; 
+        }
+        button { 
+            padding: 15px 25px; 
+            margin: 8px; 
+            font-size: 15px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .data-count { 
+            background: #6f42c1; 
+            color: white; 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            font-weight: bold; 
+            margin: 0 5px;
+        }
+        .step { 
+            background: #f8f9fa; 
+            border-left: 4px solid #007bff; 
+            padding: 15px; 
+            margin: 10px 0; 
+        }
+        .results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗃️ Supabase Floor 2 Database Cleaner</h1>
+        
+        <div class="critical">
+            ⚠️ CRITICAL: This will permanently delete ALL Floor 2 data from the Supabase database!
+        </div>
+
+        <div class="warning">
+            <h3>🔍 Why your Floor 2 data keeps coming back:</h3>
+            <p>The data is stored in <strong>Supabase database table: <code>showroom_floor2_inventory</code></strong></p>
+            <p>Even after clearing localStorage, the data reloads from the database on page refresh!</p>
+        </div>
+
+        <div class="step">
+            <h3>Step 1: Check Current Data Sources</h3>
+            <button onclick="checkAllDataSources()" class="btn-primary">
+                🔍 Scan All Data Sources
+            </button>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Clear Browser Storage</h3>
+            <button onclick="clearLocalStorage()" class="btn-warning">
+                🧹 Clear localStorage
+            </button>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Clear Supabase Database</h3>
+            <button onclick="clearSupabaseData()" class="btn-danger">
+                💥 Clear Supabase Database
+            </button>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Force Application Refresh</h3>
+            <button onclick="forceRefresh()" class="btn-success">
+                🔄 Refresh Application
+            </button>
+        </div>
+
+        <div id="results" class="results"></div>
+
+        <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = message;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function checkAllDataSources() {
+            log('<h3>🔍 Scanning All Data Sources...</h3>', 'info');
+            
+            // Check localStorage
+            const localStorageKeys = Object.keys(localStorage);
+            const floor2LocalKeys = localStorageKeys.filter(key => 
+                key.toLowerCase().includes('floor2') ||
+                key.toLowerCase().includes('showroom') ||
+                key.toLowerCase().includes('car')
+            );
+
+            log(`<h4>📦 LocalStorage Sources:</h4>`, 'info');
+            floor2LocalKeys.forEach(key => {
+                try {
+                    const data = localStorage.getItem(key);
+                    if (data) {
+                        const parsed = JSON.parse(data);
+                        const count = Array.isArray(parsed) ? parsed.length : 'object';
+                        log(`🔑 ${key}: <span class="data-count">${count}</span>`, 'info');
+                    }
+                } catch (e) {
+                    log(`🔑 ${key}: <span class="data-count">text</span>`, 'info');
+                }
+            });
+
+            // Check main Floor 2 data
+            const mainData = localStorage.getItem('showroomFloor2Cars');
+            if (mainData) {
+                try {
+                    const parsed = JSON.parse(mainData);
+                    log(`<div class="warning">🚨 MAIN FLOOR 2 DATA FOUND: <span class="data-count">${parsed.length} cars</span></div>`, 'warning');
+                    
+                    if (parsed.length > 0) {
+                        const sampleVins = parsed.slice(0, 3).map(car => car.vinNumber || car.vin || 'No VIN').join(', ');
+                        log(`📋 Sample VINs: ${sampleVins}...`, 'info');
+                    }
+                } catch (e) {
+                    log(`<div class="warning">🚨 FLOOR 2 DATA EXISTS (parse error)</div>`, 'warning');
+                }
+            }
+
+            log(`<div class="info">🗃️ <strong>Supabase Database:</strong> Data is likely stored in <code>showroom_floor2_inventory</code> table</div>`, 'info');
+            log(`<div class="info">💡 <strong>Note:</strong> Use the Supabase dashboard or SQL commands to check/clear database data</div>`, 'info');
+        }
+
+        function clearLocalStorage() {
+            log('<h3>🧹 Clearing All localStorage Data...</h3>', 'warning');
+            
+            const allFloor2Keys = [
+                'showroomFloor2Cars',
+                'showroomFloor2_cache', 
+                'floor2Cars',
+                'showroom_floor_2_cars',
+                'showroomFloor2Data',
+                'showroom_floor_2_data',
+                'showroomFloor2',
+                'floor2Data',
+                'showroomFloor2CarsData',
+                'floor2_inventory',
+                'showroom_floor2_inventory',
+                'floor2CarData',
+                'showroomFloor2CarList',
+                'floor2CarList',
+                'voyahFloor2Cars',
+                'floor2VoyahCars',
+                'carInventory',
+                'realCarData',
+                'mockCarData'
+            ];
+
+            let clearedCount = 0;
+            
+            allFloor2Keys.forEach(key => {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        const count = Array.isArray(parsed) ? parsed.length : 'object';
+                        localStorage.removeItem(key);
+                        log(`✅ CLEARED: ${key} (had ${count} items)`, 'success');
+                        clearedCount++;
+                    } catch (e) {
+                        localStorage.removeItem(key);
+                        log(`✅ CLEARED: ${key} (text data)`, 'success');
+                        clearedCount++;
+                    }
+                } else {
+                    log(`❌ NOT FOUND: ${key}`, 'info');
+                }
+            });
+
+            // Clear any other suspicious keys
+            const allKeys = Object.keys(localStorage);
+            allKeys.forEach(key => {
+                if ((key.toLowerCase().includes('floor2') || 
+                     key.toLowerCase().includes('showroom') ||
+                     key.toLowerCase().includes('voyah')) && 
+                    !allFloor2Keys.includes(key)) {
+                    
+                    localStorage.removeItem(key);
+                    log(`🧹 EXTRA CLEAR: ${key}`, 'success');
+                    clearedCount++;
+                }
+            });
+
+            // Fire refresh events
+            const events = [
+                'clearShowroomFloor2Data',
+                'showroomFloor2CarsCleared',
+                'floor2DataCleared',
+                'showroomFloor2Cleared',
+                'carInventoryUpdated'
+            ];
+
+            events.forEach(eventName => {
+                try {
+                    window.dispatchEvent(new CustomEvent(eventName, {
+                        detail: { cleared: true, source: 'supabase-cleaner' }
+                    }));
+                    log(`📡 EVENT: ${eventName}`, 'success');
+                } catch (e) {
+                    log(`❌ EVENT FAILED: ${eventName}`, 'warning');
+                }
+            });
+
+            log(`<div class="success">✅ LocalStorage cleared: <span class="data-count">${clearedCount}</span> keys removed</div>`, 'success');
+        }
+
+        function clearSupabaseData() {
+            log('<h3>💥 Clearing Supabase Database...</h3>', 'critical');
+            
+            log(`<div class="warning">⚠️ <strong>Manual Action Required:</strong></div>`, 'warning');
+            log(`<div class="info">
+                <h4>🗃️ To clear Supabase data, you need to:</h4>
+                <ol>
+                    <li><strong>Open Supabase Dashboard:</strong> Go to your project dashboard</li>
+                    <li><strong>Navigate to SQL Editor:</strong> Use the SQL editor or Table editor</li>
+                    <li><strong>Execute this SQL:</strong> <code>DELETE FROM showroom_floor2_inventory;</code></li>
+                    <li><strong>Alternative:</strong> Use the Table editor to delete all rows manually</li>
+                </ol>
+            </div>`, 'info');
+
+            log(`<div class="info">
+                <h4>🔧 Or use this SQL command:</h4>
+                <pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; border-left: 4px solid #007bff;">
+DELETE FROM showroom_floor2_inventory WHERE true;
+COMMIT;</pre>
+            </div>`, 'info');
+
+            // Simulate clearing for demonstration
+            setTimeout(() => {
+                log(`<div class="success">✅ Ready to clear Supabase database</div>`, 'success');
+                log(`<div class="info">💡 <strong>After clearing the database:</strong> The Floor 2 page should show empty results</div>`, 'info');
+            }, 1000);
+        }
+
+        function forceRefresh() {
+            log('<h3>🔄 Force Refreshing Application...</h3>', 'info');
+            
+            try {
+                // Clear any cached data
+                if ('caches' in window) {
+                    caches.keys().then(function(names) {
+                        names.forEach(function(name) {
+                            caches.delete(name);
+                        });
+                    });
+                }
+
+                // Refresh parent or open new tab
+                if (window.parent && window.parent !== window) {
+                    window.parent.location.reload();
+                    log('✅ Parent window refreshed', 'success');
+                } else {
+                    window.open('http://localhost:5173', '_blank');
+                    log('✅ New tab opened with fresh application', 'success');
+                }
+            } catch (e) {
+                log('❌ Auto-refresh failed. Please manually refresh your application.', 'warning');
+            }
+        }
+
+        // Auto-check on load
+        window.onload = () => {
+            setTimeout(checkAllDataSources, 500);
+        };
+        </script>
+    </div>
+</body>
+</html>

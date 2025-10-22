@@ -10,13 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+// Removed custom Select for reliability inside dialogs
+import { safeParseInt } from '@/utils/errorHandling';
 
 interface EditCarDialogProps {
   isOpen: boolean;
@@ -65,7 +60,7 @@ const EditCarDialog: React.FC<EditCarDialogProps> = ({
                 id="year"
                 type="number"
                 value={editedCar.year}
-                onChange={(e) => updateField('year', parseInt(e.target.value))}
+                onChange={(e) => updateField('year', safeParseInt(e.target.value, 2024))}
               />
             </div>
           </div>
@@ -80,12 +75,33 @@ const EditCarDialog: React.FC<EditCarDialogProps> = ({
               />
             </div>
             <div>
+              <Label htmlFor="interiorColor">Color interior</Label>
+              <Input
+                id="interiorColor"
+                value={editedCar.interiorColor || ''}
+                onChange={(e) => updateField('interiorColor', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <Label htmlFor="price">Price</Label>
               <Input
                 id="price"
                 type="number"
-                value={editedCar.price}
-                onChange={(e) => updateField('price', parseInt(e.target.value))}
+                value={editedCar.sellingPrice || editedCar.price || ''}
+                onChange={(e) => updateField('sellingPrice', safeParseInt(e.target.value, 0))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="kmDriven">Km Driven</Label>
+              <Input
+                id="kmDriven"
+                type="number"
+                min="0"
+                value={editedCar.kilometersDriven || editedCar.kmDriven || ''}
+                onChange={(e) => updateField('kilometersDriven', safeParseInt(e.target.value, 0) || undefined)}
               />
             </div>
           </div>
@@ -108,7 +124,7 @@ const EditCarDialog: React.FC<EditCarDialogProps> = ({
                 min="0"
                 max="100"
                 value={editedCar.batteryPercentage || ''}
-                onChange={(e) => updateField('batteryPercentage', parseInt(e.target.value) || undefined)}
+                onChange={(e) => updateField('batteryPercentage', safeParseInt(e.target.value, 85) || undefined)}
               />
             </div>
             <div>
@@ -117,37 +133,25 @@ const EditCarDialog: React.FC<EditCarDialogProps> = ({
                 id="range"
                 type="number"
                 value={editedCar.range || ''}
-                onChange={(e) => updateField('range', parseInt(e.target.value) || undefined)}
+                onChange={(e) => updateField('range', safeParseInt(e.target.value, 520) || undefined)}
               />
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="status">Status</Label>
-            <Select value={editedCar.status || 'available'} onValueChange={(value) => updateField('status', value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="available">Available</SelectItem>
-                <SelectItem value="reserved">Reserved</SelectItem>
-                <SelectItem value="sold">Sold</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+
 
           <div>
             <Label htmlFor="category">Category</Label>
-            <Select value={editedCar.category || 'EV'} onValueChange={(value) => updateField('category', value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="EV">EV (Electric Vehicle)</SelectItem>
-                <SelectItem value="REV">REV (Range Extended Vehicle)</SelectItem>
-                <SelectItem value="ICEV">ICEV (Internal Combustion Engine)</SelectItem>
-              </SelectContent>
-            </Select>
+            <select
+              id="category"
+              value={editedCar.category || 'EV'}
+              onChange={(e) => updateField('category', e.target.value)}
+              className="w-full h-10 rounded-none border border-input bg-background px-3 py-2"
+            >
+              <option value="EV">EV (Electric Vehicle)</option>
+              <option value="REV">REV (Range Extended Vehicle)</option>
+              <option value="ICEV">ICEV (Internal Combustion Engine)</option>
+            </select>
           </div>
 
           <div>

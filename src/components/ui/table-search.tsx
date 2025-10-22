@@ -8,19 +8,22 @@ interface TableSearchProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  id?: string;
 }
 
 const TableSearch: React.FC<TableSearchProps> = ({
   value,
   onChange,
   placeholder = "Search VINs, clients, parts, models...",
-  className = ""
+  className = "",
+  id
 }) => {
   return (
     <div className={`relative flex items-center w-full max-w-md ${className}`}>
       <Search className="absolute left-3 h-4 w-4 text-gray-400" />
       <Input
         type="text"
+        id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}

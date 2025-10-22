@@ -247,7 +247,7 @@ export const EnhancedCarStatusDialog: React.FC<CarStatusSelectionDialogProps> = 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white border border-gray-300 shadow-xl" style={{ zIndex: 50001 }}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white border border-gray-300 shadow-xl">
         <DialogHeader className="border-b border-gray-200 pb-4">
           <DialogTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
             <User className="h-5 w-5 text-monza-yellow" />
@@ -324,7 +324,7 @@ export const EnhancedCarStatusDialog: React.FC<CarStatusSelectionDialogProps> = 
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="clientPhone" className="text-sm">Phone Number *</Label>
+                  <Label htmlFor="clientPhone" className="text-sm">Phone Number</FormLabel>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input

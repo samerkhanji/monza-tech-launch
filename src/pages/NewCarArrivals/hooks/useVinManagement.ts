@@ -1,9 +1,10 @@
 
 import { NewCarArrival } from '../types';
+import { safeLocalStorageGet } from '@/utils/errorHandling';
 
 export const useVinManagement = () => {
   const checkAndRemoveOrderedVin = (car: NewCarArrival) => {
-    const orderedCars = JSON.parse(localStorage.getItem('orderedCars') || '[]');
+    const orderedCars = safeLocalStorageGet<any[]>('orderedCars', []);
     const existingOrderIndex = orderedCars.findIndex((order: any) => 
       order.vin_number === car.vin
     );

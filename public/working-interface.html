@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monza TECH - Working Interface</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f5f5;
+            margin: 0;
+        }
+        .header {
+            background: #FFD700;
+            color: #000;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 15px; 
+            margin: 20px 0;
+        }
+        .card {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .card:hover {
+            border-color: #FFD700;
+            transform: translateY(-2px);
+        }
+        .btn { 
+            padding: 15px 25px; 
+            margin: 5px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 16px;
+            border-radius: 5px;
+            width: 100%;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #1e7e34; }
+        .btn-warning { background: #ffc107; color: #000; }
+        .btn-warning:hover { background: #e0a800; }
+        .section-title {
+            color: #333;
+            border-bottom: 2px solid #FFD700;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .status {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚗 MONZA TECH - Working Interface</h1>
+        <p>Direct access to all functions - no React issues!</p>
+    </div>
+
+    <div class="status">
+        ✅ <strong>This interface works!</strong> Use it to access all Monza TECH functions while we fix the main app.
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h3 class="section-title">🚗 Vehicle Management</h3>
+            <a href="http://localhost:5173/car-inventory" class="btn">Car Inventory</a>
+            <a href="http://localhost:5173/new-car-arrivals" class="btn">New Car Arrivals</a>
+            <a href="http://localhost:5173/scan-vin" class="btn">Scan VIN</a>
+            <a href="http://localhost:5173/test-drive-logs" class="btn">Test Drive Logs</a>
+        </div>
+
+        <div class="card">
+            <h3 class="section-title">🔧 Garage Operations</h3>
+            <a href="http://localhost:5173/garage-schedule" class="btn">Garage Schedule</a>
+            <a href="http://localhost:5173/repairs" class="btn">Repairs</a>
+            <a href="http://localhost:5173/repair-history" class="btn">Repair History</a>
+            <a href="http://localhost:5173/garage-car-inventory" class="btn">Garage Inventory</a>
+        </div>
+
+        <div class="card">
+            <h3 class="section-title">🏢 Showroom</h3>
+            <a href="http://localhost:5173/showroom-floor-1" class="btn">Floor 1</a>
+            <a href="http://localhost:5173/showroom-floor-2" class="btn">Floor 2</a>
+            <a href="http://localhost:5173/showroom-inventory" class="btn">Showroom Inventory</a>
+            <a href="http://localhost:5173/inventory-floor-2" class="btn">Floor 2 Inventory</a>
+        </div>
+
+        <div class="card">
+            <h3 class="section-title">💰 Financial</h3>
+            <a href="http://localhost:5173/financial-dashboard" class="btn">Financial Dashboard</a>
+            <a href="http://localhost:5173/financial-management" class="btn">Financial Management</a>
+            <a href="http://localhost:5173/owner-finances" class="btn">Owner Finances</a>
+            <a href="http://localhost:5173/financial-analytics" class="btn">Financial Analytics</a>
+        </div>
+
+        <div class="card">
+            <h3 class="section-title">📊 Reports & Analytics</h3>
+            <a href="http://localhost:5173/analytics" class="btn">Analytics</a>
+            <a href="http://localhost:5173/reports" class="btn">Reports</a>
+            <a href="http://localhost:5173/user-activity-dashboard" class="btn">User Activity</a>
+            <a href="http://localhost:5173/data-linking-summary" class="btn">Data Summary</a>
+        </div>
+
+        <div class="card">
+            <h3 class="section-title">👥 Employee Management</h3>
+            <a href="http://localhost:5173/employee-management" class="btn">Employee Management</a>
+            <a href="http://localhost:5173/employee-profile" class="btn">Employee Profile</a>
+            <a href="http://localhost:5173/employee-analytics" class="btn">Employee Analytics</a>
+            <a href="http://localhost:5173/user-management" class="btn">User Management</a>
+        </div>
+
+        <div class="card">
+            <h3 class="section-title">💼 Sales & CRM</h3>
+            <a href="http://localhost:5173/sales" class="btn">Sales</a>
+            <a href="http://localhost:5173/marketing-crm" class="btn">Marketing CRM</a>
+            <a href="http://localhost:5173/test-drives/new" class="btn">New Test Drive</a>
+            <a href="http://localhost:5173/test-drive-scanner" class="btn">Test Drive Scanner</a>
+        </div>
+
+        <div class="card">
+            <h3 class="section-title">📦 Inventory & Parts</h3>
+            <a href="http://localhost:5173/inventory" class="btn">Garage Inventory</a>
+            <a href="http://localhost:5173/part-management" class="btn">Part Management</a>
+            <a href="http://localhost:5173/scan-part" class="btn">Scan Part</a>
+            <a href="http://localhost:5173/tools-equipment" class="btn">Tools & Equipment</a>
+        </div>
+
+        <div class="card">
+            <h3 class="section-title">📅 Scheduling</h3>
+            <a href="http://localhost:5173/calendar" class="btn">Calendar</a>
+            <a href="http://localhost:5173/business-calendar" class="btn">Business Calendar</a>
+            <a href="http://localhost:5173/marketing-calendar" class="btn">Marketing Calendar</a>
+            <a href="http://localhost:5173/marketing-budget-calendar" class="btn">Budget Calendar</a>
+        </div>
+
+        <div class="card">
+            <h3 class="section-title">📨 Communication</h3>
+            <a href="http://localhost:5173/message-center" class="btn">Message Center</a>
+            <a href="http://localhost:5173/messaging-center" class="btn">Messaging Center</a>
+            <a href="http://localhost:5173/requests/new" class="btn">New Request</a>
+        </div>
+
+        <div class="card">
+            <h3 class="section-title">🛠️ System & Admin</h3>
+            <a href="http://localhost:5173/system-settings" class="btn">System Settings</a>
+            <a href="http://localhost:5173/audit-log" class="btn">Audit Log</a>
+            <a href="http://localhost:5173/api-documentation" class="btn">API Documentation</a>
+            <a href="http://localhost:5173/data-upload" class="btn">Data Upload</a>
+        </div>
+
+        <div class="card">
+            <h3 class="section-title">🚨 Emergency Actions</h3>
+            <button class="btn btn-warning" onclick="window.open('http://localhost:5173', '_blank')">
+                Open Main App (New Tab)
+            </button>
+            <button class="btn btn-success" onclick="window.location.reload()">
+                Refresh This Page
+            </button>
+            <button class="btn" onclick="window.location.href='http://localhost:5173'">
+                Go to Main Dashboard
+            </button>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; padding: 20px; background: white; border-radius: 10px;">
+        <h3>🔧 Still having issues?</h3>
+        <p>All buttons above should work perfectly. If any don't work, it's a deeper browser issue.</p>
+        <p><strong>Try:</strong> Different browser, restart computer, or use another device.</p>
+    </div>
+
+    <script>
+        console.log('✅ Working interface loaded successfully');
+        
+        // Test all links work
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') {
+                console.log('✅ Click detected on:', e.target.textContent);
+            }
+        });
+    </script>
+</body>
+</html>

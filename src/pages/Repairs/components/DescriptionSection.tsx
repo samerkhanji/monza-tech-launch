@@ -47,9 +47,9 @@ const DescriptionSection: React.FC = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Select a common issue" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[100] bg-white border shadow-lg max-h-48 overflow-auto" position="popper" sideOffset={4}>
                   {commonIssues.map((issue) => (
-                    <SelectItem key={issue.value} value={issue.value}>
+                    <SelectItem key={issue.value} value={issue.value} className="cursor-pointer hover:bg-gray-100">
                       {issue.label}
                     </SelectItem>
                   ))}

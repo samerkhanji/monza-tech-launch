@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// Select components removed - using native HTML selects instead
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
@@ -29,6 +29,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
 import { testDriveService, TestDriveInfo } from '@/services/testDriveService';
+import { safeParseInt } from '@/utils/errorHandling';
 
 interface TestDriveLog {
   id: string;
@@ -92,46 +93,11 @@ const TestDriveLogsPage: React.FC = () => {
     setLoading(true);
     
     try {
+      // Always start with empty state - no mock data
       const allLogs: TestDriveLog[] = [];
+      console.log('Test Drive Logs: Initialized with empty state (no mock data)');
       
-      // Data sources to check for test drive information
-      const dataSources = [
-        { key: 'carInventoryData', location: 'Main Inventory' },
-        { key: 'showroomFloor1Cars', location: 'Showroom Floor 1' },
-        { key: 'showroomFloor2Cars', location: 'Showroom Floor 2' },
-        { key: 'garageCars', location: 'Garage' },
-        { key: 'newCarArrivals', location: 'New Arrivals' }
-      ];
-
-      dataSources.forEach(source => {
-        const savedCars = localStorage.getItem(source.key);
-        if (savedCars) {
-          try {
-            const cars = JSON.parse(savedCars);
-            cars.forEach((car: any) => {
-              // Handle active test drives
-              if (car.testDriveInfo && car.testDriveInfo.isOnTestDrive) {
-                const log = createTestDriveLog(car, car.testDriveInfo, source.location, true);
-                allLogs.push(log);
-              }
-
-              // Handle test drive history
-              if (car.testDriveHistory && Array.isArray(car.testDriveHistory)) {
-                car.testDriveHistory.forEach((testDrive: any) => {
-                  const log = createTestDriveLog(car, testDrive, source.location, false);
-                  allLogs.push(log);
-                });
-              }
-            });
-          } catch (error) {
-            console.error(`Error parsing ${source.key}:`, error);
-          }
-        }
-      });
-
-      // Sort by start time (most recent first)
-      allLogs.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
-      
+      // Set empty logs
       setTestDriveLogs(allLogs);
     } catch (error) {
       console.error('Error loading test drive logs:', error);
@@ -146,31 +112,76 @@ const TestDriveLogsPage: React.FC = () => {
   };
 
   const createTestDriveLog = (car: any, testDrive: any, location: string, isActive: boolean): TestDriveLog => {
-    const startTime = testDrive.testDriveStartTime || testDrive.startTime || new Date().toISOString();
-    const endTime = testDrive.testDriveEndTime || testDrive.endTime;
+    // Validate and sanitize date inputs
+    const validateDate = (dateString: any): string => {
+      if (!dateString || dateString === 'Invalid Date' || dateString === 'null' || dateString === 'undefined') {
+        return new Date().toISOString();
+      }
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+          return new Date().toISOString();
+        }
+        return date.toISOString();
+      } catch (error) {
+        return new Date().toISOString();
+      }
+    };
+
+    const startTime = validateDate(testDrive.testDriveStartTime || testDrive.startTime);
+    const endTime = testDrive.testDriveEndTime || testDrive.endTime ? validateDate(testDrive.testDriveEndTime || testDrive.endTime) : undefined;
     
     // Calculate actual duration if both start and end times are available
     let actualDuration: number | undefined;
     let durationString: string | undefined;
     
     if (startTime && endTime) {
-      const startDate = new Date(startTime);
-      const endDate = new Date(endTime);
-      actualDuration = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
-      durationString = testDriveService.formatDuration(actualDuration);
+      try {
+        const startDate = new Date(startTime);
+        const endDate = new Date(endTime);
+        if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+          actualDuration = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+          durationString = testDriveService.formatDuration(actualDuration);
+        }
+      } catch (error) {
+        console.error('Error calculating duration:', error);
+      }
     }
     
     // Use stored actual duration if available, otherwise use expected duration
     const storedDuration = testDrive.actualDuration || testDrive.testDriveDuration || testDrive.duration;
     const expectedDuration = testDrive.expectedDuration || (testDrive.isClientTestDrive ? 30 : 15);
-    const expectedEndTime = new Date(new Date(startTime).getTime() + expectedDuration * 60000).toISOString();
+    
+    // Calculate expected end time safely
+    let expectedEndTime: string;
+    try {
+      const startDate = new Date(startTime);
+      if (!isNaN(startDate.getTime())) {
+        expectedEndTime = new Date(startDate.getTime() + expectedDuration * 60000).toISOString();
+      } else {
+        expectedEndTime = new Date().toISOString();
+      }
+    } catch (error) {
+      expectedEndTime = new Date().toISOString();
+    }
     
     // Calculate if overdue (for active test drives)
     const now = new Date();
-    const expectedEnd = new Date(expectedEndTime);
-    const isOverdue = isActive && now > expectedEnd;
-    const overdueMs = isOverdue ? now.getTime() - expectedEnd.getTime() : 0;
-    const overdueMinutes = Math.floor(overdueMs / 60000);
+    let isOverdue = false;
+    let overdueMinutes = 0;
+    
+    try {
+      const expectedEnd = new Date(expectedEndTime);
+      if (!isNaN(expectedEnd.getTime())) {
+        isOverdue = isActive && now > expectedEnd;
+        if (isOverdue) {
+          const overdueMs = now.getTime() - expectedEnd.getTime();
+          overdueMinutes = Math.floor(overdueMs / 60000);
+        }
+      }
+    } catch (error) {
+      console.error('Error calculating overdue status:', error);
+    }
 
     return {
       id: `${car.id || car.vinNumber}-${startTime}`,
@@ -209,20 +220,28 @@ const TestDriveLogsPage: React.FC = () => {
     setTestDriveLogs(prevLogs => 
       prevLogs.map(log => {
         if (log.status === 'active' || log.status === 'overdue') {
-          const now = new Date();
-          const expectedEnd = new Date(log.expectedEndTime || log.startTime);
-          const isOverdue = now > expectedEnd;
-          
-          if (isOverdue && log.status !== 'overdue') {
-            const overdueMs = now.getTime() - expectedEnd.getTime();
-            const overdueMinutes = Math.floor(overdueMs / 60000);
+          try {
+            const now = new Date();
+            const expectedEnd = new Date(log.expectedEndTime || log.startTime);
             
-            return {
-              ...log,
-              status: 'overdue' as const,
-              isOverdue: true,
-              overdueBy: `${overdueMinutes} minutes`
-            };
+            // Validate the date
+            if (!isNaN(expectedEnd.getTime())) {
+              const isOverdue = now > expectedEnd;
+              
+              if (isOverdue && log.status !== 'overdue') {
+                const overdueMs = now.getTime() - expectedEnd.getTime();
+                const overdueMinutes = Math.floor(overdueMs / 60000);
+                
+                return {
+                  ...log,
+                  status: 'overdue' as const,
+                  isOverdue: true,
+                  overdueBy: `${overdueMinutes} minutes`
+                };
+              }
+            }
+          } catch (error) {
+            console.error('Error updating test drive status:', error);
           }
         }
         return log;
@@ -247,22 +266,33 @@ const TestDriveLogsPage: React.FC = () => {
     if (dateFilter !== 'all') {
       const now = new Date();
       filtered = filtered.filter(log => {
-        const logDate = new Date(log.startTime);
-        switch (dateFilter) {
-          case 'today':
-            return isToday(logDate);
-          case 'yesterday':
-            return isYesterday(logDate);
-          case 'week': {
-            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            return logDate >= weekAgo;
+        try {
+          const logDate = new Date(log.startTime);
+          
+          // Skip invalid dates
+          if (isNaN(logDate.getTime())) {
+            return false;
           }
-          case 'month': {
-            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-            return logDate >= monthAgo;
+          
+          switch (dateFilter) {
+            case 'today':
+              return isToday(logDate);
+            case 'yesterday':
+              return isYesterday(logDate);
+            case 'week': {
+              const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+              return logDate >= weekAgo;
+            }
+            case 'month': {
+              const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+              return logDate >= monthAgo;
+            }
+            default:
+              return true;
           }
-          default:
-            return true;
+        } catch (error) {
+          console.error('Error filtering by date:', error);
+          return false;
         }
       });
     }
@@ -332,13 +362,29 @@ const TestDriveLogsPage: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    const date = parseISO(dateString);
-    if (isToday(date)) {
-      return `Today ${format(date, 'h:mm a')}`;
-    } else if (isYesterday(date)) {
-      return `Yesterday ${format(date, 'h:mm a')}`;
-    } else {
-      return format(date, 'MMM d, yyyy h:mm a');
+    try {
+      // Validate the date string first
+      if (!dateString || dateString === 'Invalid Date' || dateString === 'null' || dateString === 'undefined') {
+        return 'Invalid Date';
+      }
+      
+      const date = parseISO(dateString);
+      
+      // Check if the parsed date is valid
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+      
+      if (isToday(date)) {
+        return `Today ${format(date, 'h:mm a')}`;
+      } else if (isYesterday(date)) {
+        return `Yesterday ${format(date, 'h:mm a')}`;
+      } else {
+        return format(date, 'MMM d, yyyy h:mm a');
+      }
+    } catch (error) {
+      console.error('Error formatting date:', dateString, error);
+      return 'Invalid Date';
     }
   };
 
@@ -347,19 +393,55 @@ const TestDriveLogsPage: React.FC = () => {
       // CSV Header
       ['Date', 'Time', 'Car VIN', 'Model', 'Type', 'Driver', 'Phone', 'Duration', 'Status', 'Location', 'Purpose'].join(','),
       // CSV Data
-      ...filteredLogs.map(log => [
-        format(parseISO(log.startTime), 'yyyy-MM-dd'),
-        format(parseISO(log.startTime), 'HH:mm'),
-        log.carVin,
-        log.carModel,
-        log.testDriveType,
-        log.driverName,
-        log.driverPhone || '',
-        log.duration || '',
-        log.status,
-        log.location,
-        log.purpose || ''
-      ].join(','))
+      ...filteredLogs.map(log => {
+        try {
+          const startDate = parseISO(log.startTime);
+          if (isNaN(startDate.getTime())) {
+            return [
+              'Invalid Date',
+              'Invalid Time',
+              log.carVin,
+              log.carModel,
+              log.testDriveType,
+              log.driverName,
+              log.driverPhone || '',
+              log.duration || '',
+              log.status,
+              log.location,
+              log.purpose || ''
+            ].join(',');
+          }
+          
+          return [
+            format(startDate, 'yyyy-MM-dd'),
+            format(startDate, 'HH:mm'),
+            log.carVin,
+            log.carModel,
+            log.testDriveType,
+            log.driverName,
+            log.driverPhone || '',
+            log.duration || '',
+            log.status,
+            log.location,
+            log.purpose || ''
+          ].join(',');
+        } catch (error) {
+          console.error('Error formatting log for export:', error);
+          return [
+            'Invalid Date',
+            'Invalid Time',
+            log.carVin,
+            log.carModel,
+            log.testDriveType,
+            log.driverName,
+            log.driverPhone || '',
+            log.duration || '',
+            log.status,
+            log.location,
+            log.purpose || ''
+          ].join(',');
+        }
+      })
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -448,7 +530,14 @@ const TestDriveLogsPage: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Today</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {filteredLogs.filter(log => isToday(parseISO(log.startTime))).length}
+                  {filteredLogs.filter(log => {
+                    try {
+                      const date = parseISO(log.startTime);
+                      return !isNaN(date.getTime()) && isToday(date);
+                    } catch (error) {
+                      return false;
+                    }
+                  }).length}
                 </p>
               </div>
               <Car className="h-8 w-8 text-green-600" />
@@ -466,7 +555,7 @@ const TestDriveLogsPage: React.FC = () => {
                     const completedWithDuration = filteredLogs.filter(log => log.duration && log.status === 'completed');
                     if (completedWithDuration.length === 0) return 'N/A';
                     const avgMinutes = Math.round(
-                      completedWithDuration.reduce((sum, log) => sum + parseInt(log.duration!), 0) / completedWithDuration.length
+                      completedWithDuration.reduce((sum, log) => sum + safeParseInt(log.duration, 0), 0) / completedWithDuration.length
                     );
                     return testDriveService.formatDuration(avgMinutes);
                   })()}
@@ -497,7 +586,7 @@ const TestDriveLogsPage: React.FC = () => {
               {(() => {
                 const clientLogs = filteredLogs.filter(log => log.testDriveType === 'client');
                 const completedClientLogs = clientLogs.filter(log => log.duration && log.status === 'completed');
-                const totalMinutes = completedClientLogs.reduce((sum, log) => sum + parseInt(log.duration!), 0);
+                const totalMinutes = completedClientLogs.reduce((sum, log) => sum + safeParseInt(log.duration, 0), 0);
                 const avgMinutes = completedClientLogs.length > 0 ? Math.round(totalMinutes / completedClientLogs.length) : 0;
                 
                 return (
@@ -536,7 +625,7 @@ const TestDriveLogsPage: React.FC = () => {
               {(() => {
                 const employeeLogs = filteredLogs.filter(log => log.testDriveType === 'employee');
                 const completedEmployeeLogs = employeeLogs.filter(log => log.duration && log.status === 'completed');
-                const totalMinutes = completedEmployeeLogs.reduce((sum, log) => sum + parseInt(log.duration!), 0);
+                const totalMinutes = completedEmployeeLogs.reduce((sum, log) => sum + safeParseInt(log.duration, 0), 0);
                 const avgMinutes = completedEmployeeLogs.length > 0 ? Math.round(totalMinutes / completedEmployeeLogs.length) : 0;
                 
                 return (
@@ -595,48 +684,51 @@ const TestDriveLogsPage: React.FC = () => {
 
             <div>
               <Label htmlFor="status">Status</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="overdue">Overdue</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+              <select 
+                id="status"
+                value={statusFilter} 
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="h-9 w-full px-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 relative z-10"
+                style={{ appearance: 'auto' }}
+              >
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="overdue">Overdue</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
             </div>
 
             <div>
               <Label htmlFor="type">Type</Label>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="client">Client</SelectItem>
-                  <SelectItem value="employee">Employee</SelectItem>
-                </SelectContent>
-              </Select>
+              <select 
+                id="type"
+                value={typeFilter} 
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="h-9 w-full px-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 relative z-10"
+                style={{ appearance: 'auto' }}
+              >
+                <option value="all">All Types</option>
+                <option value="client">Client</option>
+                <option value="employee">Employee</option>
+              </select>
             </div>
 
             <div>
               <Label htmlFor="date">Date Range</Label>
-              <Select value={dateFilter} onValueChange={setDateFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Dates" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Dates</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="yesterday">Yesterday</SelectItem>
-                  <SelectItem value="week">Past Week</SelectItem>
-                  <SelectItem value="month">Past Month</SelectItem>
-                </SelectContent>
-              </Select>
+              <select 
+                id="date"
+                value={dateFilter} 
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="h-9 w-full px-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 relative z-10"
+                style={{ appearance: 'auto' }}
+              >
+                <option value="all">All Dates</option>
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="week">Past Week</option>
+                <option value="month">Past Month</option>
+              </select>
             </div>
 
             <div className="flex items-end">
@@ -716,7 +808,17 @@ const TestDriveLogsPage: React.FC = () => {
                           <p className="font-medium">{formatDate(log.startTime)}</p>
                           {log.endTime && (
                             <p className="text-xs text-gray-500">
-                              Ended: {format(parseISO(log.endTime), 'h:mm a')}
+                              Ended: {(() => {
+                                try {
+                                  const endDate = parseISO(log.endTime);
+                                  if (!isNaN(endDate.getTime())) {
+                                    return format(endDate, 'h:mm a');
+                                  }
+                                  return 'Invalid Time';
+                                } catch (error) {
+                                  return 'Invalid Time';
+                                }
+                              })()}
                             </p>
                           )}
                           {log.isOverdue && (
@@ -729,7 +831,7 @@ const TestDriveLogsPage: React.FC = () => {
                           {log.duration ? (
                             <div>
                               <span className="font-mono text-sm font-medium text-green-600">
-                                {testDriveService.formatDuration(parseInt(log.duration))}
+                                {testDriveService.formatDuration(safeParseInt(log.duration, 0))}
                               </span>
                               <p className="text-xs text-gray-500">Actual duration</p>
                             </div>

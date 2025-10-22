@@ -1,0 +1,29 @@
+MONZA TECH - PROPRIETARY SOFTWARE LICENSE
+
+Copyright (c) 2024 Monza TECH. All rights reserved.
+
+IMPORTANT: READ CAREFULLY BEFORE INSTALLING OR USING THIS SOFTWARE.
+
+This software is the proprietary property of Monza TECH and is protected by copyright laws and international treaty provisions. This license agreement grants you certain limited rights to use the software.
+
+LICENSE GRANT:
+- This software is licensed, not sold, to you for use only under the terms of this license.
+- You may install and use this software on a single computer or workstation.
+- This license is personal to you and may not be transferred to another party.
+
+RESTRICTIONS:
+- You may not copy, distribute, or transfer this software or documentation to any other party.
+- You may not reverse engineer, decompile, or disassemble the software.
+- You may not modify, adapt, or create derivative works based on the software.
+- Online access requires authorization from Monza TECH.
+
+OWNERSHIP:
+All rights, title, and interest in and to the software remain with Monza TECH.
+
+TERMINATION:
+This license is effective until terminated. Your rights under this license will terminate automatically if you fail to comply with any of the terms hereof.
+
+DISCLAIMER:
+THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND.
+
+Contact: samer@monzasal.com for licensing inquiries.

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Car } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { safeParseInt } from '@/utils/errorHandling';
 
 interface CarData {
   id: string;
@@ -200,21 +201,13 @@ const ManualAddCarDialog: React.FC<ManualAddCarDialogProps> = ({
 
               <div>
                 <Label htmlFor="model">Model *</Label>
-                <Select 
-                  value={formData.model} 
-                  onValueChange={(value) => handleInputChange('model', value)}
-                >
-                  <SelectTrigger className={errors.model ? 'border-red-500' : ''}>
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Voyah Dream">Voyah Dream</SelectItem>
-                    <SelectItem value="Voyah Free">Voyah Free</SelectItem>
-                    <SelectItem value="Voyah Passion">Voyah Passion</SelectItem>
-                    <SelectItem value="Voyah Free 318">Voyah Free 318</SelectItem>
-                    <SelectItem value="Mhero">Mhero</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="model"
+                  value={formData.model}
+                  onChange={(e) => handleInputChange('model', e.target.value)}
+                  placeholder="Enter model (e.g., Voyah Free, Voyah Dream, etc.)"
+                  className={errors.model ? 'border-red-500' : ''}
+                />
                 {errors.model && (
                   <p className="text-sm text-red-500 mt-1">{errors.model}</p>
                 )}
@@ -230,7 +223,7 @@ const ManualAddCarDialog: React.FC<ManualAddCarDialogProps> = ({
                   min="2020"
                   max="2030"
                   value={formData.year}
-                  onChange={(e) => handleInputChange('year', parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('year', safeParseInt(e.target.value, 2024))}
                   className={errors.year ? 'border-red-500' : ''}
                 />
                 {errors.year && (
@@ -279,7 +272,7 @@ const ManualAddCarDialog: React.FC<ManualAddCarDialogProps> = ({
                   min="0"
                   step="1000"
                   value={formData.price}
-                  onChange={(e) => handleInputChange('price', parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('price', safeParseInt(e.target.value, 0))}
                   placeholder="e.g., 85000"
                   className={errors.price ? 'border-red-500' : ''}
                 />
@@ -298,7 +291,7 @@ const ManualAddCarDialog: React.FC<ManualAddCarDialogProps> = ({
                   min="0"
                   max="100"
                   value={formData.batteryPercentage}
-                  onChange={(e) => handleInputChange('batteryPercentage', parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('batteryPercentage', safeParseInt(e.target.value, 85))}
                 />
               </div>
 
@@ -309,7 +302,7 @@ const ManualAddCarDialog: React.FC<ManualAddCarDialogProps> = ({
                   type="number"
                   min="0"
                   value={formData.range}
-                  onChange={(e) => handleInputChange('range', parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('range', safeParseInt(e.target.value, 520))}
                   placeholder="e.g., 520"
                 />
               </div>
@@ -327,7 +320,7 @@ const ManualAddCarDialog: React.FC<ManualAddCarDialogProps> = ({
                   type="number"
                   min="0"
                   value={formData.horsePower}
-                  onChange={(e) => handleInputChange('horsePower', parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('horsePower', safeParseInt(e.target.value, 0))}
                   placeholder="e.g., 350"
                 />
               </div>
@@ -339,7 +332,7 @@ const ManualAddCarDialog: React.FC<ManualAddCarDialogProps> = ({
                   type="number"
                   min="0"
                   value={formData.torque}
-                  onChange={(e) => handleInputChange('torque', parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('torque', safeParseInt(e.target.value, 0))}
                   placeholder="e.g., 500"
                 />
               </div>
@@ -361,7 +354,7 @@ const ManualAddCarDialog: React.FC<ManualAddCarDialogProps> = ({
                   type="number"
                   min="0"
                   value={formData.topSpeed}
-                  onChange={(e) => handleInputChange('topSpeed', parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('topSpeed', safeParseInt(e.target.value, 0))}
                   placeholder="e.g., 250"
                 />
               </div>

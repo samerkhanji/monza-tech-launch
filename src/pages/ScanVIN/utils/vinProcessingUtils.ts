@@ -1,4 +1,5 @@
 import { Car } from '@/pages/CarInventory/types';
+import { safeLocalStorageGet } from '@/utils/errorHandling';
 
 interface VINProcessResult {
   foundCar: Car | null;
@@ -38,7 +39,7 @@ export const processVINToInventory = (
 
 export const processVIN = (vin: string, category: 'EV' | 'REV'): VINProcessResult => {
   // Check if VIN exists in ordered cars or existing inventory first
-  const orderedCars = JSON.parse(localStorage.getItem('orderedCars') || '[]');
+  const orderedCars = safeLocalStorageGet<any[]>('orderedCars', []);
   const existingCar = orderedCars.find((car: any) => car.vin_number === vin);
   
   if (existingCar) {

@@ -81,53 +81,8 @@ const MOCK_REQUESTS: Request[] = [
   }
 ];
 
-// Mock garage cars
-const MOCK_GARAGE_CARS: GarageCar[] = [
-  {
-    id: '1',
-    carModel: 'Voyah Free 2024',
-    carCode: 'VF2401',
-    customerName: 'Ahmad Khalil',
-    entryDate: '2025-05-18',
-    expectedExitDate: '2025-05-21',
-    status: 'in_repair',
-    assignedEmployee: 'Mark',
-    notes: 'Brake system issue',
-    lastUpdated: '2025-05-19T10:30:00',
-    startTimestamp: '2025-05-18T14:30:00',
-    endTimestamp: '',
-    repairDuration: '2 hours, 30 minutes'
-  },
-  {
-    id: '2',
-    carModel: 'Voyah Dream 2024',
-    carCode: 'VD2403',
-    customerName: 'Maya Nassar',
-    entryDate: '2025-05-19',
-    expectedExitDate: '2025-05-22',
-    status: 'in_diagnosis',
-    assignedEmployee: 'Ali',
-    notes: 'Engine check light on',
-    lastUpdated: '2025-05-19T09:15:00',
-    startTimestamp: '',
-    endTimestamp: '',
-  },
-  {
-    id: '3',
-    carModel: 'MHero 917 2024',
-    carCode: 'MH2402',
-    customerName: 'Karim Abboud',
-    entryDate: '2025-05-17',
-    expectedExitDate: '2025-05-20',
-    status: 'ready',
-    assignedEmployee: 'Mark',
-    notes: 'Regular maintenance complete',
-    lastUpdated: '2025-05-20T11:45:00',
-    startTimestamp: '2025-05-17T10:00:00',
-    endTimestamp: '2025-05-20T11:45:00',
-    repairDuration: '3 days, 1 hour, 45 minutes'
-  }
-];
+// No mock garage cars - start with empty state
+const MOCK_GARAGE_CARS: GarageCar[] = [];
 
 // Mock scheduled appointments for today
 const MOCK_SCHEDULED_TODAY = [

@@ -32,7 +32,7 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({ form }) => {
                     type="datetime-local"
             value={form.watch('startTimestamp')}
             onChange={(e) => form.setValue('startTimestamp', e.target.value)}
-            className="repair-dialog"
+            className="repair-dialog calendar-fix"
             required
           />
         </div>
@@ -44,7 +44,7 @@ const TimeTrackingSection: React.FC<TimeTrackingSectionProps> = ({ form }) => {
                     type="datetime-local"
             value={form.watch('endTimestamp')}
             onChange={(e) => form.setValue('endTimestamp', e.target.value)}
-            className="repair-dialog"
+            className="repair-dialog calendar-fix"
             min={form.watch('startTimestamp')}
             required
           />

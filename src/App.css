@@ -93,7 +93,7 @@
 }
 
 /* Specific fix for delivery date dialog */
-[data-radix-dialog-content]:has([data-dialog-title*="Set Delivery Date"]) .flex-1 {
+.delivery-date-dialog .flex-1 {
   max-height: calc(95vh - 140px) !important;
   overflow-y: auto !important;
   padding-bottom: 20px !important;
@@ -126,8 +126,19 @@
   background: transparent !important;
 }
 
+/* EXCEPTION: Customs Dialog - Allow single scrollbar */
+.customs-dialog-content .flex-1 {
+  scrollbar-width: thin !important;
+  -ms-overflow-style: auto !important;
+}
+
+.customs-dialog-content .flex-1::-webkit-scrollbar {
+  display: block !important;
+  width: 8px !important;
+}
+
 /* STEP 2: FORCE EVERYTHING TO BE NON-SCROLLABLE */
-*:not(html):not(body) {
+.content-elements {
   overflow: visible !important;
   overflow-x: visible !important;
   overflow-y: visible !important;
@@ -360,12 +371,12 @@ fieldset {
   box-sizing: border-box !important;
 }
 
-*:not(html):not(body):not([data-radix-dialog-content]) {
+.content-elements:not(.dialog-content) {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
 }
 
-*:not(html):not(body):not([data-radix-dialog-content])::-webkit-scrollbar {
+.content-elements:not(.dialog-content)::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
@@ -507,8 +518,8 @@ fieldset {
 .max-h-\[500px\],
 .max-h-\[400px\],
 .max-h-\[300px\],
-.overflow-y-auto:not(body):not(#root),
-.overflow-auto:not(body):not(#root) {
+.overflow-y-auto.content-overflow,
+.overflow-auto.content-overflow {
   overflow: visible !important;
   max-height: none !important;
   height: auto !important;
@@ -526,12 +537,12 @@ fieldset {
 }
 
 /* Hide ALL other scrollbars except main page */
-*:not(body):not(#root):not([data-radix-dialog-content])::-webkit-scrollbar {
+.content-elements:not(.dialog-content)::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
 }
 
-*:not(body):not(#root):not([data-radix-dialog-content]) {
+.content-elements:not(.dialog-content) {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
 }
@@ -581,7 +592,7 @@ body::-webkit-scrollbar-thumb:hover,
   box-sizing: border-box !important;
 }
 
-*:not(body):not(#root):not([data-radix-dialog-content]) {
+.content-elements:not(.dialog-content) {
   overflow: visible !important;
   max-height: none !important;
 }

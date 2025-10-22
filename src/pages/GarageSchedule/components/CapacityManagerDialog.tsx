@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Clock as CalendarIcon, Car, CheckCircle, Clock, Settings, TrendingUp, Users } from 'lucide-react';
+import { AlertTriangle, Car, CheckCircle, Clock, Settings, TrendingUp, Users } from 'lucide-react';
 import { CustomCalendarIcon } from '@/components/icons/CustomCalendarIcon';
 import { toast } from '@/hooks/use-toast';
 
@@ -54,7 +54,7 @@ const CapacityManagerDialog: React.FC<CapacityManagerDialogProps> = ({
       maxCapacity: schedule.maxCarsCapacity || 7,
       currentlyScheduled: schedule.currentCarsScheduled || 0,
       workingHours: {
-        start: schedule.startTime || '08:00',
+        start: schedule.startTime || '09:00',
         end: schedule.endTime || '16:00'
       },
       sections: {
@@ -92,7 +92,7 @@ const CapacityManagerDialog: React.FC<CapacityManagerDialogProps> = ({
         date: selectedDateStr,
         maxCapacity: 7,
         currentlyScheduled: 0,
-        workingHours: { start: '08:00', end: '16:00' },
+        workingHours: { start: '09:00', end: '17:00' },
         sections: {
           electrical: { capacity: 8, active: 2 },
           mechanic: { capacity: 8, active: 2 },
@@ -145,7 +145,7 @@ const CapacityManagerDialog: React.FC<CapacityManagerDialogProps> = ({
           date: dateStr,
           maxCapacity: 7,
           currentlyScheduled: 0,
-          workingHours: { start: '08:00', end: '16:00' },
+          workingHours: { start: '09:00', end: '17:00' },
           sections: {
             electrical: { capacity: 8, active: 2 },
             mechanic: { capacity: 8, active: 2 },
@@ -196,7 +196,7 @@ const CapacityManagerDialog: React.FC<CapacityManagerDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto overflow-visible !z-[99999]" style={{ zIndex: 99999 }}>
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto overflow-visible">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
@@ -210,7 +210,6 @@ const CapacityManagerDialog: React.FC<CapacityManagerDialogProps> = ({
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="calendar" className="flex items-center gap-2">
-              <CustomCalendarIcon className="h-4 w-4" />
               Calendar View
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">

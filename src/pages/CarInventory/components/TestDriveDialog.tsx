@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { Car } from '../types';
-import { User, Briefcase, Clock, Car as CarIcon, UserCheck, Shield, Calendar } from 'lucide-react';
+import { User, Briefcase, Clock, Car as CarIcon, UserCheck, Shield } from 'lucide-react';
 import '@/styles/car-status-dialog-scrollbar.css';
 
 // Safe auth hook that doesn't crash if AuthProvider is not available
@@ -164,6 +164,7 @@ const TestDriveDialog: React.FC<TestDriveDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
         className="sm:max-w-[600px] w-[95vw] bg-white car-status-dialog flex flex-col" 
+        overlayClassName="bg-black/30 backdrop-blur-0"
         style={{ 
           height: '85vh',
           maxHeight: '85vh'
@@ -291,7 +292,7 @@ const TestDriveDialog: React.FC<TestDriveDialogProps> = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="driverPhone">Phone Number *</Label>
+                <Label htmlFor="driverPhone">Phone Number</Label>
                 <Input
                   id="driverPhone"
                   value={testDriverPhone}

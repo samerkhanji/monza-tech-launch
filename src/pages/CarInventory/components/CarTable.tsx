@@ -63,15 +63,19 @@ const CarTable: React.FC<CarTableProps> = ({
               <TableRow className="bg-gray-50">
                 <TableHead className="font-semibold">VIN</TableHead>
                 <TableHead className="font-semibold">Model</TableHead>
+                <TableHead className="font-semibold">Category</TableHead>
                 <TableHead className="font-semibold">Year</TableHead>
-                <TableHead className="font-semibold">Color</TableHead>
+                <TableHead className="font-semibold">Color interior</TableHead>
                 <TableHead className="font-semibold">Price</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
+                <TableHead className="font-semibold">Warranty Life</TableHead>
                 <TableHead className="font-semibold">Battery</TableHead>
-                <TableHead className="font-semibold">Range</TableHead>
+                <TableHead className="font-semibold">Range Capacity</TableHead>
+                <TableHead className="font-semibold">Km Driven</TableHead>
                 <TableHead className="font-semibold">Test Drive</TableHead>
                 <TableHead className="font-semibold">PDI</TableHead>
                 <TableHead className="font-semibold">Customs</TableHead>
+                <TableHead className="font-semibold">Software Model</TableHead>
                 <TableHead className="font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -99,7 +103,7 @@ const CarTable: React.FC<CarTableProps> = ({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={12} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={17} className="text-center py-8 text-gray-500">
                     No cars found matching the current filters
                   </TableCell>
                 </TableRow>

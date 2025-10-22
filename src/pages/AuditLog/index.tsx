@@ -39,7 +39,7 @@ const AuditLogPage: React.FC = () => {
   }, []);
 
   // Conditional logic after hooks
-  if (user?.role !== 'owner' && user?.role !== 'garage_manager') {
+  if (user?.role?.toUpperCase() !== 'OWNER' && user?.role?.toLowerCase() !== 'garage_manager') {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -341,13 +341,20 @@ const AuditLogPage: React.FC = () => {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 audit-dropdown-container">
                   <Label>Action</Label>
                   <Select value={filters.action || 'all'} onValueChange={(value) => updateFilter('action', value === 'all' ? '' : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="All Actions" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent 
+                      position="popper" 
+                      side="bottom" 
+                      align="start" 
+                      sideOffset={4}
+                      avoidCollisions={true}
+                      className="select-content-fixed"
+                    >
                       <SelectItem value="all">All Actions</SelectItem>
                       <SelectItem value="CREATE">Create</SelectItem>
                       <SelectItem value="UPDATE">Update</SelectItem>
@@ -359,13 +366,20 @@ const AuditLogPage: React.FC = () => {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 audit-dropdown-container">
                   <Label>Time Range</Label>
                   <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent 
+                      position="popper" 
+                      side="bottom" 
+                      align="start" 
+                      sideOffset={4}
+                      avoidCollisions={true}
+                      className="select-content-fixed"
+                    >
                       <SelectItem value="today">Today</SelectItem>
                       <SelectItem value="week">This Week</SelectItem>
                       <SelectItem value="month">This Month</SelectItem>

@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calculator, TrendingDown, Calendar, DollarSign } from 'lucide-react';
+import { Calculator, TrendingDown, DollarSign } from 'lucide-react';
+import { safeParseFloat } from '@/utils/errorHandling';
 
 interface DepreciationCalculatorDialogProps {
   isOpen: boolean;
@@ -25,10 +26,10 @@ const DepreciationCalculatorDialog: React.FC<DepreciationCalculatorDialogProps> 
   const [usageHours, setUsageHours] = useState<string>('0');
 
   const calculateDepreciation = () => {
-    const price = parseFloat(purchasePrice) || 0;
-    const salvage = parseFloat(salvageValue) || 0;
-    const life = parseFloat(usefulLife) || 5;
-    const usage = parseFloat(usageHours) || 0;
+    const price = safeParseFloat(purchasePrice, 0);
+    const salvage = safeParseFloat(salvageValue, 0);
+    const life = safeParseFloat(usefulLife, 5);
+    const usage = safeParseFloat(usageHours, 0);
     
     const purchaseDateObj = new Date(purchaseDate);
     const currentDate = new Date();
@@ -130,7 +131,7 @@ const DepreciationCalculatorDialog: React.FC<DepreciationCalculatorDialogProps> 
               <div>
                 <Label htmlFor="depreciationMethod">Depreciation Method</Label>
                 <Select value={depreciationMethod} onValueChange={setDepreciationMethod}>
-                  <SelectTrigger>
+                  <SelectTrigger id="depreciationMethod">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -166,7 +167,7 @@ const DepreciationCalculatorDialog: React.FC<DepreciationCalculatorDialogProps> 
               <div>
                 <Label htmlFor="condition">Current Condition</Label>
                 <Select value={condition} onValueChange={setCondition}>
-                  <SelectTrigger>
+                  <SelectTrigger id="condition">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -241,7 +242,7 @@ const DepreciationCalculatorDialog: React.FC<DepreciationCalculatorDialogProps> 
 
                     <div className="bg-orange-50 p-4 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="h-4 w-4 text-orange-600" />
+                        <Calculator className="h-4 w-4 text-orange-600" />
                         <span className="text-sm font-medium text-orange-600">Depreciation Rate</span>
                       </div>
                       <p className="text-2xl font-bold text-orange-800">

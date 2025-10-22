@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Force Clear Showroom Floor 2</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #dc2626;
+        }
+        .secondary {
+            background: #6b7280;
+        }
+        .secondary:hover {
+            background: #4b5563;
+        }
+        .primary {
+            background: #3b82f6;
+        }
+        .primary:hover {
+            background: #2563eb;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💥 Force Clear Showroom Floor 2</h1>
+        
+        <div class="warning">
+            <strong>⚠️ NUCLEAR OPTION:</strong> This will completely obliterate all Showroom Floor 2 data using multiple methods to ensure nothing remains.
+        </div>
+        
+        <button onclick="nuclearClear()" class="primary">💥 NUCLEAR CLEAR</button>
+        <button onclick="checkAllData()" class="secondary">📊 Check All Data</button>
+        <button onclick="goToFloor2()" class="secondary">🏢 Go to Floor 2</button>
+        <button onclick="goToApp()" class="secondary">🏠 Go to App</button>
+        
+        <h3>🔧 Manual Console Commands:</h3>
+        <p>You can also run these commands directly in your browser console (F12):</p>
+        
+        <pre>// Nuclear clear command
+localStorage.removeItem('showroomFloor2Cars');
+localStorage.removeItem('showroomFloor2Data');
+localStorage.removeItem('showroomFloor2Settings');
+localStorage.removeItem('showroomFloor2');
+localStorage.removeItem('floor2Cars');
+localStorage.removeItem('floor2Data');
+localStorage.removeItem('showroom2Cars');
+localStorage.removeItem('showroom2Data');
+localStorage.removeItem('carInventory');
+localStorage.removeItem('realCarData');
+localStorage.removeItem('mockCarData');
+
+// Clear any keys containing 'showroom' or 'floor2'
+Object.keys(localStorage).forEach(key => {
+    if (key.toLowerCase().includes('showroom') || 
+        key.toLowerCase().includes('floor2') || 
+        key.toLowerCase().includes('floor 2') ||
+        key.toLowerCase().includes('showroom2')) {
+        localStorage.removeItem(key);
+        console.log('Removed:', key);
+    }
+});
+
+// Force reload
+window.location.reload();</pre>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function nuclearClear() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            try {
+                // Step 1: Clear all known keys
+                const keysToRemove = [
+                    'showroomFloor2Cars',
+                    'showroomFloor2Data', 
+                    'showroomFloor2Settings',
+                    'showroomFloor2',
+                    'floor2Cars',
+                    'floor2Data',
+                    'showroom2Cars',
+                    'showroom2Data',
+                    'carInventory',
+                    'realCarData',
+                    'mockCarData'
+                ];
+                
+                keysToRemove.forEach(key => {
+                    localStorage.removeItem(key);
+                    console.log('Removed:', key);
+                });
+                
+                // Step 2: Clear any keys containing related terms
+                const allKeys = Object.keys(localStorage);
+                const relatedKeys = allKeys.filter(key => 
+                    key.toLowerCase().includes('showroom') || 
+                    key.toLowerCase().includes('floor2') || 
+                    key.toLowerCase().includes('floor 2') ||
+                    key.toLowerCase().includes('showroom2') ||
+                    key.toLowerCase().includes('floor') ||
+                    key.toLowerCase().includes('car')
+                );
+                
+                relatedKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                    console.log('Removed related key:', key);
+                });
+                
+                // Step 3: Clear sessionStorage too
+                sessionStorage.clear();
+                
+                // Step 4: Force clear any cached data
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => {
+                            caches.delete(name);
+                            console.log('Cleared cache:', name);
+                        });
+                    });
+                }
+                
+                status.innerHTML = `
+                    <div class="success">
+                        <strong>💥 NUCLEAR CLEAR COMPLETE!</strong>
+                        <br>• Removed ${keysToRemove.length} known keys
+                        <br>• Removed ${relatedKeys.length} related keys
+                        <br>• Cleared sessionStorage
+                        <br>• Cleared browser cache
+                        <br>• Total: ${keysToRemove.length + relatedKeys.length} data entries obliterated
+                    </div>
+                `;
+                
+                // Force reload after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/showroom-floor-2';
+                }, 2000);
+                
+            } catch (error) {
+                status.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Nuclear clear failed:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function checkAllData() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            const allKeys = Object.keys(localStorage);
+            const showroomKeys = allKeys.filter(key => 
+                key.toLowerCase().includes('showroom') || 
+                key.toLowerCase().includes('floor2') || 
+                key.toLowerCase().includes('floor 2') ||
+                key.toLowerCase().includes('showroom2')
+            );
+            
+            const carKeys = allKeys.filter(key => 
+                key.toLowerCase().includes('car') ||
+                key.toLowerCase().includes('inventory')
+            );
+            
+            let html = '<h3>📊 All Data Analysis:</h3>';
+            
+            if (showroomKeys.length > 0) {
+                html += `<div class="warning">
+                    <strong>🏢 Showroom Related Keys (${showroomKeys.length}):</strong>
+                    <br>${showroomKeys.join(', ')}
+                </div>`;
+            } else {
+                html += `<div class="success">✅ No showroom-related keys found</div>`;
+            }
+            
+            if (carKeys.length > 0) {
+                html += `<div class="warning">
+                    <strong>🚗 Car Related Keys (${carKeys.length}):</strong>
+                    <br>${carKeys.join(', ')}
+                </div>`;
+            } else {
+                html += `<div class="success">✅ No car-related keys found</div>`;
+            }
+            
+            html += `<div class="success">
+                <strong>📊 Total localStorage keys:</strong> ${allKeys.length}
+            </div>`;
+            
+            status.innerHTML = html;
+        }
+        
+        function goToFloor2() {
+            window.location.href = '/showroom-floor-2';
+        }
+        
+        function goToApp() {
+            window.location.href = '/';
+        }
+        
+        // Auto-check data on page load
+        window.onload = function() {
+            checkAllData();
+        };
+    </script>
+</body>
+</html> 

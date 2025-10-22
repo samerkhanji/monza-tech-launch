@@ -120,7 +120,7 @@ export const monzaBotResponseFilter = {
     if (!roleConfig) return false;
     
     // Owners have access to everything
-    if (user.role === 'owner') return true;
+    if (user.role?.toUpperCase() === 'OWNER') return true;
     
     const queryLower = query.toLowerCase();
     
@@ -153,7 +153,7 @@ export const monzaBotResponseFilter = {
 
   // Filter response content based on user role
   filterResponse(user: AuthUser | null, response: string): string {
-    if (!user || user.role === 'owner') return response;
+    if (!user || user.role?.toUpperCase() === 'OWNER') return response;
     
     const userRole = user.role as keyof typeof ROLE_PERMISSIONS;
     const roleConfig = ROLE_PERMISSIONS[userRole];
@@ -254,19 +254,19 @@ export const monzaBotResponseFilter = {
 
   // Check specific permission types
   canAccessClientData(user: AuthUser | null): boolean {
-    return user?.role === 'owner' || user?.role === 'sales';
+    return user?.role?.toUpperCase() === 'OWNER' || user?.role?.toLowerCase() === 'sales';
   },
 
   canAccessFinancialData(user: AuthUser | null): boolean {
-    return user?.role === 'owner';
+    return user?.role?.toUpperCase() === 'OWNER';
   },
 
   canAccessEmployeeAnalytics(user: AuthUser | null): boolean {
-    return user?.role === 'owner';
+    return user?.role?.toUpperCase() === 'OWNER';
   },
 
   canAccessBusinessAnalytics(user: AuthUser | null): boolean {
-    return user?.role === 'owner' || user?.role === 'garage_manager';
+    return user?.role?.toUpperCase() === 'OWNER' || user?.role?.toLowerCase() === 'garage_manager';
   },
 
   // Get allowed data scope for user

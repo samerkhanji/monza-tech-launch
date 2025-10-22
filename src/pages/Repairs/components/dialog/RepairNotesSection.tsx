@@ -20,7 +20,6 @@ const RepairNotesSection: React.FC<RepairNotesSectionProps> = ({ form }) => {
   return (
     <div className="space-y-3 bg-green-50 p-4 rounded-lg border border-green-100">
       <div className="flex items-center gap-2 mb-1">
-        <CustomCalendarIcon className="h-4 w-4 text-green-600" />
         <h3 className="text-sm font-medium text-green-700">Repair Notes</h3>
       </div>
       <FormField

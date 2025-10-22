@@ -25,6 +25,7 @@ import { useCarData } from '@/contexts/CarDataContext';
 import { GarageSchedule, ScheduledCar } from '@/types';
 import { Search, Car, User, Clock, Wrench, AlertTriangle, Camera } from 'lucide-react';
 import VinOcrCameraDialog from './VinOcrCameraDialog';
+import { toast } from '@/hooks/use-toast';
 
 interface ScheduleFormDialogProps {
   isOpen: boolean;
@@ -57,8 +58,8 @@ const ScheduleFormDialog: React.FC<ScheduleFormDialogProps> = ({
   
   const [formData, setFormData] = useState({
     date: editingSchedule?.date || '',
-    startTime: editingSchedule?.startTime || '08:00',
-    endTime: editingSchedule?.endTime || '16:00',
+            startTime: editingSchedule?.startTime || '09:00',
+          endTime: editingSchedule?.endTime || '17:00',
     available: editingSchedule?.available ?? true,
     notes: editingSchedule?.notes || '',
     maxCarsCapacity: editingSchedule?.maxCarsCapacity || 7
@@ -110,8 +111,8 @@ const ScheduleFormDialog: React.FC<ScheduleFormDialogProps> = ({
     } else {
       setFormData({
         date: '',
-        startTime: '08:00',
-        endTime: '16:00',
+        startTime: '09:00',
+                  endTime: '17:00',
         available: true,
         notes: '',
         maxCarsCapacity: 7
@@ -154,7 +155,11 @@ const ScheduleFormDialog: React.FC<ScheduleFormDialogProps> = ({
     );
 
     if (alreadyAssigned) {
-      alert('This car is already assigned to this schedule.');
+      toast({
+        title: "Duplicate Assignment",
+        description: "This car is already assigned to this schedule.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -263,13 +268,13 @@ const ScheduleFormDialog: React.FC<ScheduleFormDialogProps> = ({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
-                <div className="relative z-10">
+                <div className="relative">
                   <Input
                     id="date"
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                    className="relative z-10"
+                    className="calendar-fix"
                     required
                   />
                 </div>
@@ -317,7 +322,7 @@ const ScheduleFormDialog: React.FC<ScheduleFormDialogProps> = ({
                 value={formData.available.toString()}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, available: value === 'true' }))}
               >
-                <SelectTrigger>
+                <SelectTrigger id="available">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -354,7 +359,7 @@ const ScheduleFormDialog: React.FC<ScheduleFormDialogProps> = ({
                     <div>
                       <Label className="text-sm font-medium">Select by VIN</Label>
                       <Select value={selectedVIN} onValueChange={handleVINSelection}>
-                        <SelectTrigger>
+                        <SelectTrigger id="vinSelection">
                           <SelectValue placeholder="Choose VIN..." />
                         </SelectTrigger>
                         <SelectContent>
@@ -435,7 +440,7 @@ const ScheduleFormDialog: React.FC<ScheduleFormDialogProps> = ({
                       value={manualEntry.section}
                       onValueChange={(value) => setManualEntry(prev => ({ ...prev, section: value as any }))}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="sectionAssignment">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -462,7 +467,7 @@ const ScheduleFormDialog: React.FC<ScheduleFormDialogProps> = ({
                       value={manualEntry.urgencyLevel}
                       onValueChange={(value) => setManualEntry(prev => ({ ...prev, urgencyLevel: value as any }))}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="urgencyLevel">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

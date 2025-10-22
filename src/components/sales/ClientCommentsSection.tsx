@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { CAR_MODELS } from '@/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MessageSquare, Plus, Star, Calendar } from 'lucide-react';
+import { MessageSquare, Plus, Star } from 'lucide-react';
 
 interface ClientComment {
   id: string;
@@ -223,7 +223,7 @@ const ClientCommentsSection: React.FC = () => {
                 </div>
                 <p className="text-gray-700 mb-2">{comment.comment}</p>
                 <div className="flex items-center gap-1 text-xs text-gray-500">
-                  <Calendar className="h-3 w-3" />
+                                          <Clock className="h-3 w-3" />
                   {new Date(comment.timestamp).toLocaleDateString()}
                 </div>
               </CardContent>

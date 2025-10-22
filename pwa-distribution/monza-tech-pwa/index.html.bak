@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monza S.A.L - Car Dealership Management</title>
+    
+    <!-- Date Picker Fix CSS - Critical Override -->
+    <style>
+      /* CRITICAL: Restore calendar picker functionality */
+      input[type="date"]::-webkit-calendar-picker-indicator {
+        cursor: pointer !important;
+        opacity: 1 !important;
+        display: block !important;
+        visibility: visible !important;
+        position: static !important;
+        width: 20px !important;
+        height: 20px !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>') !important;
+        background-repeat: no-repeat !important;
+        background-position: center !important;
+        background-size: 16px 16px !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        z-index: 1 !important;
+      }
+      
+      input[type="date"] {
+        cursor: pointer !important;
+        background-color: white !important;
+        color: #000 !important;
+      }
+      
+      .pdi-date-input::-webkit-calendar-picker-indicator,
+      input[type="date"].mt-1::-webkit-calendar-picker-indicator,
+      input[type="date"].w-full::-webkit-calendar-picker-indicator {
+        cursor: pointer !important;
+        opacity: 1 !important;
+        display: block !important;
+        visibility: visible !important;
+        position: static !important;
+        width: 20px !important;
+        height: 20px !important;
+      }
+    </style>
+  </head> 

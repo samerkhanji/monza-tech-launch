@@ -502,11 +502,11 @@ const MessagingCenter: React.FC<MessagingCenterProps> = () => {
             <DialogTitle>Start New Chat</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Input placeholder="User ID" />
-            <Input placeholder="User Name" />
-            <Input placeholder="User Email" />
+            <Input id="userId" placeholder="User ID" />
+            <Input id="userName" placeholder="User Name" />
+            <Input id="userEmail" placeholder="User Email" />
             <Select>
-              <SelectTrigger>
+              <SelectTrigger id="userRole">
                 <SelectValue placeholder="User Role" />
               </SelectTrigger>
               <SelectContent>
@@ -539,7 +539,7 @@ const MessagingCenter: React.FC<MessagingCenterProps> = () => {
               value={groupRequestForm.groupDescription}
               onChange={(e) => setGroupRequestForm(prev => ({ ...prev, groupDescription: e.target.value }))}
             />
-            <Input placeholder="Participant IDs (comma-separated)" />
+            <Input id="participantIds" placeholder="Participant IDs (comma-separated)" />
             <Button onClick={handleCreateGroupRequest}>
               Send Group Request
             </Button>

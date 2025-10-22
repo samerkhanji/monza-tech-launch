@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Checkbox } from '@/components/ui/checkbox';
-import { DateTimeInput } from '@/components/ui/datetime-input';
+import { CustomDateTimeInput } from '@/components/ui/CustomDateTimeInput';
 import { Users, AlertTriangle } from 'lucide-react';
+import { useNotifications } from '@/contexts/NotificationContext';
+import { toast } from '@/hooks/use-toast';
 
 interface BusinessEvent {
   id: string;
@@ -30,12 +32,15 @@ interface BusinessEventDialogProps {
 }
 
 const availableEmployees = [
-  'Khalil',
-  'Mark', 
-  'Tamara',
-  'Ahmed',
-  'Sarah',
-  'Omar'
+  'Houssam (Owner)',
+  'Samer (Owner)',
+  'Kareem (Owner)',
+  'Mark (Garage Manager)',
+  'Lara (Assistant)',
+  'Samaya (Assistant)',
+  'Khalil (Hybrid: Sales + Garage Manager + Marketing)',
+  'Tamara (Hybrid: Sales + Marketing + Personal Assistant)',
+  'Elie (Hybrid: Technician + Sales + Marketing)'
 ];
 
 const skillOptions = [
@@ -56,6 +61,7 @@ const BusinessEventDialog: React.FC<BusinessEventDialogProps> = ({
   onOpenChange,
   onEventAdded
 }) => {
+  const { addNotification } = useNotifications();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -91,6 +97,25 @@ const BusinessEventDialog: React.FC<BusinessEventDialogProps> = ({
 
     onEventAdded(newEvent);
     
+    // Send notifications to assigned employees and always to owners
+    const owners = ['Houssam (Owner)', 'Samer (Owner)', 'Kareem (Owner)'];
+    const allNotificationRecipients = [...new Set([...formData.assignedEmployees, ...owners])];
+    
+    allNotificationRecipients.forEach(employee => {
+      addNotification({
+        title: 'New Calendar Event Assignment',
+        description: `You have been assigned to "${formData.title}" scheduled for ${format(selectedDateTime, 'PPP')} at ${format(selectedDateTime, 'p')}. Priority: ${formData.priority}`,
+        link: '/business-calendar',
+        assignedTo: employee,
+        eventId: newEvent.id
+      });
+    });
+    
+    toast({
+      title: "Event Created & Notifications Sent",
+      description: `${formData.title} has been scheduled and notifications sent to ${allNotificationRecipients.length} team members.`,
+    });
+    
     // Reset form
     setFormData({
       title: '',
@@ -125,12 +150,12 @@ const BusinessEventDialog: React.FC<BusinessEventDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-visible">
         <DialogHeader>
           <DialogTitle>Schedule New Work</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 overflow-visible relative">
           {/* Basic Information */}
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
@@ -146,43 +171,57 @@ const BusinessEventDialog: React.FC<BusinessEventDialogProps> = ({
             
             <div>
               <Label htmlFor="workType">Work Type</Label>
-              <Select value={formData.workType} onValueChange={(value: any) => setFormData(prev => ({ ...prev, workType: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="meeting">Meeting</SelectItem>
-                  <SelectItem value="project">Project</SelectItem>
-                  <SelectItem value="training">Training</SelectItem>
-                  <SelectItem value="maintenance">Maintenance</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <select
+                id="workType"
+                value={formData.workType}
+                onChange={(e) => setFormData(prev => ({ ...prev, workType: e.target.value as any }))}
+                className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+                style={{
+                  fontSize: '14px',
+                  lineHeight: '1.4',
+                  appearance: 'auto'
+                }}
+              >
+                <option value="">Select work type</option>
+                <option value="meeting">Meeting</option>
+                <option value="project">Project</option>
+                <option value="training">Training</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="other">Other</option>
+              </select>
             </div>
             
             <div>
               <Label htmlFor="priority">Priority</Label>
-              <Select value={formData.priority} onValueChange={(value: any) => setFormData(prev => ({ ...prev, priority: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low Priority</SelectItem>
-                  <SelectItem value="medium">Medium Priority</SelectItem>
-                  <SelectItem value="high">High Priority</SelectItem>
-                </SelectContent>
-              </Select>
+              <select
+                id="priority"
+                value={formData.priority}
+                onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as any }))}
+                className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+                style={{
+                  fontSize: '14px',
+                  lineHeight: '1.4',
+                  appearance: 'auto'
+                }}
+              >
+                <option value="">Select priority</option>
+                <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
+              </select>
             </div>
           </div>
 
-          {/* Date and Time */}
-          <DateTimeInput
-            label="Event Date & Time"
-            value={selectedDateTime}
-            onChange={setSelectedDateTime}
-            required={true}
-            showTime={true}
-          />
+          {/* Date and Time - Container with proper positioning */}
+          <div className="relative overflow-visible">
+            <CustomDateTimeInput
+              label="Event Date & Time"
+              value={selectedDateTime}
+              onChange={setSelectedDateTime}
+              required={true}
+              showTime={true}
+            />
+          </div>
 
           <div>
             <Label htmlFor="duration">Estimated Duration (hours)</Label>
@@ -204,14 +243,14 @@ const BusinessEventDialog: React.FC<BusinessEventDialogProps> = ({
               Assign Employees
             </Label>
             <div className="mt-2 grid grid-cols-2 gap-2 p-3 border rounded-md">
-              {availableEmployees.map((employee) => (
-                <div key={employee} className="flex items-center space-x-2">
+              {availableEmployees.map((employee, index) => (
+                <div key={`employee-${employee}-${index}`} className="flex items-center space-x-2">
                   <Checkbox
-                    id={employee}
+                    id={`employee-checkbox-${employee}-${index}`}
                     checked={formData.assignedEmployees.includes(employee)}
                     onCheckedChange={() => handleEmployeeToggle(employee)}
                   />
-                  <Label htmlFor={employee} className="text-sm cursor-pointer">
+                  <Label htmlFor={`employee-checkbox-${employee}-${index}`} className="text-sm cursor-pointer">
                     {employee}
                   </Label>
                 </div>
@@ -229,14 +268,14 @@ const BusinessEventDialog: React.FC<BusinessEventDialogProps> = ({
           <div>
             <Label>Required Skills (Optional)</Label>
             <div className="mt-2 grid grid-cols-2 gap-2 p-3 border rounded-md max-h-32 overflow-y-auto">
-              {skillOptions.map((skill) => (
-                <div key={skill} className="flex items-center space-x-2">
+              {skillOptions.map((skill, index) => (
+                <div key={`skill-${skill}-${index}`} className="flex items-center space-x-2">
                   <Checkbox
-                    id={skill}
+                    id={`skill-checkbox-${skill}-${index}`}
                     checked={formData.requiredSkills.includes(skill)}
                     onCheckedChange={() => handleSkillToggle(skill)}
                   />
-                  <Label htmlFor={skill} className="text-sm cursor-pointer">
+                  <Label htmlFor={`skill-checkbox-${skill}-${index}`} className="text-sm cursor-pointer">
                     {skill}
                   </Label>
                 </div>

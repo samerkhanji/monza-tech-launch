@@ -25,6 +25,7 @@ import StatusSection from './dialog/StatusSection';
 import RepairPhotoCapture from '@/components/RepairPhotoCapture';
 import PartsUsageTracker from '@/components/PartsUsageTracker';
 import { enhancedMonzaBotService } from '@/services/enhancedMonzaBotService';
+import { safeLocalStorageGet } from '@/utils/errorHandling';
 
 interface RepairPhoto {
   id: string;
@@ -88,7 +89,7 @@ const CarDetailsDialog: React.FC<CarDetailsDialogProps> = ({
     
     try {
       const carHistoryKey = `car_photos_${selectedCar.carCode}`;
-      const existingPhotos = JSON.parse(localStorage.getItem(carHistoryKey) || '[]');
+      const existingPhotos = safeLocalStorageGet<any[]>(carHistoryKey, []);
       
       // Filter photos for this specific repair session if needed
       const sessionPhotos = existingPhotos.filter((photo: any) => 
@@ -209,7 +210,7 @@ const CarDetailsDialog: React.FC<CarDetailsDialogProps> = ({
 
     try {
       const enhancedHistoryKey = 'enhanced_repair_sessions';
-      const existingHistory = JSON.parse(localStorage.getItem(enhancedHistoryKey) || '[]');
+      const existingHistory = safeLocalStorageGet<any[]>(enhancedHistoryKey, []);
       
       const repairSession = {
         id: `repair_session_${selectedCar.id}_${Date.now()}`,

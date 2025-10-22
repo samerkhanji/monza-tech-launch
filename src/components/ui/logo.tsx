@@ -12,12 +12,16 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     lg: 'h-16',
   };
 
+  const textSizes = {
+    sm: 'text-xs',
+    md: 'text-sm',
+    lg: 'text-base',
+  };
+
   return (
     <div className={`${className} ${sizes[size]} flex items-center justify-center`}>
-      <div className="relative w-full h-full">
-        <div className="absolute inset-0 bg-monza-yellow rounded-lg flex items-center justify-center">
-          <span className="text-monza-black font-bold text-xl">M</span>
-        </div>
+      <div className="bg-monza-yellow rounded-lg px-3 py-1 flex items-center justify-center min-w-fit whitespace-nowrap">
+        <span className={`text-monza-black font-bold ${textSizes[size]}`}>MONZA S.A.L.</span>
       </div>
     </div>
   );

@@ -1,0 +1,95 @@
+/* Dialog and Popover Z-Index Fixes */
+/* This fixes stacking context issues in dialogs */
+
+/* Ensure popover content is clickable and above everything */
+.radix-select-content, 
+.radix-popover-content,
+[data-radix-popper-content-wrapper] {
+  pointer-events: auto !important;
+  z-index: 1000002 !important;
+}
+
+/* Dialog overlay and content z-index ladder */
+[data-radix-dialog-overlay] {
+  z-index: 1000000 !important;
+  background: rgba(0, 0, 0, 0.4) !important; /* lighter overlay */
+}
+
+[data-radix-dialog-content] {
+  z-index: 1000001 !important;
+  overflow: visible !important; /* NOT overflow-hidden */
+}
+
+/* Select and Combobox content positioning */
+[data-radix-select-content],
+[data-radix-popover-content] {
+  z-index: 1000002 !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure Select triggers are clickable */
+[data-radix-select-trigger] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  position: relative !important;
+}
+
+/* Fix for Select content appearing */
+[data-radix-select-content][data-state="open"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Command palette and dropdown positioning */
+[data-radix-command] {
+  overflow: visible !important;
+}
+
+/* Ensure tooltips and toasts are above everything */
+[data-radix-tooltip-content] {
+  z-index: 1000003 !important;
+}
+
+[data-sonner-toaster] {
+  z-index: 1000004 !important;
+}
+
+/* Fix for any transform/overflow issues */
+.dialog-content-wrapper {
+  overflow: visible !important;
+  transform: none !important;
+}
+
+/* Prevent backdrop from swallowing events */
+.dialog-backdrop {
+  pointer-events: auto;
+}
+
+.dialog-backdrop > * {
+  pointer-events: auto;
+}
+
+/* Focus trap improvements */
+[data-radix-focus-scope] {
+  outline: none;
+}
+
+/* Mobile improvements */
+@media (max-width: 768px) {
+  [data-radix-dialog-content] {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+  
+  [data-radix-select-content],
+  [data-radix-popover-content] {
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+}

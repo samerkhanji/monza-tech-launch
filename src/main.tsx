@@ -1,4 +1,4 @@
-console.log('Monza S.A.L. main.tsx executing');
+// Reduced console noise - use window.enableVerboseLogs() to see all logs
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -8,18 +8,19 @@ import { Provider } from 'react-redux';
 import { store } from './store';
 import './styles/date-picker-fix.css';
 import './styles/time-scheduling-fix.css';
-import { Toaster } from '@/components/ui/toaster';
-import App from './App.tsx';
 import './index.css';
+import './styles/dialog-fixes.css';
+import '@/styles/pdi-professional.css';
+import App from './App-restored-complete';
 
 // Initialize comprehensive mock data (commented out temporarily)
-// import './services/mockDataService';
 
-console.log('Starting Monza S.A.L. application...');
+
+// Starting application...
 
 const rootElement = document.getElementById("root");
 if (rootElement) {
-  console.log('Root element found, initializing Monza app...');
+  // Root element found, initializing app...
   
   try {
     const root = createRoot(rootElement);
@@ -28,7 +29,7 @@ if (rootElement) {
         <App />
       </Provider>
     );
-    console.log('Monza S.A.L. application rendered successfully with Redux store');
+    // Application rendered successfully
   } catch (error) {
     console.error('Error rendering Monza application:', error);
     rootElement.innerHTML = `

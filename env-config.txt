@@ -1,0 +1,9 @@
+# MONZA TECH - SUPABASE CONFIGURATION
+# ===================================
+# Copy this to create .env.local file
+
+VITE_SUPABASE_URL=https://wunqntfreyezylvbzvxc.supabase.co
+VITE_SUPABASE_ANON_KEY=your_anon_public_key_here
+VITE_SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+
+# Get keys from: https://supabase.com/dashboard/project/wunqntfreyezylvbzvxc/settings/api

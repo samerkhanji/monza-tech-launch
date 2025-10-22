@@ -39,12 +39,16 @@
 /* ===== 4. DROPDOWN LAYERS ===== */
 .dropdown-menu,
 [data-radix-dropdown-menu-content],
-.select-content,
-[data-radix-select-content] {
-  z-index: 800 !important;
+.select-content {
+  z-index: 1200 !important;
   background: white !important;
   border: 1px solid #e2e8f0 !important;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Radix Select content should sit above modal content */
+[data-radix-select-content] {
+  z-index: 1002 !important; /* keep just stacking boost; let Radix position it */
 }
 
 /* ===== 5. TOOLTIP LAYERS ===== */
@@ -58,9 +62,9 @@
 .modal-overlay,
 [data-radix-dialog-overlay],
 .dialog-overlay {
-  z-index: 1000 !important;
-  background: rgba(0, 0, 0, 0.75) !important;
-  backdrop-filter: blur(2px) !important;
+  z-index: 1000000 !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: none !important;
   position: fixed !important;
   inset: 0 !important;
 }
@@ -69,7 +73,7 @@
 .modal-content,
 [data-radix-dialog-content],
 .dialog-content {
-  z-index: 1001 !important;
+  z-index: 1000001 !important;
   position: fixed !important;
   background: white !important;
   border-radius: 8px !important;
@@ -164,7 +168,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   z-index: 3500 !important;
   position: fixed !important;
   background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(4px) !important;
+  backdrop-filter: none !important;
 }
 
 /* ===== 14. EMERGENCY/CRITICAL LAYERS ===== */

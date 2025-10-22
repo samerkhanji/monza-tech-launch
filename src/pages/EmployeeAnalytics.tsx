@@ -19,7 +19,7 @@ const EmployeeAnalytics: React.FC = () => {
   useEffect(() => {
     // Hook called unconditionally at top level
     // Only load data if user has proper access
-    if (user?.role === 'owner' || user?.role === 'garage_manager') {
+    if (user?.role?.toUpperCase() === 'OWNER' || user?.role?.toLowerCase() === 'garage_manager') {
       // Load mechanic data here
     }
   }, [period, user]);
@@ -27,7 +27,7 @@ const EmployeeAnalytics: React.FC = () => {
   // Simulate fetching repair data from repairs and garage sections
   useEffect(() => {
     // Only fetch data if user has access
-    if (user?.role !== 'owner' && user?.role !== 'garage_manager') {
+    if (user?.role?.toUpperCase() !== 'OWNER' && user?.role?.toLowerCase() !== 'garage_manager') {
       return;
     }
 
@@ -77,7 +77,7 @@ const EmployeeAnalytics: React.FC = () => {
   }, [user]);
 
   // Conditional logic after hooks
-  if (user?.role !== 'owner' && user?.role !== 'garage_manager') {
+  if (user?.role?.toUpperCase() !== 'OWNER' && user?.role?.toLowerCase() !== 'garage_manager') {
     toast({
       title: "Access Denied",
       description: "Only owners and garage managers can access employee analytics.",
@@ -107,6 +107,8 @@ const EmployeeAnalytics: React.FC = () => {
           </Button>
           
           <select
+            id="periodFilter"
+            name="periodFilter"
             className="h-10 rounded-md border border-input bg-background px-3 py-2"
             value={period}
             onChange={(e) => setPeriod(e.target.value)}

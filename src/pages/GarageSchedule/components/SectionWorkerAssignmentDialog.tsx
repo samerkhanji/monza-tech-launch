@@ -24,6 +24,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 
 interface SectionWorkerAssignmentDialogProps {
   isOpen: boolean;
@@ -62,6 +63,7 @@ const SectionWorkerAssignmentDialog: React.FC<SectionWorkerAssignmentDialogProps
   carCode,
   customerName
 }) => {
+  const { toast } = useToast();
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [sectionAssignments, setSectionAssignments] = useState<Record<string, SectionAssignment>>({});
   const [currentStep, setCurrentStep] = useState<'sections' | 'workers'>('sections');
@@ -189,7 +191,11 @@ const SectionWorkerAssignmentDialog: React.FC<SectionWorkerAssignmentDialogProps
 
   const handleNext = () => {
     if (selectedSections.length === 0) {
-      alert('Please select at least one section');
+      toast({
+        title: "Selection Required",
+        description: "Please select at least one section",
+        variant: "destructive",
+      });
       return;
     }
     setCurrentStep('workers');
@@ -205,7 +211,11 @@ const SectionWorkerAssignmentDialog: React.FC<SectionWorkerAssignmentDialogProps
     );
     
     if (assignments.length === 0) {
-      alert('Please assign at least one worker to the selected sections');
+      toast({
+        title: "Worker Assignment Required",
+        description: "Please assign at least one worker to the selected sections",
+        variant: "destructive",
+      });
       return;
     }
 

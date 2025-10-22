@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Camera, Scan, Package, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { PartsInventoryService } from '@/services/partsInventoryService';
 import { RepairHistoryService } from '@/services/repairHistoryService';
+import { toast } from '@/hooks/use-toast';
 
 interface PartsOrderDialogProps {
   isOpen: boolean;
@@ -134,12 +135,20 @@ export const PartsOrderDialog: React.FC<PartsOrderDialogProps> = ({
 
   const handleSubmit = async () => {
     if (!partNumber.trim()) {
-      alert('Please enter a part number');
+      toast({
+        title: "Part Number Required",
+        description: "Please enter a part number",
+        variant: "destructive",
+      });
       return;
     }
 
     if (!selectedSupplier) {
-      alert('Please select a supplier');
+      toast({
+        title: "Supplier Required",
+        description: "Please select a supplier",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -175,7 +184,10 @@ export const PartsOrderDialog: React.FC<PartsOrderDialogProps> = ({
             notes: 'Parts used in repair - Auto-processed'
           });
 
-          alert(`✅ Part used from inventory: ${foundPart.partName}`);
+          toast({
+            title: "Part Used Successfully",
+            description: `Part used from inventory: ${foundPart.partName}`,
+          });
           onClose();
         } else {
           throw new Error(result.message);
@@ -197,12 +209,19 @@ export const PartsOrderDialog: React.FC<PartsOrderDialogProps> = ({
         };
 
         console.log('Part ordered with auto-filled data:', orderData);
-        alert(`📦 Part ordered from ${selectedSupplier}: ${foundPart?.partName || partNumber}`);
+        toast({
+          title: "Part Ordered Successfully",
+          description: `Part ordered from ${selectedSupplier}: ${foundPart?.partName || partNumber}`,
+        });
         onClose();
       }
     } catch (error) {
       console.error('Error processing part:', error);
-      alert('Error processing part: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      toast({
+        title: "Error Processing Part",
+        description: 'Error processing part: ' + (error instanceof Error ? error.message : 'Unknown error'),
+        variant: "destructive",
+      });
     } finally {
       setIsProcessing(false);
     }

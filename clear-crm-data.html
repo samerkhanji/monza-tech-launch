@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear CRM Data - Monza TECH</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        
+        .description {
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+        
+        button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+            margin: 10px;
+        }
+        
+        button:hover {
+            background: #c82333;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .data-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 3px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗑️ Clear CRM Data</h1>
+        <p class="description">
+            This will completely clear all Customer Relationship Management data including leads, customer information, and marketing data.
+        </p>
+        
+        <button onclick="clearCRMData()">Clear All CRM Data</button>
+        <button onclick="showCurrentData()">Show Current Data</button>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        <div id="dataDisplay" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        function clearCRMData() {
+            try {
+                const crmKeys = [
+                    'crmLeads',
+                    'marketingCRM', 
+                    'marketingCRMData',
+                    'marketingCRMLeads',
+                    'leadData',
+                    'customerData',
+                    'leads',
+                    'clientRequests',
+                    'requests'
+                ];
+                
+                let clearedCount = 0;
+                let clearedItems = [];
+                
+                crmKeys.forEach(key => {
+                    const data = localStorage.getItem(key);
+                    if (data) {
+                        try {
+                            const parsedData = JSON.parse(data);
+                            const itemCount = Array.isArray(parsedData) ? parsedData.length : Object.keys(parsedData).length;
+                            localStorage.removeItem(key);
+                            clearedCount++;
+                            clearedItems.push(`${key} (${itemCount} items)`);
+                        } catch (e) {
+                            localStorage.removeItem(key);
+                            clearedCount++;
+                            clearedItems.push(`${key} (data cleared)`);
+                        }
+                    }
+                });
+                
+                const statusDiv = document.getElementById('status');
+                statusDiv.style.display = 'block';
+                
+                if (clearedCount > 0) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = `
+                        <strong>✅ Successfully cleared ${clearedCount} CRM data sources:</strong><br>
+                        ${clearedItems.map(item => `• ${item}`).join('<br>')}
+                    `;
+                } else {
+                    statusDiv.className = 'status info';
+                    statusDiv.innerHTML = '📝 No CRM data found to clear. The system is already clean.';
+                }
+                
+                // Clear the data display
+                document.getElementById('dataDisplay').innerHTML = '';
+                
+            } catch (error) {
+                const statusDiv = document.getElementById('status');
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `❌ Error clearing CRM data: ${error.message}`;
+            }
+        }
+        
+        function showCurrentData() {
+            try {
+                const crmKeys = [
+                    'crmLeads',
+                    'marketingCRM', 
+                    'marketingCRMData',
+                    'marketingCRMLeads',
+                    'leadData',
+                    'customerData',
+                    'leads',
+                    'clientRequests',
+                    'requests'
+                ];
+                
+                const dataDisplay = document.getElementById('dataDisplay');
+                let hasData = false;
+                let dataHtml = '<h3>Current CRM Data:</h3>';
+                
+                crmKeys.forEach(key => {
+                    const data = localStorage.getItem(key);
+                    if (data) {
+                        hasData = true;
+                        try {
+                            const parsedData = JSON.parse(data);
+                            const itemCount = Array.isArray(parsedData) ? parsedData.length : Object.keys(parsedData).length;
+                            dataHtml += `<div class="data-item"><strong>${key}:</strong> ${itemCount} items</div>`;
+                        } catch (e) {
+                            dataHtml += `<div class="data-item"><strong>${key}:</strong> Has data (unable to parse)</div>`;
+                        }
+                    }
+                });
+                
+                if (!hasData) {
+                    dataHtml += '<div class="data-item">No CRM data found in localStorage</div>';
+                }
+                
+                dataDisplay.innerHTML = dataHtml;
+                
+            } catch (error) {
+                document.getElementById('dataDisplay').innerHTML = `<div class="error">Error checking data: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-show current data on page load
+        window.onload = function() {
+            showCurrentData();
+        };
+    </script>
+</body>
+</html>

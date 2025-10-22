@@ -6,7 +6,7 @@ const WstacyEmployeeManagement = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Wstacy Employee Management</h1>
+        <h1 className="text-3xl font-bold">Employee Management</h1>
         <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
           Launch 1.0 Feature
         </Badge>
@@ -19,7 +19,7 @@ const WstacyEmployeeManagement = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">15</div>
+            <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">Currently active</p>
           </CardContent>
         </Card>
@@ -30,7 +30,7 @@ const WstacyEmployeeManagement = () => {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">87%</div>
+            <div className="text-2xl font-bold">0%</div>
             <p className="text-xs text-muted-foreground">This week</p>
           </CardContent>
         </Card>
@@ -41,7 +41,7 @@ const WstacyEmployeeManagement = () => {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">42.5</div>
+            <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">Per week</p>
           </CardContent>
         </Card>
@@ -52,7 +52,7 @@ const WstacyEmployeeManagement = () => {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12/15</div>
+            <div className="text-2xl font-bold">0/0</div>
             <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>

@@ -10,19 +10,32 @@ export const useGarageScheduleIntegration = () => {
   useEffect(() => {
     // Load scheduled cars from garage schedule
     const loadScheduledCars = () => {
-      const savedSchedules = localStorage.getItem('garageSchedules');
+      // Try both keys for backward compatibility
+      let savedSchedules = localStorage.getItem('garageSchedules');
+      if (!savedSchedules) {
+        savedSchedules = localStorage.getItem('garageSchedule');
+      }
+      
       if (savedSchedules) {
         try {
           const schedules: GarageSchedule[] = JSON.parse(savedSchedules);
+          // Ensure it's an array
+          const schedulesArray = Array.isArray(schedules) ? schedules : [schedules];
           const today = new Date().toISOString().split('T')[0];
-          const todaySchedule = schedules.find(s => s.date === today);
+          const todaySchedule = schedulesArray.find(s => s.date === today);
           
           if (todaySchedule && todaySchedule.scheduledCars) {
             setScheduledCars(todaySchedule.scheduledCars);
+            console.log(`Garage Schedule Integration: Loaded ${todaySchedule.scheduledCars.length} scheduled cars for today`);
+          } else {
+            console.log('Garage Schedule Integration: No scheduled cars found for today');
+            setScheduledCars([]);
           }
         } catch (error) {
           console.error('Error loading scheduled cars:', error);
         }
+      } else {
+        console.log('Garage Schedule Integration: No schedules found in localStorage');
       }
     };
 
@@ -50,7 +63,7 @@ export const useGarageScheduleIntegration = () => {
 
     // Set up storage listeners
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'garageSchedules') {
+      if (e.key === 'garageSchedules' || e.key === 'garageSchedule') {
         loadScheduledCars();
       } else if (e.key === 'carInventory') {
         loadInventoryCarsWithIssues();
@@ -63,17 +76,23 @@ export const useGarageScheduleIntegration = () => {
 
   // Sync function to ensure data integrity between schedule and garage
   const syncScheduleWithGarage = useCallback(() => {
-    const schedules = localStorage.getItem('garageSchedules');
+    // Try both keys for backward compatibility
+    let schedules = localStorage.getItem('garageSchedules');
+    if (!schedules) {
+      schedules = localStorage.getItem('garageSchedule');
+    }
     const garageCars = localStorage.getItem('garageCars');
     
     if (!schedules) return [];
 
     try {
       const schedulesData: GarageSchedule[] = JSON.parse(schedules);
+      // Ensure it's an array
+      const schedulesArray = Array.isArray(schedulesData) ? schedulesData : [schedulesData];
       const garageData: GarageCar[] = garageCars ? JSON.parse(garageCars) : [];
       
       // Get all scheduled cars from all dates
-      const allScheduledCars = schedulesData.flatMap(schedule => 
+      const allScheduledCars = schedulesArray.flatMap(schedule => 
         (schedule.scheduledCars || []).map(car => ({
           ...car,
           scheduleDate: schedule.date

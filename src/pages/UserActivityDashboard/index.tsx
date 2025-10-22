@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { 
   Users, 
   Search, 
@@ -87,7 +87,7 @@ const UserActivityDashboard: React.FC = () => {
   // Get comprehensive user activity summaries
   const userActivitySummaries = useMemo(() => {
     // Only process if user has access
-    if (user?.role !== 'owner' && user?.role !== 'garage_manager') {
+    if (user?.role?.toUpperCase() !== 'OWNER' && user?.role?.toLowerCase() !== 'garage_manager') {
       return [];
     }
 
@@ -187,7 +187,7 @@ const UserActivityDashboard: React.FC = () => {
   }, [auditLogs, user]);
 
   // Conditional logic after hooks
-  if (user?.role !== 'owner' && user?.role !== 'garage_manager') {
+  if (user?.role?.toUpperCase() !== 'OWNER' && user?.role?.toLowerCase() !== 'garage_manager') {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -367,55 +367,59 @@ const UserActivityDashboard: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="lg:col-span-2">
               <Input
+                id="user-activity-search"
                 placeholder="Search users, activities, VINs, parts, details..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full"
               />
             </div>
-            <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Time Range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Time</SelectItem>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={selectedSection} onValueChange={setSelectedSection}>
-              <SelectTrigger>
-                <SelectValue placeholder="Section" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Sections</SelectItem>
-                <SelectItem value="INVENTORY">Inventory</SelectItem>
-                <SelectItem value="SHOWROOM_1">Showroom 1</SelectItem>
-                <SelectItem value="SHOWROOM_2">Showroom 2</SelectItem>
-                <SelectItem value="GARAGE">Garage</SelectItem>
-                <SelectItem value="FINANCIAL">Financial</SelectItem>
-                <SelectItem value="REPAIRS">Repairs</SelectItem>
-                <SelectItem value="PDI">PDI</SelectItem>
-                <SelectItem value="USERS">Users</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={selectedAction} onValueChange={setSelectedAction}>
-              <SelectTrigger>
-                <SelectValue placeholder="Action" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Actions</SelectItem>
-                <SelectItem value="CREATE">Create</SelectItem>
-                <SelectItem value="UPDATE">Update</SelectItem>
-                <SelectItem value="DELETE">Delete</SelectItem>
-                <SelectItem value="VIEW">View</SelectItem>
-                <SelectItem value="LOGIN">Login</SelectItem>
-                <SelectItem value="LOGOUT">Logout</SelectItem>
-                <SelectItem value="UPLOAD">Upload</SelectItem>
-                <SelectItem value="DOWNLOAD">Download</SelectItem>
-              </SelectContent>
-            </Select>
+            <select
+              id="timeRange"
+              value={selectedTimeRange}
+              onChange={(e) => setSelectedTimeRange(e.target.value)}
+              className="h-10 w-full px-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 relative z-10"
+              style={{ appearance: 'auto' }}
+            >
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+            <select
+              id="section"
+              value={selectedSection}
+              onChange={(e) => setSelectedSection(e.target.value)}
+              className="h-10 w-full px-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 relative z-10"
+              style={{ appearance: 'auto' }}
+            >
+              <option value="all">All Sections</option>
+              <option value="INVENTORY">Inventory</option>
+              <option value="SHOWROOM_1">Showroom 1</option>
+              <option value="SHOWROOM_2">Showroom 2</option>
+              <option value="GARAGE">Garage</option>
+              <option value="FINANCIAL">Financial</option>
+              <option value="REPAIRS">Repairs</option>
+              <option value="PDI">PDI</option>
+              <option value="USERS">Users</option>
+            </select>
+            <select
+              id="action"
+              value={selectedAction}
+              onChange={(e) => setSelectedAction(e.target.value)}
+              className="h-10 w-full px-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 relative z-10"
+              style={{ appearance: 'auto' }}
+            >
+              <option value="all">All Actions</option>
+              <option value="CREATE">Create</option>
+              <option value="UPDATE">Update</option>
+              <option value="DELETE">Delete</option>
+              <option value="VIEW">View</option>
+              <option value="LOGIN">Login</option>
+              <option value="LOGOUT">Logout</option>
+              <option value="UPLOAD">Upload</option>
+              <option value="DOWNLOAD">Download</option>
+            </select>
           </div>
           {(searchTerm || selectedTimeRange !== 'all' || selectedSection !== 'all' || selectedAction !== 'all') && (
             <div className="mt-4 flex items-center gap-2">

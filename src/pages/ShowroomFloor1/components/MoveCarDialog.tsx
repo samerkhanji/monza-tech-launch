@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from '@/hooks/use-toast';
-import { Car, Building, Wrench, Package, Warehouse } from 'lucide-react';
+import { Car, Building, Wrench, Package, Warehouse, Clock } from 'lucide-react';
 
 interface MoveCarDialogProps {
   isOpen: boolean;
@@ -27,10 +27,24 @@ const MoveCarDialog: React.FC<MoveCarDialogProps> = ({
   car,
   onMoveCar
 }) => {
+  console.log('🏢 MoveCarDialog rendered with:', { isOpen, car });
+  
+  React.useEffect(() => {
+    if (isOpen) {
+      console.log('🏢 MoveCarDialog opened with car:', car);
+    }
+  }, [isOpen, car]);
   const [selectedDestination, setSelectedDestination] = useState('');
   const [notes, setNotes] = useState('');
 
+  // Exclude current table (floor1) and disallow moving to New Arrivals from existing tables
   const destinations = [
+    {
+      id: 'floor1',
+      label: 'Showroom Floor 1',
+      description: 'Move to main showroom floor 1',
+      icon: Building
+    },
     {
       id: 'floor2',
       label: 'Showroom Floor 2',
@@ -38,22 +52,16 @@ const MoveCarDialog: React.FC<MoveCarDialogProps> = ({
       icon: Building
     },
     {
-      id: 'inventory',
-      label: 'Car Inventory',
-      description: 'Move to main car inventory storage',
-      icon: Package
-    },
-    {
       id: 'garage',
-      label: 'Garage for Repair',
-      description: 'Move to garage for maintenance/repair',
+      label: 'Garage Inventory',
+      description: 'Move to garage inventory',
       icon: Wrench
     },
     {
-      id: 'new-arrivals',
-      label: 'New Car Arrivals',
-      description: 'Move back to new arrivals processing',
-      icon: Warehouse
+      id: 'garage-schedule',
+      label: 'Garage Schedule',
+      description: 'Add to garage schedule for service/repair',
+      icon: Clock
     }
   ];
 
@@ -103,8 +111,19 @@ const MoveCarDialog: React.FC<MoveCarDialogProps> = ({
             >
               {destinations.map((destination) => {
                 const IconComponent = destination.icon;
+                const isSelected = selectedDestination === destination.id;
                 return (
-                  <div key={destination.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                  <div
+                    key={destination.id}
+                    className={
+                      `flex items-center space-x-3 p-3 border rounded-lg transition-colors cursor-pointer ` +
+                      (isSelected ? 'bg-yellow-50 border-monza-yellow' : 'hover:bg-gray-50')
+                    }
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedDestination(destination.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedDestination(destination.id); } }}
+                  >
                     <RadioGroupItem value={destination.id} id={destination.id} />
                     <div className="flex items-center space-x-3 flex-1">
                       <IconComponent className="h-5 w-5 text-monza-yellow" />

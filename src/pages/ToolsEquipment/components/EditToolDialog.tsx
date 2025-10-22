@@ -9,7 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tool } from '@/services/toolsEquipmentService';
-import { Calendar, Clock, User, MapPin, DollarSign, Settings, AlertTriangle } from 'lucide-react';
+import { Clock, User, MapPin, DollarSign, Settings, AlertTriangle } from 'lucide-react';
+import { safeParseFloat } from '@/utils/errorHandling';
+import { toast } from '@/hooks/use-toast';
 
 interface EditToolDialogProps {
   isOpen: boolean;
@@ -65,7 +67,11 @@ const EditToolDialog: React.FC<EditToolDialogProps> = ({ isOpen, tool, onClose, 
     e.preventDefault();
     
     if (!formData.name || !formData.category || !formData.purchasePrice) {
-      alert('Please fill in required fields');
+      toast({
+        title: "Validation Error",
+        description: "Please fill in required fields",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -73,13 +79,13 @@ const EditToolDialog: React.FC<EditToolDialogProps> = ({ isOpen, tool, onClose, 
       name: formData.name,
       type: formData.type,
       category: formData.category,
-      purchasePrice: parseFloat(formData.purchasePrice),
+      purchasePrice: safeParseFloat(formData.purchasePrice, 0),
       location: formData.location,
       description: formData.description,
       purchasedBy: formData.purchasedBy,
       supplier: formData.supplier,
-      usageHours: parseFloat(formData.usageHours) || 0,
-      depreciationRate: parseFloat(formData.depreciationRate) || 20,
+      usageHours: safeParseFloat(formData.usageHours, 0),
+      depreciationRate: safeParseFloat(formData.depreciationRate, 20),
       condition: formData.condition,
       assignedTo: formData.assignedTo || null,
       notes: formData.notes,
@@ -165,7 +171,7 @@ const EditToolDialog: React.FC<EditToolDialogProps> = ({ isOpen, tool, onClose, 
                   <div className="space-y-2">
                     <Label htmlFor="type">Type</Label>
                     <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}>
-                      <SelectTrigger>
+                      <SelectTrigger id="type">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -188,7 +194,7 @@ const EditToolDialog: React.FC<EditToolDialogProps> = ({ isOpen, tool, onClose, 
                   <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
                     <Select value={formData.location} onValueChange={(value) => setFormData(prev => ({ ...prev, location: value }))}>
-                      <SelectTrigger>
+                      <SelectTrigger id="location">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -204,7 +210,7 @@ const EditToolDialog: React.FC<EditToolDialogProps> = ({ isOpen, tool, onClose, 
                   <div className="space-y-2">
                     <Label htmlFor="condition">Condition</Label>
                     <Select value={formData.condition} onValueChange={(value) => setFormData(prev => ({ ...prev, condition: value }))}>
-                      <SelectTrigger>
+                      <SelectTrigger id="condition">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

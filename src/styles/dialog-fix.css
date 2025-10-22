@@ -71,11 +71,15 @@
 
 /* Ensure Proper Z-Index for Dialog Overlays */
 [data-radix-dialog-overlay] {
-  z-index: 50000 !important;
+  z-index: 1000000 !important;
+  /* Lighten global default; per-dialog overrides can still apply via className */
+  background: rgba(0,0,0,0.3) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
 [data-radix-dialog-content] {
-  z-index: 50001 !important;
+  z-index: 1000001 !important;
 }
 
 /* Fix for Very Long Forms */

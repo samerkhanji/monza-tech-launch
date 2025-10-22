@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from '@/hooks/use-toast';
-import { Calendar, Clock, Users, Wrench, FileText, X, Camera, TrendingUp } from 'lucide-react';
+import { Clock, Users, Wrench, FileText, X, Camera, TrendingUp } from 'lucide-react';
 import PartNumberScannerDialog from '@/components/PartNumberScannerDialog';
 import { workflowTrackingService } from '@/services/workflowTrackingService';
 import { productivityTrackingService } from '@/services/productivityTrackingService';

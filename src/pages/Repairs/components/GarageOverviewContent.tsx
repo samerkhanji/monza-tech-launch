@@ -97,7 +97,7 @@ const GarageOverviewContent: React.FC<GarageOverviewContentProps> = ({
     return sections.map(section => {
       const sectionCars = todayScheduledCars.filter(car => car.workType === section);
       const pending = sectionCars.filter(car => car.status === 'pending').length;
-      const assigned = sectionCars.filter(car => car.status === 'assigned').length;
+      const scheduled = sectionCars.filter(car => car.status === 'scheduled').length;
       const inProgress = sectionCars.filter(car => car.status === 'in_progress').length;
       const completed = sectionCars.filter(car => car.status === 'completed').length;
       const highPriority = sectionCars.filter(car => car.priority === 'high').length;
@@ -106,7 +106,7 @@ const GarageOverviewContent: React.FC<GarageOverviewContentProps> = ({
         section,
         total: sectionCars.length,
         pending,
-        assigned, 
+        scheduled, 
         inProgress,
         completed,
         highPriority,
@@ -147,6 +147,32 @@ const GarageOverviewContent: React.FC<GarageOverviewContentProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Sync Status Indicator */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              <div>
+                <p className="text-sm font-medium text-blue-800">
+                  Garage Schedule Integration
+                </p>
+                <p className="text-xs text-blue-600">
+                  Last synced: {lastSyncTime.toLocaleTimeString()}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-blue-700 border-blue-300">
+                {totalScheduledToday} scheduled today
+              </Badge>
+              <Badge variant="outline" className="text-green-700 border-green-300">
+                {cars.length} in garage
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       {/* Live Garage Schedule Summary */}
       <Card className="border-l-4 border-l-blue-500">
         <CardHeader>
@@ -223,7 +249,7 @@ const GarageOverviewContent: React.FC<GarageOverviewContentProps> = ({
                     <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
                       <div>Active: {section.inProgress}</div>
                       <div>Done: {section.completed}</div>
-                      <div>Assigned: {section.assigned}</div>
+                      <div>Scheduled: {section.scheduled}</div>
                       <div>Pending: {section.pending}</div>
                     </div>
                   </div>

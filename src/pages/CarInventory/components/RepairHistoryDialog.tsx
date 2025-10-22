@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
 import { Car, RepairHistoryRecord } from '../types';
-import { Wrench, Calendar, User, FileText } from 'lucide-react';
+import { Wrench, User, FileText } from 'lucide-react';
 
 interface RepairHistoryDialogProps {
   isOpen: boolean;
@@ -50,7 +50,7 @@ const RepairHistoryDialog: React.FC<RepairHistoryDialogProps> = ({
                   <div key={repair.id} className="border rounded-lg p-4 bg-white">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-gray-500" />
+                        <Clock className="h-4 w-4 text-gray-500" />
                         <span className="font-medium">
                           {format(new Date(repair.date), 'MMM dd, yyyy')}
                         </span>

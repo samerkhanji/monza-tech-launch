@@ -36,6 +36,7 @@ const ShowroomFloor2Filters: React.FC<ShowroomFloor2FiltersProps> = ({
         <div className="relative">
           <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
           <Input
+            id="floor2Search"
             placeholder="Search Floor 2 vehicles by VIN, model, or color..."
             className="pl-8"
             value={searchTerm}
@@ -44,6 +45,7 @@ const ShowroomFloor2Filters: React.FC<ShowroomFloor2FiltersProps> = ({
         </div>
         
         <select
+          id="categoryFilter"
           className="h-10 rounded-md border border-input bg-background px-3 py-2"
           value={categoryFilter}
           onChange={(e) => onCategoryChange(e.target.value)}

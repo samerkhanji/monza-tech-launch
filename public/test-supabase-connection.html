@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Supabase Connection - Monza TECH</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .container { background: white; border-radius: 8px; padding: 30px; margin: 20px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .step { background: #f8f9fa; border-radius: 6px; padding: 20px; margin: 15px 0; border-left: 4px solid #007bff; }
+        button { background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; margin: 8px; font-size: 14px; }
+        button:hover { background: #0056b3; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .info { color: #17a2b8; font-weight: bold; }
+        .code-block { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 6px; margin: 15px 0; font-family: 'Consolas', monospace; font-size: 13px; overflow-x: auto; }
+        .results { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; margin: 15px 0; white-space: pre-wrap; font-family: monospace; font-size: 12px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin: 5px 0; font-family: monospace; }
+        .highlight { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 15px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Supabase Connection</h1>
+        
+        <div class="highlight">
+            <strong>🎯 Goal:</strong> Test your Supabase connection and get fresh API keys if needed.
+        </div>
+        
+        <div class="step">
+            <h3>🔑 Current Credentials Being Used</h3>
+            <p><strong>URL:</strong> <code>https://wunqntfreyezylvbzvxc.supabase.co</code></p>
+            <p><strong>Anon Key:</strong> <code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</code></p>
+            
+            <button onclick="testCurrentCredentials()">🧪 Test Current Credentials</button>
+            <div id="testResult"></div>
+        </div>
+
+        <div class="step">
+            <h3>🔄 Get Fresh Credentials from Supabase</h3>
+            <p>If the test fails, get fresh credentials from your Supabase dashboard:</p>
+            <ol>
+                <li>Go to <strong>https://supabase.com/dashboard</strong></li>
+                <li>Select your project: <strong>wunqntfreyezylvbzvxc</strong></li>
+                <li>Go to <strong>Settings → API</strong></li>
+                <li>Copy the <strong>Project URL</strong> and <strong>anon/public key</strong></li>
+                <li>Paste them below and test:</li>
+            </ol>
+            
+            <label><strong>Project URL:</strong></label>
+            <input type="text" id="newUrl" placeholder="https://your-project.supabase.co" value="https://wunqntfreyezylvbzvxc.supabase.co">
+            
+            <label><strong>Anon Key:</strong></label>
+            <textarea id="newKey" rows="3" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+            
+            <button onclick="testNewCredentials()">🧪 Test New Credentials</button>
+            <div id="newTestResult"></div>
+        </div>
+
+        <div class="step">
+            <h3>🛠️ Fix Your App</h3>
+            <p>If new credentials work, update your app:</p>
+            <button onclick="generateEnvFile()">📋 Generate .env.local File</button>
+            <div id="envResult"></div>
+        </div>
+
+        <div class="step">
+            <h3>📊 Test Results</h3>
+            <div id="allResults" class="results">
+                Click "Test Current Credentials" to start...
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>🚨 Quick Fix Option</h3>
+        <p>If you can't get new credentials, try this SQL to bypass authentication:</p>
+        
+        <div class="code-block">
+-- Run this in your Supabase SQL Editor to allow public access
+ALTER TABLE public.car_inventory DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cars DISABLE ROW LEVEL SECURITY;
+
+-- Then test if your app works
+        </div>
+    </div>
+
+    <script>
+        let workingUrl = '';
+        let workingKey = '';
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('allResults');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            results.innerHTML += `[${timestamp}] ${icon} ${message}\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        async function testSupabaseConnection(url, key) {
+            try {
+                const response = await fetch(`${url}/rest/v1/`, {
+                    headers: {
+                        'apikey': key,
+                        'Authorization': `Bearer ${key}`
+                    }
+                });
+
+                if (response.ok) {
+                    log(`Connection successful to ${url}`, 'success');
+                    return true;
+                } else {
+                    log(`Connection failed: ${response.status} ${response.statusText}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`Connection error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testTableAccess(url, key, tableName) {
+            try {
+                const response = await fetch(`${url}/rest/v1/${tableName}?select=count&limit=1`, {
+                    headers: {
+                        'apikey': key,
+                        'Authorization': `Bearer ${key}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.text();
+                
+                if (response.ok) {
+                    log(`Table '${tableName}' accessible`, 'success');
+                    return true;
+                } else {
+                    log(`Table '${tableName}' error: ${response.status} - ${result}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`Table '${tableName}' test failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testCurrentCredentials() {
+            const url = 'https://wunqntfreyezylvbzvxc.supabase.co';
+            const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1bnFudGZyZXllenlsdmJ6dnhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NDE4MDIsImV4cCI6MjA2MzMxNzgwMn0.AphXufXZef_wAvVT3TXl2s_JQwbI9wK6KN2uCQgVc5o';
+            
+            const result = document.getElementById('testResult');
+            result.innerHTML = '<div class="info">🧪 Testing current credentials...</div>';
+            
+            log('Testing current Supabase credentials...', 'info');
+            
+            const connectionOk = await testSupabaseConnection(url, key);
+            
+            if (connectionOk) {
+                log('Basic connection works, testing table access...', 'info');
+                
+                const carInventoryOk = await testTableAccess(url, key, 'car_inventory');
+                const carsOk = await testTableAccess(url, key, 'cars');
+                
+                if (carInventoryOk || carsOk) {
+                    result.innerHTML = '<div class="success">✅ Credentials work! Your issue might be elsewhere.</div>';
+                    workingUrl = url;
+                    workingKey = key;
+                } else {
+                    result.innerHTML = '<div class="error">❌ Can connect but tables are blocked (RLS issue)</div>';
+                }
+            } else {
+                result.innerHTML = '<div class="error">❌ Current credentials are invalid or expired</div>';
+            }
+        }
+
+        async function testNewCredentials() {
+            const url = document.getElementById('newUrl').value.trim();
+            const key = document.getElementById('newKey').value.trim();
+            
+            if (!url || !key) {
+                alert('Please enter both URL and API key');
+                return;
+            }
+            
+            const result = document.getElementById('newTestResult');
+            result.innerHTML = '<div class="info">🧪 Testing new credentials...</div>';
+            
+            log(`Testing new credentials for ${url}...`, 'info');
+            
+            const connectionOk = await testSupabaseConnection(url, key);
+            
+            if (connectionOk) {
+                log('New credentials work! Testing table access...', 'info');
+                
+                const carInventoryOk = await testTableAccess(url, key, 'car_inventory');
+                const carsOk = await testTableAccess(url, key, 'cars');
+                
+                if (carInventoryOk || carsOk) {
+                    result.innerHTML = '<div class="success">✅ New credentials work perfectly!</div>';
+                    workingUrl = url;
+                    workingKey = key;
+                } else {
+                    result.innerHTML = '<div class="warning">⚠️ Credentials work but tables need RLS fixes</div>';
+                    workingUrl = url;
+                    workingKey = key;
+                }
+            } else {
+                result.innerHTML = '<div class="error">❌ New credentials are also invalid</div>';
+            }
+        }
+
+        function generateEnvFile() {
+            if (!workingUrl || !workingKey) {
+                alert('Test credentials first to find working ones');
+                return;
+            }
+            
+            const envContent = `# Supabase Configuration
+VITE_SUPABASE_URL=${workingUrl}
+VITE_SUPABASE_ANON_KEY=${workingKey}`;
+
+            const result = document.getElementById('envResult');
+            result.innerHTML = `
+                <div class="success">✅ .env.local file content generated!</div>
+                <div><strong>Create a file called '.env.local' in your project root with this content:</strong></div>
+                <textarea rows="4" style="width: 100%; font-family: monospace; margin: 10px 0;">${envContent}</textarea>
+                <div><strong>Then restart your development server (npm run dev)</strong></div>
+            `;
+            
+            log('Generated .env.local file content', 'success');
+        }
+    </script>
+</body>
+</html>

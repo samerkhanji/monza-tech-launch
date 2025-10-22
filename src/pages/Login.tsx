@@ -116,9 +116,9 @@ const Login: React.FC = () => {
             <button 
               type="button"
               className="text-xs text-monza-yellow hover:text-monza-yellow/80 cursor-pointer block"
-              onClick={() => fillDemoCredentials('samer@monzasal.com', 'Monza123')}
+              onClick={() => fillDemoCredentials('samer@monza.com', 'Monza123')}
             >
-              Owner: samer@monzasal.com / Monza123
+              Owner: samer@monza.com / Monza123
             </button>
             <button 
               type="button"

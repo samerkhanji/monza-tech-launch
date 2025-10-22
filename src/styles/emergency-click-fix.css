@@ -1,0 +1,85 @@
+/* EMERGENCY CLICK FIX - OVERRIDE ALL BLOCKING CSS */
+
+/* Force everything to be clickable */
+* {
+  pointer-events: auto !important;
+  cursor: auto !important;
+  user-select: auto !important;
+}
+
+/* Force interactive elements to be clickable */
+button,
+a,
+[role="button"],
+input,
+select,
+textarea,
+.clickable {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Remove any blocking overlays */
+.fixed.inset-0,
+[data-radix-dialog-overlay],
+.overlay {
+  pointer-events: none !important;
+}
+
+/* But allow sidebar overlay to be clickable */
+.sidebar-overlay,
+.fixed.inset-0.bg-black\/50 {
+  pointer-events: auto !important;
+}
+
+/* Except when they contain interactive content */
+.fixed.inset-0.button-container,
+.fixed.inset-0.link-container,
+.fixed.inset-0.input-container,
+[data-radix-dialog-overlay].dialog-container {
+  pointer-events: auto !important;
+}
+
+/* Force body and html to be interactive */
+html,
+body,
+#root {
+  pointer-events: auto !important;
+  cursor: auto !important;
+}
+
+/* Remove filters that might block clicks (but preserve transforms for animations) */
+.blocking-overlay {
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Make sure sidebar navigation works */
+nav,
+nav *,
+.sidebar,
+.sidebar *,
+.sidebar-close-btn,
+[data-testid="sidebar-close-button"] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Ensure dropdown buttons in sidebar work */
+.sidebar button,
+.sidebar [role="button"],
+.sidebar .flex.items-center.w-full {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+/* Emergency visible styling for debugging */
+button:hover,
+a:hover,
+[role="button"]:hover {
+  background-color: rgba(255, 255, 0, 0.2) !important;
+}

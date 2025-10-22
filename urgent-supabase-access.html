@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🚨 URGENT: Access Supabase Dashboard</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            margin: 20px; 
+            background: #ffe6e6;
+        }
+        .container { 
+            max-width: 700px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 3px solid #dc3545;
+        }
+        .urgent { 
+            background: #dc3545; 
+            color: white; 
+            padding: 20px; 
+            margin: 15px 0; 
+            border-radius: 8px; 
+            font-weight: bold;
+            text-align: center;
+            font-size: 18px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 5px solid #007bff;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .sql-command {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            margin: 10px 0;
+            border: 2px solid #007bff;
+        }
+        .link-button {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 10px 5px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .link-button:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="urgent">
+            🚨 URGENT: 20 CARS STILL SHOWING IN FLOOR 2!
+        </div>
+
+        <h1>🎯 Immediate Action Required</h1>
+        
+        <p><strong>The Floor 2 data is coming from your Supabase database.</strong> We need to clear the <code>showroom_floor2_inventory</code> table.</p>
+
+        <div class="step">
+            <h3>Option 1: Quick Supabase Dashboard Access</h3>
+            <p>Click to open your Supabase dashboard:</p>
+            <a href="https://supabase.com/dashboard" target="_blank" class="link-button">
+                🗃️ Open Supabase Dashboard
+            </a>
+        </div>
+
+        <div class="step">
+            <h3>Option 2: Direct Project Access</h3>
+            <p>If you know your project URL, use this pattern:</p>
+            <a href="https://supabase.com/dashboard/project/YOUR_PROJECT_ID" target="_blank" class="link-button">
+                📊 Direct Project Link
+            </a>
+            <p><small>Replace YOUR_PROJECT_ID with your actual project ID</small></p>
+        </div>
+
+        <div class="step">
+            <h3>📋 Step-by-Step Instructions:</h3>
+            <ol>
+                <li><strong>Open Supabase Dashboard</strong> (using links above)</li>
+                <li><strong>Navigate to SQL Editor</strong> (left sidebar)</li>
+                <li><strong>Paste this command:</strong></li>
+            </ol>
+            
+            <div class="sql-command" id="sqlCommand">
+DELETE FROM showroom_floor2_inventory;
+            </div>
+            <button class="copy-btn" onclick="copySQL()">📋 Copy SQL</button>
+            
+            <ol start="4">
+                <li><strong>Click "Run"</strong> to execute</li>
+                <li><strong>Refresh your Floor 2 page</strong></li>
+            </ol>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ Alternative: Table Editor Method</h3>
+            <p>If SQL Editor doesn't work:</p>
+            <ol>
+                <li>Go to <strong>Table Editor</strong> in Supabase</li>
+                <li>Find <strong>showroom_floor2_inventory</strong> table</li>
+                <li>Select all rows</li>
+                <li>Click <strong>Delete</strong></li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>🔄 After Clearing Database:</h3>
+            <ol>
+                <li>Refresh your Monza TECH application</li>
+                <li>Go to Showroom Floor 2</li>
+                <li>Should show: <strong>"Cars on Display (0)"</strong></li>
+            </ol>
+        </div>
+
+        <div class="urgent">
+            💡 This is the ONLY way to eliminate those 20 cars!
+        </div>
+
+        <script>
+            function copySQL() {
+                const sql = document.getElementById('sqlCommand').textContent;
+                navigator.clipboard.writeText(sql).then(() => {
+                    alert('✅ SQL command copied! Paste it in Supabase SQL Editor.');
+                });
+            }
+
+            // Auto-focus on the most important action
+            window.onload = () => {
+                document.querySelector('.link-button').focus();
+            };
+        </script>
+    </div>
+</body>
+</html>

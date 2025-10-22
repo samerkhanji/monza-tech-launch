@@ -84,6 +84,7 @@ export interface GarageCar {
   repairDuration?: string;
   lastUpdated: string;
   partsUsed?: string[];
+  toolsUsed?: string[]; // Tools used during the repair
   estimatedCompletionTimestamp?: string;
   beforePhotos?: string[];
   afterPhotos?: string[];

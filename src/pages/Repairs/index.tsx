@@ -14,10 +14,11 @@ import WorkerScheduleView from './components/WorkerScheduleView';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarDays, AlertTriangle, Plus, Users, Eye, Clock, CheckCircle, Wrench, Calendar, Car } from 'lucide-react';
+import { AlertTriangle, Users, Eye, Clock, CheckCircle, Wrench, Car } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import ScheduleWorkInterface from './components/ScheduleWorkInterface';
+import { safeLocalStorageGet } from '@/utils/errorHandling';
 
 const GaragePage: React.FC = () => {
   const location = useLocation();
@@ -28,10 +29,15 @@ const GaragePage: React.FC = () => {
       try {
         const parsedCars = JSON.parse(saved);
         // Verify these cars exist in the schedule
-        const schedules = localStorage.getItem('garageSchedules');
+        let schedules = localStorage.getItem('garageSchedules');
+        if (!schedules) {
+          schedules = localStorage.getItem('garageSchedule');
+        }
         if (schedules) {
           const schedulesData = JSON.parse(schedules);
-          const allScheduledCarCodes = schedulesData.flatMap((schedule: { scheduledCars?: Array<{ carCode: string }> }) => 
+          // Ensure it's an array
+          const schedulesArray = Array.isArray(schedulesData) ? schedulesData : [schedulesData];
+          const allScheduledCarCodes = schedulesArray.flatMap((schedule: { scheduledCars?: Array<{ carCode: string }> }) => 
             (schedule.scheduledCars || []).map((car: { carCode: string }) => car.carCode)
           );
           
@@ -57,6 +63,43 @@ const GaragePage: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const isGarageManager = user?.name === 'Mark';
+
+  // Auto-sync scheduled cars to garage overview
+  const syncScheduledCarsToGarage = () => {
+    try {
+      // Load scheduled cars from garage schedule
+      let schedules = localStorage.getItem('garageSchedules');
+      if (!schedules) {
+        schedules = localStorage.getItem('garageSchedule');
+      }
+      
+      if (schedules) {
+        const schedulesData = JSON.parse(schedules);
+        const schedulesArray = Array.isArray(schedulesData) ? schedulesData : [schedulesData];
+        
+        // Get today's scheduled cars
+        const today = new Date().toISOString().split('T')[0];
+        const todaySchedule = schedulesArray.find((s: any) => s.date === today);
+        
+        if (todaySchedule && todaySchedule.scheduledCars) {
+          const scheduledCars = todaySchedule.scheduledCars;
+          const existingCarCodes = cars.map(car => car.carCode);
+          
+          // Add new scheduled cars that aren't already in garage
+          const newCars = scheduledCars
+            .filter((scheduledCar: any) => !existingCarCodes.includes(scheduledCar.carCode))
+            .map((scheduledCar: any) => convertScheduledCarToGarageCar(scheduledCar));
+          
+          if (newCars.length > 0) {
+            setCars(prev => [...prev, ...newCars]);
+            console.log(`Auto-synced ${newCars.length} scheduled cars to garage overview`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error syncing scheduled cars to garage:', error);
+    }
+  };
 
   // Handle URL parameters for VIN filtering
   useEffect(() => {
@@ -107,6 +150,9 @@ const GaragePage: React.FC = () => {
         } catch (error) {
           console.error('Error parsing updated garage cars:', error);
         }
+      } else if (e.key === 'garageSchedules' || e.key === 'garageSchedule') {
+        // Sync scheduled cars when schedule changes
+        setTimeout(() => syncScheduledCarsToGarage(), 100);
       }
     };
 
@@ -131,6 +177,11 @@ const GaragePage: React.FC = () => {
     const syncedCars = syncScheduleWithGarage();
     setCars(syncedCars);
   }, [allScheduledCars, syncScheduleWithGarage]);
+
+  // Auto-sync scheduled cars to garage overview when scheduled cars change
+  useEffect(() => {
+    syncScheduledCarsToGarage();
+  }, [allScheduledCars]); // Run when scheduled cars change
 
   const addScheduledCarToGarage = (scheduledCar: any) => {
     const garageCar = convertScheduledCarToGarageCar(scheduledCar);
@@ -445,6 +496,7 @@ const GaragePage: React.FC = () => {
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         isGarageManager={isGarageManager}
+        onSyncScheduledCars={syncScheduledCarsToGarage}
       />
 
       <Tabs defaultValue="garage" className="w-full">
@@ -481,7 +533,6 @@ const GaragePage: React.FC = () => {
                           onClick={() => addScheduledCarToGarage(scheduledCar)}
                           disabled={cars.some(car => car.carCode === scheduledCar.carCode)}
                         >
-                          <Plus className="h-4 w-4 mr-1" />
                           Add to Garage
                         </Button>
                       </div>
@@ -520,7 +571,6 @@ const GaragePage: React.FC = () => {
                           onClick={() => addInventoryCarToGarage(inventoryCar)}
                           disabled={cars.some(car => car.carCode === inventoryCar.vinNumber)}
                         >
-                          <Plus className="h-4 w-4 mr-1" />
                           Add to Garage
                         </Button>
                       </div>
@@ -565,7 +615,7 @@ const GaragePage: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CalendarDays className="h-5 w-5" />
+                <Clock className="h-5 w-5" />
                 Schedule Work Appointments
               </CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -578,7 +628,7 @@ const GaragePage: React.FC = () => {
                 scheduledCars={allScheduledCars}
                 onScheduleUpdate={(newSchedule) => {
                   // Save to garage schedule system
-                  const existingSchedules = JSON.parse(localStorage.getItem('garageSchedules') || '[]');
+                  const existingSchedules = safeLocalStorageGet<any[]>('garageSchedules', []);
                   const today = new Date().toISOString().split('T')[0];
                   
                   // Find or create today's schedule

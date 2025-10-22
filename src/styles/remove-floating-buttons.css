@@ -1,0 +1,52 @@
+/* Complete removal of ALL floating buttons per user request */
+
+/* Remove any floating elements with z-index in the floating range */
+*[class*="fixed"][class*="bottom"][class*="z-"] {
+  display: none !important;
+}
+
+/* Specifically target the floating buttons the user mentioned */
+.fixed.bottom-6.right-4,
+.fixed.bottom-4.left-4,
+.fixed.bottom-20.right-4,
+.fixed.bottom-24.right-4 {
+  display: none !important;
+}
+
+/* Remove any elements with high z-index that are fixed positioned */
+*[style*="position: fixed"][style*="z-index: 50"],
+*[style*="position: fixed"][style*="z-index: 9998"],
+*[style*="position: fixed"][style*="z-index: 9997"] {
+  display: none !important;
+}
+
+/* Hide any button with bot, zap, or rocket icons in floating position */
+button[class*="fixed"][class*="bottom"] {
+  display: none !important;
+}
+
+/* Remove floating popover containers */
+div[class*="fixed"][class*="bottom"][class*="z-50"] {
+  display: none !important;
+}
+
+/* Emergency override for any remaining floating elements */
+.lucide-bot,
+.lucide-zap,
+.lucide-rocket {
+  /* Only hide if they're in floating containers */
+}
+
+button[title*="MonzaBot"],
+button[title*="Quick Actions"],
+button[title*="Welcome Tour"],
+button[title*="Restart Welcome Tour"],
+button[title*="Keyboard Shortcuts"] {
+  display: none !important;
+}
+
+/* Hide any gradient buttons that are floating */
+button[class*="gradient"][class*="fixed"] {
+  display: none !important;
+}
+

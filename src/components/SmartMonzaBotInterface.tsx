@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Brain, MessageSquare, X, HelpCircle } from 'lucide-react';
+import { Brain, MessageSquare, X, HelpCircle, Bot } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import VoiceCameraInterface from './VoiceCameraInterface';
 import MonzaBotSidebar from './MonzaBotSidebar';
-import { useAuth } from '@/contexts/AuthContext';
 
 const SmartMonzaBotInterface: React.FC = () => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [showInterface, setShowInterface] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
@@ -23,15 +25,29 @@ const SmartMonzaBotInterface: React.FC = () => {
 
   return (
     <>
-      {/* Smart Assistant Toggle Button */}
+      {/* Main MonzaBot Chat Button - Always visible on mobile */}
       <Button
-        onClick={() => setShowInterface(true)}
-        className="fixed bottom-20 right-4 z-[9998] h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-2 border-white/20"
+        onClick={() => setShowSidebar(true)}
+        className="fixed bottom-6 right-4 z-[9998] h-16 w-16 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-200 bg-gradient-to-r from-monza-yellow to-amber-400 hover:from-amber-400 hover:to-monza-yellow text-monza-black border-2 border-white/30"
         size="icon"
+        title="Open MonzaBot Chat"
       >
-        <Brain className="h-6 w-6" />
-        <span className="sr-only">Open Smart Assistant</span>
+        <Bot className="h-8 w-8" />
+        <span className="sr-only">Open MonzaBot Chat</span>
       </Button>
+
+      {/* Smart Assistant Voice/Camera Button - Secondary position */}
+      {!isMobile && (
+        <Button
+          onClick={() => setShowInterface(true)}
+          className="fixed bottom-24 right-4 z-[9997] h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-2 border-white/20"
+          size="icon"
+          title="Voice & Camera Assistant"
+        >
+          <Brain className="h-5 w-5" />
+          <span className="sr-only">Open Voice & Camera Assistant</span>
+        </Button>
+      )}
 
       {/* Voice & Camera Interface Dialog */}
       <Dialog open={showInterface} onOpenChange={setShowInterface}>
@@ -56,7 +72,10 @@ const SmartMonzaBotInterface: React.FC = () => {
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-2">{analysisResult}</p>
                   <Button 
-                    onClick={() => setShowSidebar(true)}
+                    onClick={() => {
+                      setShowSidebar(true);
+                      setShowInterface(false);
+                    }}
                     size="sm"
                     className="w-full bg-monza-yellow text-monza-black hover:bg-monza-yellow/80"
                   >
@@ -66,6 +85,22 @@ const SmartMonzaBotInterface: React.FC = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Quick Chat Access Button */}
+            <div className="mt-4 pt-4 border-t">
+              <Button 
+                onClick={() => {
+                  setShowSidebar(true);
+                  setShowInterface(false);
+                }}
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                <Bot className="h-4 w-4 mr-2" />
+                Open MonzaBot Chat
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

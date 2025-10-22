@@ -183,7 +183,7 @@ const LOCATION_CONFIGS = {
   },
   shipped: { 
     name: 'Shipped', 
-    route: '/shipping-eta', 
+    route: '/car-inventory?status=delivered', 
     icon: Truck, 
     color: 'bg-blue-50 border-blue-200',
     description: 'Delivered vehicles',

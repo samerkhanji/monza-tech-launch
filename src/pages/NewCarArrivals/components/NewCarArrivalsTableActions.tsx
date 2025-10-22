@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { CarDamageDocumentation } from './CarDamageDocumentation';
-import ActionDropdown from '@/components/ui/ActionDropdown';
+import PortalActionDropdown from '@/components/ui/PortalActionDropdown';
 import type { NewCarArrival } from '../types';
 import MoveCarDialog from './MoveCarDialog';
 
@@ -45,7 +45,7 @@ export const NewCarArrivalsTableActions: React.FC<NewCarArrivalsTableActionsProp
         onAddPhoto={onAddPhoto}
       />
       
-      <ActionDropdown
+      <PortalActionDropdown
         options={[
           { value: 'inventory', label: 'Move to Inventory' },
           { value: 'move', label: 'Move Car' }
@@ -54,6 +54,7 @@ export const NewCarArrivalsTableActions: React.FC<NewCarArrivalsTableActionsProp
           if (action === 'inventory') handleMoveToInventory();
           else if (action === 'move') setShowMoveDialog(true);
         }}
+        id={`actions-${car.id}`}
         ariaLabel={`Actions for ${car.id}`}
       />
 

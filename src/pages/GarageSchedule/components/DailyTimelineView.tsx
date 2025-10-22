@@ -14,7 +14,6 @@ import {
   AlertTriangle, 
   Plus, 
   User, 
-  Calendar, 
   Timer,
   Wrench,
   Palette,
@@ -39,6 +38,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { GarageSchedule, ScheduledCar } from '@/types';
 import VinOcrCameraDialog from './VinOcrCameraDialog';
+import { safeParseFloat, safeParseInt } from '@/utils/errorHandling';
 
 interface DailyTimelineViewProps {
   schedule: GarageSchedule | null;
@@ -463,19 +463,28 @@ const DailyTimelineView: React.FC<DailyTimelineViewProps> = ({
 
       {/* Filter Controls */}
       <div className="flex items-center justify-between">
-        <Select value={selectedSection} onValueChange={setSelectedSection}>
-          <SelectTrigger className="w-64">
-            <SelectValue placeholder="Filter by section" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Sections</SelectItem>
-            <SelectItem value="electrical">Electrical</SelectItem>
-            <SelectItem value="mechanic">Mechanical</SelectItem>
-            <SelectItem value="body_work">Body Work</SelectItem>
-            <SelectItem value="painter">Painting</SelectItem>
-            <SelectItem value="detailer">Detailing</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="timeline-dropdown">
+          <Select value={selectedSection} onValueChange={setSelectedSection}>
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="Filter by section" />
+            </SelectTrigger>
+            <SelectContent 
+              position="popper" 
+              side="bottom" 
+              align="start" 
+              sideOffset={4}
+              avoidCollisions={true}
+              className="select-content-fixed"
+            >
+              <SelectItem value="all">All Sections</SelectItem>
+              <SelectItem value="electrical">Electrical</SelectItem>
+              <SelectItem value="mechanic">Mechanical</SelectItem>
+              <SelectItem value="body_work">Body Work</SelectItem>
+              <SelectItem value="painter">Painting</SelectItem>
+              <SelectItem value="detailer">Detailing</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         
         <Button variant="outline" onClick={() => setSelectedSection('all')}>
           Show All Sections
@@ -836,7 +845,7 @@ const DailyTimelineView: React.FC<DailyTimelineViewProps> = ({
                   max="12"
                   step="0.5"
                   value={quickAddData.estimatedHours}
-                  onChange={(e) => setQuickAddData(prev => ({ ...prev, estimatedHours: parseFloat(e.target.value) || 2 }))}
+                  onChange={(e) => setQuickAddData(prev => ({ ...prev, estimatedHours: safeParseFloat(e.target.value, 2) }))}
                 />
               </div>
             </div>
@@ -901,7 +910,7 @@ const DailyTimelineView: React.FC<DailyTimelineViewProps> = ({
                   min="1"
                   max="20"
                   value={dailyCapacity.totalWorkers}
-                  onChange={(e) => handleUpdateCapacity('totalWorkers', parseInt(e.target.value) || 1)}
+                  onChange={(e) => handleUpdateCapacity('totalWorkers', safeParseInt(e.target.value, 1))}
                 />
               </div>
               <div>
@@ -911,7 +920,7 @@ const DailyTimelineView: React.FC<DailyTimelineViewProps> = ({
                   min="2"
                   max="12"
                   value={dailyCapacity.hoursOpen}
-                  onChange={(e) => handleUpdateCapacity('hoursOpen', parseInt(e.target.value) || 8)}
+                  onChange={(e) => handleUpdateCapacity('hoursOpen', safeParseInt(e.target.value, 8))}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   {isSaturday ? 'Saturday default: 6h (8AM-2PM)' : 'Weekday default: 8h (8AM-4PM)'}
@@ -949,7 +958,7 @@ const DailyTimelineView: React.FC<DailyTimelineViewProps> = ({
                           onChange={(e) => handleUpdateSectionCapacity(
                             section as keyof DailyCapacity['sections'], 
                             'workers', 
-                            parseInt(e.target.value) || 0
+                            safeParseInt(e.target.value, 0)
                           )}
                           className="mt-1"
                         />
@@ -965,7 +974,7 @@ const DailyTimelineView: React.FC<DailyTimelineViewProps> = ({
                           onChange={(e) => handleUpdateSectionCapacity(
                             section as keyof DailyCapacity['sections'], 
                             'capacity', 
-                            parseInt(e.target.value) || 0
+                            safeParseInt(e.target.value, 0)
                           )}
                           className="mt-1"
                         />

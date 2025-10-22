@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { 
   DollarSign, 
@@ -12,11 +14,17 @@ import {
   Eye,
   PieChart,
   BarChart3,
-  Lock
+  Lock,
+  Edit3,
+  Save,
+  X
 } from 'lucide-react';
 import { useCarData, CarFinancialRecord as ContextCarFinancialRecord } from '@/contexts/CarDataContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useAuth } from '@/contexts/AuthContext';
 import { CarDetailDialog } from '@/components/CarDetailDialog';
+import '@/styles/dialog-scrollbars.css';
+import { safeParseFloat } from '@/utils/errorHandling';
 
 // Lebanese-based financial configuration - 2025 economic data
 const LEBANON_CONFIG = {
@@ -156,6 +164,7 @@ interface CarFinancialRecord {
   totalCost: number;
   profit: number;
   profitMargin: number;
+  customerPrice?: number; // New field for direct customer price editing
   currency: 'LBP' | 'USD';
   exchangeRate: number;
   partsUsed: Array<{
@@ -179,13 +188,35 @@ const FinancialDashboard: React.FC = () => {
   const [realFinancialRecords, setRealFinancialRecords] = useState<CarFinancialRecord[]>([]);
   const [selectedCarCode, setSelectedCarCode] = useState<string | null>(null);
   const [isCarDetailOpen, setIsCarDetailOpen] = useState(false);
+  
+  // Editing state
+  const [editingRecord, setEditingRecord] = useState<string | null>(null);
+  const [editedValues, setEditedValues] = useState<Partial<CarFinancialRecord>>({});
+  const [editingInDialog, setEditingInDialog] = useState(false);
+  const [dialogEditedValues, setDialogEditedValues] = useState<Partial<CarFinancialRecord>>({});
 
-  // Get unified car data and auth context
+  // Get unified car data and permissions
   const { unifiedCars, refreshData } = useCarData();
-  const { hasPermission } = useAuth();
+  
+  // Safe permissions hook usage with error handling
+  let permissionsData;
+  try {
+    permissionsData = usePermissions();
+  } catch (error) {
+    console.error('Error loading permissions:', error);
+    permissionsData = { can: () => false, isLoading: false, hasRole: () => false, permissions: new Set(), roles: new Set() };
+  }
+  
+  const { can, isLoading: permissionsLoading } = permissionsData;
 
   // Check if user has permission to view financial data
-  const canViewFinancialData = hasPermission('view_financial_data');
+  // For development: Allow OWNERS to access financial data even if permissions fail to load
+  const { user } = useAuth() || {};
+  const isOwner = user?.role === 'OWNER';
+  const hasPermissionViaRole = isOwner; // Owners always have financial access
+  const hasPermissionViaSystem = !permissionsLoading && (typeof can === 'function' ? can('financial.view') : false);
+  
+  const canViewFinancialData = hasPermissionViaSystem || hasPermissionViaRole;
 
   // Load real financial data from unified car data
   useEffect(() => {
@@ -220,10 +251,9 @@ const FinancialDashboard: React.FC = () => {
       }
     });
 
-    // If no real data, generate some mock data based on garage cars
-    if (allFinancialRecords.length === 0) {
-      allFinancialRecords.push(...generateMockFinancialDataFromCars());
-    }
+    // 🚫 DISABLED: No more mock financial data generation
+    // Mock data generation completely disabled to prevent fake financial records
+    console.log('🚫 FinancialDashboard: Mock financial data generation disabled');
 
     setRealFinancialRecords(allFinancialRecords);
   }, [unifiedCars]);
@@ -408,8 +438,9 @@ const FinancialDashboard: React.FC = () => {
     return records.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
   };
 
-  // Use real financial records or generate from cars
-  const financialRecords = realFinancialRecords.length > 0 ? realFinancialRecords : generateMockFinancialDataFromCars();
+  // 🚫 FORCE EMPTY: No mock financial data generation allowed
+  const financialRecords = realFinancialRecords.length > 0 ? realFinancialRecords : [];
+  console.log('🚫 FinancialDashboard: Mock data generation completely disabled, showing real data only');
 
   // Calculate summary statistics
   const calculateSummary = () => {
@@ -454,6 +485,16 @@ const FinancialDashboard: React.FC = () => {
     setIsCarDetailOpen(true);
   };
 
+  // Show loading state while permissions are loading
+  if (permissionsLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p className="text-gray-600">Loading financial dashboard...</p>
+      </div>
+    );
+  }
+
   // If user doesn't have permission to view financial data, show access denied
   if (!canViewFinancialData) {
     return (
@@ -467,12 +508,126 @@ const FinancialDashboard: React.FC = () => {
             Financial data is only accessible to owners.
           </p>
           <p className="text-sm text-gray-500">
+            Current user: {user?.name || 'Unknown'} ({user?.role || 'No role'})
+          </p>
+          <p className="text-sm text-gray-500">
             Please contact your administrator if you need access to financial information.
           </p>
         </div>
       </div>
     );
   }
+
+  // Editing functions
+  const handleStartEdit = (record: CarFinancialRecord) => {
+    setEditingRecord(record.carCode);
+    setEditedValues({
+      laborCost: record.laborCost,
+      partsCost: record.partsCost,
+      electricityCost: record.electricityCost,
+      equipmentCost: record.equipmentCost,
+      overheadCost: record.overheadCost,
+      profit: record.profit,
+      profitMargin: record.profitMargin
+    });
+  };
+
+  const handleSaveEdit = (carCode: string) => {
+    if (editedValues) {
+      // Update the financial records
+      setRealFinancialRecords(prev => 
+        prev.map(record => 
+          record.carCode === carCode 
+            ? { 
+                ...record, 
+                ...editedValues,
+                totalCost: (editedValues.laborCost || 0) + 
+                          (editedValues.partsCost || 0) + 
+                          (editedValues.electricityCost || 0) + 
+                          (editedValues.equipmentCost || 0) + 
+                          (editedValues.overheadCost || 0)
+              }
+            : record
+        )
+      );
+    }
+    setEditingRecord(null);
+    setEditedValues({});
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRecord(null);
+    setEditedValues({});
+  };
+
+  const handleInputChange = (field: keyof CarFinancialRecord, value: string) => {
+    const numValue = safeParseFloat(value, 0);
+    setEditedValues(prev => ({ ...prev, [field]: numValue }));
+  };
+
+  // Dialog editing functions
+  const handleStartDialogEdit = () => {
+    if (selectedCar) {
+      setEditingInDialog(true);
+      setDialogEditedValues({
+        laborCost: selectedCar.laborCost,
+        partsCost: selectedCar.partsCost,
+        electricityCost: selectedCar.electricityCost,
+        equipmentCost: selectedCar.equipmentCost,
+        overheadCost: selectedCar.overheadCost,
+        profit: selectedCar.profit,
+        profitMargin: selectedCar.profitMargin
+      });
+    }
+  };
+
+  const handleSaveDialogEdit = () => {
+    if (selectedCar && dialogEditedValues) {
+      // Use manually entered totalCost if provided, otherwise calculate from components
+      const calculatedTotalCost = (dialogEditedValues.laborCost || selectedCar.laborCost) + 
+                                 (dialogEditedValues.partsCost || selectedCar.partsCost) + 
+                                 (dialogEditedValues.electricityCost || selectedCar.electricityCost) + 
+                                 (dialogEditedValues.equipmentCost || selectedCar.equipmentCost) + 
+                                 (dialogEditedValues.overheadCost || selectedCar.overheadCost);
+      
+      const finalTotalCost = dialogEditedValues.totalCost !== undefined ? 
+                            dialogEditedValues.totalCost : calculatedTotalCost;
+      
+      // Use manually entered customerPrice if provided, otherwise calculate from totalCost + profit
+      const finalCustomerPrice = dialogEditedValues.customerPrice !== undefined ? 
+                                 dialogEditedValues.customerPrice : 
+                                 finalTotalCost + (dialogEditedValues.profit || selectedCar.profit);
+      
+      const updatedRecord = {
+        ...selectedCar,
+        ...dialogEditedValues,
+        totalCost: finalTotalCost,
+        customerPrice: finalCustomerPrice
+      };
+      
+      // Update the financial records
+      setRealFinancialRecords(prev => 
+        prev.map(record => 
+          record.carCode === selectedCar.carCode ? updatedRecord : record
+        )
+      );
+      
+      // Update the selected car for the dialog
+      setSelectedCar(updatedRecord);
+    }
+    setEditingInDialog(false);
+    setDialogEditedValues({});
+  };
+
+  const handleCancelDialogEdit = () => {
+    setEditingInDialog(false);
+    setDialogEditedValues({});
+  };
+
+  const handleDialogInputChange = (field: keyof CarFinancialRecord, value: string) => {
+    const numValue = safeParseFloat(value, 0);
+    setDialogEditedValues(prev => ({ ...prev, [field]: numValue }));
+  };
 
   return (
     <div className="space-y-6">
@@ -648,19 +803,62 @@ const FinancialDashboard: React.FC = () => {
 
       {/* Detailed Record Dialog */}
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Calculator className="h-5 w-5" />
-              Financial Breakdown - {selectedCar?.carCode}
-            </DialogTitle>
-            <DialogDescription>
-              Detailed cost analysis for {selectedCar?.carModel} repair
-            </DialogDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="flex items-center gap-2">
+                  <Calculator className="h-5 w-5" />
+                  Financial Breakdown - {selectedCar?.carCode}
+                </DialogTitle>
+                <DialogDescription>
+                  Detailed cost analysis for {selectedCar?.carModel} repair
+                </DialogDescription>
+              </div>
+              <div className="flex gap-2">
+                {editingInDialog ? (
+                  <>
+                    <Button
+                      size="sm"
+                      onClick={handleSaveDialogEdit}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <Save className="h-4 w-4" />
+                      Save Changes
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCancelDialogEdit}
+                      className="flex items-center gap-2"
+                    >
+                      <X className="h-4 w-4" />
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleStartDialogEdit}
+                    className="flex items-center gap-2"
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    Edit All Costs
+                  </Button>
+                )}
+              </div>
+            </div>
           </DialogHeader>
           
           {selectedCar && (
-            <div className="space-y-6">
+            <div 
+              className="flex-1 overflow-y-auto pr-2 space-y-6 financial-breakdown-scroll" 
+              style={{
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#CBD5E0 #F7FAFC'
+              }}
+            >
               {/* Summary */}
               <div className="grid grid-cols-2 gap-6">
                 <Card>
@@ -669,38 +867,159 @@ const FinancialDashboard: React.FC = () => {
                     <p className="text-sm text-gray-600">Internal expenses for repair work</p>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span>Labor ({selectedCar.laborHours}h):</span>
-                      <span className="font-medium text-red-600">{formatCurrency(selectedCar.laborCost)}</span>
+                      {editingInDialog ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">$</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={dialogEditedValues.laborCost || selectedCar.laborCost}
+                            onChange={(e) => handleDialogInputChange('laborCost', e.target.value)}
+                            className="w-24 h-8 text-sm font-medium text-red-600"
+                          />
+                        </div>
+                      ) : (
+                        <span className="font-medium text-red-600">{formatCurrency(selectedCar.laborCost)}</span>
+                      )}
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span>Parts & Materials:</span>
-                      <span className="font-medium text-red-600">{formatCurrency(selectedCar.partsCost)}</span>
+                      {editingInDialog ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">$</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={dialogEditedValues.partsCost || selectedCar.partsCost}
+                            onChange={(e) => handleDialogInputChange('partsCost', e.target.value)}
+                            className="w-24 h-8 text-sm font-medium text-red-600"
+                          />
+                        </div>
+                      ) : (
+                        <span className="font-medium text-red-600">{formatCurrency(selectedCar.partsCost)}</span>
+                      )}
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span>Electricity:</span>
-                      <span className="font-medium text-red-600">{formatCurrency(selectedCar.electricityCost)}</span>
+                      {editingInDialog ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">$</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={dialogEditedValues.electricityCost || selectedCar.electricityCost}
+                            onChange={(e) => handleDialogInputChange('electricityCost', e.target.value)}
+                            className="w-24 h-8 text-sm font-medium text-red-600"
+                          />
+                        </div>
+                      ) : (
+                        <span className="font-medium text-red-600">{formatCurrency(selectedCar.electricityCost)}</span>
+                      )}
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span>Equipment:</span>
-                      <span className="font-medium text-red-600">{formatCurrency(selectedCar.equipmentCost)}</span>
+                      {editingInDialog ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">$</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={dialogEditedValues.equipmentCost || selectedCar.equipmentCost}
+                            onChange={(e) => handleDialogInputChange('equipmentCost', e.target.value)}
+                            className="w-24 h-8 text-sm font-medium text-red-600"
+                          />
+                        </div>
+                      ) : (
+                        <span className="font-medium text-red-600">{formatCurrency(selectedCar.equipmentCost)}</span>
+                      )}
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span>Overhead:</span>
-                      <span className="font-medium text-red-600">{formatCurrency(selectedCar.overheadCost)}</span>
+                      {editingInDialog ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">$</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={dialogEditedValues.overheadCost || selectedCar.overheadCost}
+                            onChange={(e) => handleDialogInputChange('overheadCost', e.target.value)}
+                            className="w-24 h-8 text-sm font-medium text-red-600"
+                          />
+                        </div>
+                      ) : (
+                        <span className="font-medium text-red-600">{formatCurrency(selectedCar.overheadCost)}</span>
+                      )}
                     </div>
                     <hr />
-                    <div className="flex justify-between text-lg font-bold">
+                    <div className="flex justify-between text-lg font-bold items-center">
                       <span>Total Company Cost:</span>
-                      <span className="text-red-600">{formatCurrency(selectedCar.totalCost)}</span>
+                      {editingInDialog ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-red-600">$</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={dialogEditedValues.totalCost || selectedCar.totalCost}
+                            onChange={(e) => handleDialogInputChange('totalCost', e.target.value)}
+                            className="w-32 h-8 text-sm font-bold text-red-600"
+                            placeholder="0.00"
+                            title="Enter custom total cost or leave blank to auto-calculate"
+                          />
+                          <span className="text-xs text-gray-500">✏️ Editable</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-red-600">{formatCurrency(selectedCar.totalCost)}</span>
+                          {selectedCar.totalCost && (
+                            <span className="text-xs text-gray-500" title="This value can be edited">✏️</span>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex justify-between text-lg font-bold">
+                    <div className="flex justify-between text-lg font-bold items-center">
                       <span>Customer Price:</span>
-                      <span className="text-green-600">{formatCurrency(selectedCar.totalCost + selectedCar.profit)}</span>
+                      {editingInDialog ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-green-600">$</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={dialogEditedValues.customerPrice || selectedCar.customerPrice || (selectedCar.totalCost + selectedCar.profit)}
+                            onChange={(e) => handleDialogInputChange('customerPrice', e.target.value)}
+                            className="w-32 h-8 text-sm font-bold text-green-600"
+                            placeholder="0.00"
+                            title="Enter custom customer price or leave blank to auto-calculate"
+                          />
+                          <span className="text-xs text-gray-500">✏️ Editable</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-600">{formatCurrency(selectedCar.customerPrice || (selectedCar.totalCost + selectedCar.profit))}</span>
+                          <span className="text-xs text-gray-500" title="This value can be edited">✏️</span>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex justify-between text-lg font-bold">
+                    <div className="flex justify-between text-lg font-bold items-center">
                       <span>Profit:</span>
-                      <span className="text-blue-600">{formatCurrency(selectedCar.profit)}</span>
+                      {editingInDialog ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-blue-600">$</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={dialogEditedValues.profit || selectedCar.profit}
+                            onChange={(e) => handleDialogInputChange('profit', e.target.value)}
+                            className="w-24 h-8 text-sm font-bold text-blue-600"
+                          />
+                          <span className="text-sm text-gray-500">
+                            ({dialogEditedValues.profitMargin || selectedCar.profitMargin}%)
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-blue-600">{formatCurrency(selectedCar.profit)}</span>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

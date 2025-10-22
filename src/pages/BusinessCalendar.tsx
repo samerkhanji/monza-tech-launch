@@ -22,47 +22,8 @@ interface BusinessEvent {
   estimatedDuration?: number; // in hours
 }
 
-// Sample business events
-const initialEvents: BusinessEvent[] = [
-  {
-    id: '1',
-    title: 'Team Training - New Equipment',
-    date: new Date(2025, 4, 21, 9, 0),
-    createdBy: 'Manager',
-    assignedEmployees: ['Khalil', 'Mark', 'Tamara'],
-    description: 'Training session on new diagnostic equipment',
-    priority: 'high',
-    status: 'scheduled',
-    workType: 'training',
-    requiredSkills: ['Technical'],
-    estimatedDuration: 3
-  },
-  {
-    id: '2',
-    title: 'Monthly Performance Review',
-    date: new Date(2025, 4, 22, 14, 0),
-    createdBy: 'HR Manager',
-    assignedEmployees: ['Khalil'],
-    description: 'Individual performance review session',
-    priority: 'medium',
-    status: 'scheduled',
-    workType: 'meeting',
-    estimatedDuration: 1
-  },
-  {
-    id: '3',
-    title: 'Inventory Audit',
-    date: new Date(2025, 4, 23, 10, 0),
-    createdBy: 'Operations Manager',
-    assignedEmployees: ['Mark', 'Tamara'],
-    description: 'Quarterly inventory audit of all floors',
-    priority: 'medium',
-    status: 'scheduled',
-    workType: 'project',
-    requiredSkills: ['Organization', 'Attention to Detail'],
-    estimatedDuration: 4
-  }
-];
+// No sample events - start with empty state
+const initialEvents: BusinessEvent[] = [];
 
 const BusinessCalendar: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());

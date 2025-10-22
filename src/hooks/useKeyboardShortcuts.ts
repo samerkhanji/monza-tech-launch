@@ -1,69 +1,181 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-interface UseKeyboardShortcutsOptions {
-  onClose?: () => void;
-  enableEscapeClose?: boolean;
-  enableDoubleEscape?: boolean;
-  enableCtrlW?: boolean;
+interface ShortcutAction {
+  key: string;
+  ctrlKey?: boolean;
+  altKey?: boolean;
+  shiftKey?: boolean;
+  description: string;
+  action: () => void;
 }
 
-export const useKeyboardShortcuts = ({
-  onClose,
-  enableEscapeClose = true,
-  enableDoubleEscape = true,
-  enableCtrlW = true,
-}: UseKeyboardShortcutsOptions) => {
-  const lastEscapeTime = useRef<number>(0);
-  const escapeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+export function useKeyboardShortcuts() {
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!onClose) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Handle Ctrl/Cmd + W for closing dialogs
-      if (enableCtrlW && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'w') {
-        event.preventDefault();
-        onClose();
-        return;
+  const shortcuts: ShortcutAction[] = [
+    // Navigation shortcuts
+    {
+      key: 'd',
+      altKey: true,
+      description: 'Go to Dashboard',
+      action: () => navigate('/enhanced-dashboard')
+    },
+    {
+      key: 'i',
+      altKey: true,
+      description: 'Go to Car Inventory',
+      action: () => navigate('/car-inventory')
+    },
+    {
+      key: 'r',
+      altKey: true,
+      description: 'Go to Repairs',
+      action: () => navigate('/repairs')
+    },
+    {
+      key: 'g',
+      altKey: true,
+      description: 'Go to Garage Schedule',
+      action: () => navigate('/garage-schedule')
+    },
+    {
+      key: 'f',
+      altKey: true,
+      description: 'Go to Finances',
+      action: () => navigate('/financial-dashboard')
+    },
+    {
+      key: 's',
+      altKey: true,
+      description: 'Go to System Status',
+      action: () => navigate('/system-status')
+    },
+    {
+      key: 'c',
+      altKey: true,
+      description: 'Go to Customization',
+      action: () => navigate('/customization')
+    },
+    {
+      key: 'p',
+      altKey: true,
+      description: 'Go to Performance Monitor',
+      action: () => navigate('/performance')
+    },
+    
+    // Quick actions
+    {
+      key: 'n',
+      ctrlKey: true,
+      description: 'New Car Entry',
+      action: () => navigate('/car-inventory')
+    },
+    {
+      key: 'n',
+      ctrlKey: true,
+      shiftKey: true,
+      description: 'New Repair',
+      action: () => navigate('/repairs')
+    },
+    {
+      key: 'h',
+      altKey: true,
+      description: 'Show/Hide Shortcuts Help',
+      action: () => {
+        const event = new CustomEvent('toggle-shortcuts-help');
+        window.dispatchEvent(event);
       }
-
-      // Handle Escape key behavior
-      if (enableEscapeClose && event.key === 'Escape') {
-        const currentTime = Date.now();
-        
-        if (enableDoubleEscape) {
-          // Double escape functionality
-          if (currentTime - lastEscapeTime.current < 500) {
-            // Double tap detected within 500ms
-            if (escapeTimeoutRef.current) {
-              clearTimeout(escapeTimeoutRef.current);
-              escapeTimeoutRef.current = null;
-            }
-            onClose();
-            lastEscapeTime.current = 0;
-          } else {
-            // First escape tap
-            lastEscapeTime.current = currentTime;
-            escapeTimeoutRef.current = setTimeout(() => {
-              lastEscapeTime.current = 0;
-            }, 500);
-          }
+    },
+    
+    // Search and focus
+    {
+      key: '/',
+      ctrlKey: true,
+      description: 'Focus Search',
+      action: () => {
+        const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
         } else {
-          // Single escape to close
-          onClose();
+          // If no search input, dispatch search event
+          const event = new CustomEvent('global-search');
+          window.dispatchEvent(event);
         }
       }
-    };
+    },
+    
+    // System shortcuts
+    {
+      key: 'Escape',
+      description: 'Close Modal/Dialog',
+      action: () => {
+        // Try to close any open modals
+        const closeButtons = document.querySelectorAll('[data-dialog-close], .dialog-close, [aria-label*="close"]');
+        if (closeButtons.length > 0) {
+          (closeButtons[closeButtons.length - 1] as HTMLElement).click();
+        }
+      }
+    }
+  ];
 
-    document.addEventListener('keydown', handleKeyDown);
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't trigger shortcuts when typing in inputs
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true') {
+        // Exception: Allow Escape to work in inputs too
+        if (event.key !== 'Escape') {
+          return;
+        }
+      }
 
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      if (escapeTimeoutRef.current) {
-        clearTimeout(escapeTimeoutRef.current);
+      const matchingShortcut = shortcuts.find(shortcut => {
+        return (
+          shortcut.key.toLowerCase() === event.key.toLowerCase() &&
+          !!shortcut.ctrlKey === event.ctrlKey &&
+          !!shortcut.altKey === event.altKey &&
+          !!shortcut.shiftKey === event.shiftKey
+        );
+      });
+
+      if (matchingShortcut) {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('🎹 Keyboard shortcut triggered:', matchingShortcut.description);
+        matchingShortcut.action();
       }
     };
-  }, [onClose, enableEscapeClose, enableDoubleEscape, enableCtrlW]);
-};
 
-export default useKeyboardShortcuts; 
+    window.addEventListener('keydown', handleKeyDown);
+    
+    // Store shortcuts in global for help display
+    (window as any).monzaShortcuts = shortcuts;
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      delete (window as any).monzaShortcuts;
+    };
+  }, [navigate]);
+
+  return shortcuts;
+}
+
+// Hook for displaying shortcuts help
+export function useShortcutsHelp() {
+  const shortcuts = (window as any).monzaShortcuts || [];
+  
+  const formatShortcut = (shortcut: ShortcutAction) => {
+    const parts = [];
+    if (shortcut.ctrlKey) parts.push('Ctrl');
+    if (shortcut.altKey) parts.push('Alt');
+    if (shortcut.shiftKey) parts.push('Shift');
+    parts.push(shortcut.key.toUpperCase());
+    return parts.join(' + ');
+  };
+
+  return {
+    shortcuts,
+    formatShortcut
+  };
+}

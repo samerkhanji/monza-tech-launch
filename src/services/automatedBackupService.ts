@@ -1,5 +1,6 @@
 import SupabaseStorageService from './supabaseStorageService';
 import RealExcelService from './realExcelService';
+import { safeLocalStorageGet } from '@/utils/errorHandling';
 
 interface BackupData {
   carInventory: Array<{
@@ -113,23 +114,23 @@ class AutomatedBackupService {
   private static collectSystemData(): BackupData {
     const timestamp = new Date().toISOString();
 
-    // Collect car inventory data
-    const carInventory = JSON.parse(localStorage.getItem('carInventory') || '[]');
+    // Collect car inventory data using safe localStorage operations
+    const carInventory = safeLocalStorageGet<any[]>('carInventory', []);
 
     // Collect garage schedule data
     const today = new Date().toISOString().split('T')[0];
-    const garageSchedule = JSON.parse(localStorage.getItem(`garage_schedule_${today}`) || '{}');
+    const garageSchedule = safeLocalStorageGet<any>(`garage_schedule_${today}`, {});
 
     // Collect repair history
-    const repairHistory = JSON.parse(localStorage.getItem('repairHistory') || '[]');
+    const repairHistory = safeLocalStorageGet<any[]>('repairHistory', []);
 
     // Collect user activity logs
-    const userActivity = JSON.parse(localStorage.getItem('user_activity_logs') || '[]');
+    const userActivity = safeLocalStorageGet<any[]>('user_activity_logs', []);
 
     // Collect system settings
     const settings = {
       lastUpdate: localStorage.getItem('app_last_update'),
-      userPreferences: JSON.parse(localStorage.getItem('user_preferences') || '{}'),
+      userPreferences: safeLocalStorageGet<any>('user_preferences', {}),
       systemVersion: '2.0.0',
     };
 
@@ -156,6 +157,9 @@ class AutomatedBackupService {
       const jsonResult = await SupabaseStorageService.createBackup(backupData, backupId);
       
       if (!jsonResult.success) {
+        console.warn('Backup creation failed:', jsonResult.error);
+        // Don't fail completely, just log the warning and continue
+        // The backup service will try again on the next interval
         return { success: false, error: jsonResult.error };
       }
 
@@ -248,6 +252,20 @@ class AutomatedBackupService {
     if (!config.enabled) {
       console.log('📦 Automated backups are disabled');
       return;
+    }
+
+    // Check if Supabase is available
+    try {
+      // Test Supabase connection by trying to list files
+      SupabaseStorageService.listFiles('excel-backups', 'backups').then(result => {
+        if (result.error && result.error.includes('bucket')) {
+          console.warn('⚠️ Supabase storage not available, backups will use localStorage fallback');
+        }
+      }).catch(() => {
+        console.warn('⚠️ Supabase storage not available, backups will use localStorage fallback');
+      });
+    } catch (error) {
+      console.warn('⚠️ Supabase storage not available, backups will use localStorage fallback');
     }
 
     // Clear existing interval

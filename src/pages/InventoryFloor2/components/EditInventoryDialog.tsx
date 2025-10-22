@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InventoryItem, VehicleType, Category } from '@/types/inventory';
-
-type PdiStatus = 'pending' | 'in progress' | 'completed' | 'failed';
+import { safeParseInt } from '@/utils/errorHandling';
 
 interface EditInventoryDialogProps {
   isOpen: boolean;
@@ -22,7 +21,7 @@ const EditInventoryDialog: React.FC<EditInventoryDialogProps> = ({
   onSave,
   floor
 }) => {
-  const [formData, setFormData] = useState<Partial<InventoryItem & { pdiFile?: File | null }>>({});
+  const [formData, setFormData] = useState<Partial<InventoryItem>>({});
 
   useEffect(() => {
     if (item) {
@@ -31,14 +30,12 @@ const EditInventoryDialog: React.FC<EditInventoryDialogProps> = ({
         partName: item.partName,
         partNumber: item.partNumber,
         quantity: item.quantity,
-        location: { ...item.location },
+        location: { 
+          room: item.location?.room || ''
+        },
         supplier: item.supplier,
         vehicleType: item.vehicleType,
         category: item.category,
-        vin: item.vin,
-        pdiStatus: item.pdiStatus,
-        pdiNotes: item.pdiNotes,
-        pdiFile: undefined,
       });
     }
   }, [item]);
@@ -106,7 +103,7 @@ const EditInventoryDialog: React.FC<EditInventoryDialogProps> = ({
               id="quantity"
               type="number"
               value={formData.quantity || 0}
-              onChange={e => setFormData(prev => ({ ...prev, quantity: parseInt(e.target.value) || 0 }))}
+              onChange={e => setFormData(prev => ({ ...prev, quantity: safeParseInt(e.target.value, 0) }))}
               className="col-span-3"
             />
           </div>
@@ -125,38 +122,7 @@ const EditInventoryDialog: React.FC<EditInventoryDialogProps> = ({
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="shelf" className="text-right">Shelf</Label>
-              <Input
-                id="shelf"
-                value={formData.location?.shelf || ''}
-                onChange={e => handleLocationChange('shelf', e.target.value)}
-                className="col-span-3"
-                placeholder="P1, P2..."
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="column" className="text-right">Column</Label>
-              <Input
-                id="column"
-                value={formData.location?.column || ''}
-                onChange={e => handleLocationChange('column', e.target.value)}
-                className="col-span-3"
-                placeholder="1, 2, 3..."
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="row" className="text-right">Row</Label>
-            <Input
-              id="row"
-              value={formData.location?.row || ''}
-              onChange={e => handleLocationChange('row', e.target.value)}
-              className="col-span-3"
-              placeholder="1, 2, 3..."
-            />
-          </div>
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="supplier" className="text-right">Supplier</Label>
             <Input
@@ -183,73 +149,14 @@ const EditInventoryDialog: React.FC<EditInventoryDialogProps> = ({
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="category" className="text-right">Category</Label>
-            <select
+            <Input
               id="category"
-              className="col-span-3 border rounded px-2 py-1"
+              className="col-span-3"
               value={formData.category || ''}
               onChange={e => setFormData(prev => ({ ...prev, category: e.target.value as Category }))}
-              style={{ background: "#fff", color: "#000", borderColor: "#757575" }}
-            >
-              <option value="part">Part</option>
-              <option value="accessory">Accessory</option>
-            </select>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="vin" className="text-right">VIN</Label>
-            <Input
-              id="vin"
-              value={formData.vin || ''}
-              onChange={e => setFormData(prev => ({ ...prev, vin: e.target.value }))}
-              className="col-span-3"
-              placeholder="Enter VIN"
+              placeholder="Enter category (e.g., part, accessory)"
             />
           </div>
-          {/* --- PDI Section --- */}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="pdiStatus" className="text-right">PDI Status</Label>
-            <select
-              id="pdiStatus"
-              className="col-span-3 border rounded px-2 py-1"
-              value={formData.pdiStatus || ''}
-              onChange={e => setFormData(prev => ({ ...prev, pdiStatus: e.target.value as PdiStatus }))}
-              style={{ background: "#fff", color: "#000", borderColor: "#757575" }}
-            >
-              <option value="pending">Pending</option>
-              <option value="in progress">In Progress</option>
-              <option value="completed">Completed</option>
-              <option value="failed">Failed</option>
-            </select>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="pdiNotes" className="text-right">PDI Notes</Label>
-            <Input
-              id="pdiNotes"
-              value={formData.pdiNotes || ''}
-              onChange={e => setFormData(prev => ({ ...prev, pdiNotes: e.target.value }))}
-              className="col-span-3"
-              placeholder="Enter PDI notes"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="pdiFile" className="text-right">PDI File</Label>
-            <input
-              id="pdiFile"
-              type="file"
-              accept=".pdf,image/*"
-              className="col-span-3"
-              onChange={e => {
-                const file = e.target.files?.[0] || null;
-                setFormData(prev => ({ ...prev, pdiFile: file }));
-              }}
-              style={{ background: "#fff", color: "#000" }}
-            />
-            {formData.pdiFile && (
-              <div className="col-span-4 mt-2 text-xs text-green-700">
-                Selected file: {formData.pdiFile.name}
-              </div>
-            )}
-          </div>
-          {/* --- End PDI Section --- */}
         </div>
         <DialogFooter>
           <Button

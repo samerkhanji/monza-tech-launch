@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABSOLUTE MINIMAL CLICK TEST</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+            display: block;
+            width: 300px;
+        }
+        .red-button {
+            background: #dc3545 !important;
+        }
+        .green-button {
+            background: #28a745 !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚨 ABSOLUTE MINIMAL CLICK TEST</h1>
+    <p>This is pure HTML with NO React, NO frameworks, NO external dependencies.</p>
+    
+    <button class="test-button" onclick="alert('Button 1 WORKS!')">
+        🔵 CLICK TEST 1
+    </button>
+    
+    <button class="test-button red-button" onclick="alert('Button 2 WORKS!')">
+        🔴 CLICK TEST 2
+    </button>
+    
+    <button class="test-button green-button" onclick="alert('Button 3 WORKS!')">
+        🟢 CLICK TEST 3
+    </button>
+    
+    <div style="margin-top: 30px; padding: 20px; background: white; border-radius: 8px;">
+        <h3>Click Results:</h3>
+        <p id="result">No clicks detected yet...</p>
+    </div>
+    
+    <script>
+        console.log('🚨 MINIMAL TEST: Script loaded');
+        
+        document.querySelectorAll('.test-button').forEach((button, index) => {
+            button.addEventListener('click', function() {
+                console.log(`🚨 MINIMAL TEST: Button ${index + 1} clicked!`);
+                document.getElementById('result').innerHTML = `Button ${index + 1} clicked at ${new Date().toLocaleTimeString()}!`;
+            });
+        });
+        
+        // Test if JavaScript is working
+        console.log('🚨 MINIMAL TEST: All event listeners added');
+        
+        // Global click detector
+        document.addEventListener('click', function(e) {
+            console.log('🚨 MINIMAL TEST: Global click detected on:', e.target);
+        });
+        
+        // Test mouse events
+        document.addEventListener('mousedown', function(e) {
+            console.log('🚨 MINIMAL TEST: Mouse down on:', e.target);
+        });
+        
+        document.addEventListener('mouseup', function(e) {
+            console.log('🚨 MINIMAL TEST: Mouse up on:', e.target);
+        });
+    </script>
+</body>
+</html>

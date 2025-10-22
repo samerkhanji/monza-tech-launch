@@ -34,7 +34,7 @@ export const sidebarSections = [
     items: [
       { href: '/showroom-floor-1', label: 'Floor 1', icon: Building },
       { href: '/showroom-floor-2', label: 'Floor 2', icon: Building2 },
-      { href: '/repairs', label: 'Garage View', icon: Wrench },
+      { href: '/inventory-floor-2', label: 'Floor 2 Inventory', icon: Package },
       { href: '/garage-schedule', label: 'Schedule', icon: CustomCalendarIcon },
       { href: '/repair-history', label: 'Repair History', icon: History },
       { href: '/inventory-garage', label: 'Garage Inventory', icon: Package }
@@ -53,7 +53,7 @@ export const sidebarSections = [
     title: 'Inventory System',
     items: [
       { href: '/scan-part', label: 'Part Scanner', icon: QrCode },
-      { href: '/inventory-floor-2', label: 'Floor 2 Inventory', icon: Package },
+      { href: '/part-management', label: 'Parts Inventory', icon: Package },
       { href: '/inventory-history', label: 'Inventory History', icon: History }
     ]
   },
@@ -71,14 +71,13 @@ export const sidebarSections = [
       { href: '/user-activity-dashboard', label: 'User Activity Monitor', icon: BarChart3 },
       { href: '/employee-management', label: 'Employee Management', icon: Users },
       { href: '/employee-profile', label: 'Employee Profile', icon: UserCircle },
-      { href: '/wstacy-employee-management', label: 'Wstacy Employee Management', icon: Users }
+      { href: '/wstacy-employee-management', label: 'Employee Management', icon: Users }
     ]
   },
   {
     title: 'System & Admin',
     items: [
-      { href: '/system-settings', label: 'System Settings', icon: Settings },
-      { href: '/part-management', label: 'Part Management', icon: Package }
+      { href: '/system-settings', label: 'System Settings', icon: Settings }
     ]
   },
   {

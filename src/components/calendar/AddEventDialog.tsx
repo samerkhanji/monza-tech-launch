@@ -166,7 +166,7 @@ const AddEventDialog: React.FC<AddEventDialogProps> = ({
                 <FormItem>
                   <FormLabel>Event Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter event title" {...field} />
+                    <Input id="eventTitle" placeholder="Enter event title" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -255,7 +255,7 @@ const AddEventDialog: React.FC<AddEventDialogProps> = ({
                 <FormItem>
                   <FormLabel>Car Code (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., VF24-001" {...field} />
+                    <Input id="eventReference" placeholder="e.g., VF24-001" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -67,3 +67,18 @@
 .car-status-dialog:focus-within::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #ffd700, #fbbf24) !important;
 } 
+
+/* Make the entire form look like one continuous sheet: remove inner boxes/radii */
+.car-status-dialog *[class*="border"],
+.car-status-dialog *[class^="border-"],
+.car-status-dialog *[class*="rounded"],
+.car-status-dialog *[class^="rounded-"] {
+  border-radius: 0 !important;
+}
+
+.car-status-dialog .card,
+.car-status-dialog .panel,
+.car-status-dialog .section {
+  border: none !important;
+  box-shadow: none !important;
+}

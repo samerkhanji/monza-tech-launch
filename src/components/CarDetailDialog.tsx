@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { UnifiedCarData, useCarData } from '@/contexts/CarDataContext';
 import { useAuth } from '@/contexts/AuthContext';
+import '@/styles/dialog-scrollbars.css';
 
 interface CarDetailDialogProps {
   isOpen: boolean;
@@ -74,7 +75,7 @@ export const CarDetailDialog: React.FC<CarDetailDialogProps> = ({
       'inventory_garage': '/inventory-garage',
       'repairs': '/repairs',
       'scheduled': '/garage-schedule',
-      'delivered': '/shipping-eta',
+      'delivered': '/car-inventory?status=delivered',
       'sold': '/sales'
     };
     
@@ -98,7 +99,14 @@ export const CarDetailDialog: React.FC<CarDetailDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="overflow-y-auto px-1" style={{ maxHeight: 'calc(95vh - 120px)' }}>
+        <div 
+          className="overflow-y-auto px-1 car-detail-scroll" 
+          style={{ 
+            maxHeight: 'calc(95vh - 120px)',
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#CBD5E0 #F7FAFC'
+          }}
+        >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className={`grid w-full ${canViewFinancialData ? 'grid-cols-5' : 'grid-cols-4'} sticky top-0 bg-white z-10 mb-4`}>
               <TabsTrigger value="overview">Overview</TabsTrigger>

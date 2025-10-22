@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restore Mock Data - 100 Cars</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #059669;
+        }
+        .secondary {
+            background: #6b7280;
+        }
+        .secondary:hover {
+            background: #4b5563;
+        }
+        .danger {
+            background: #ef4444;
+        }
+        .danger:hover {
+            background: #dc2626;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .data-section {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Restore Mock Data - 100 Cars</h1>
+        
+        <div class="info">
+            <strong>🚗 COMPREHENSIVE MOCK DATA:</strong> This will restore ~100 cars spread across all sections of the application.
+        </div>
+        
+        <button onclick="restoreAllMockData()">🔄 RESTORE 100 CARS</button>
+        <button onclick="restoreSpecificSection('showroom')" class="secondary">🏢 Showroom Data Only</button>
+        <button onclick="restoreSpecificSection('garage')" class="secondary">🔧 Garage Data Only</button>
+        <button onclick="restoreSpecificSection('inventory')" class="secondary">📦 Inventory Data Only</button>
+        <button onclick="checkCurrentData()" class="secondary">📊 Check Current Data</button>
+        <button onclick="goToApp()" class="secondary">🏠 Go to App</button>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // Generate 100 cars with realistic data
+        function generateMockCars() {
+            const models = ['Voyah FREE', 'Voyah DREAM', 'Voyah PASSION', 'Voyah HERO', 'Voyah COURAGE'];
+            const colors = ['White', 'Black', 'Red', 'Blue', 'Silver', 'Green', 'Yellow', 'Orange', 'Purple', 'Gray'];
+            const statuses = ['available', 'reserved', 'sold', 'maintenance', 'in_stock'];
+            const categories = ['EV', 'REV', 'ICEV'];
+            const locations = ['car_inventory', 'showroom_floor_1', 'showroom_floor_2', 'garage', 'inventory_floor_2'];
+            
+            const cars = [];
+            
+            for (let i = 1; i <= 100; i++) {
+                const model = models[Math.floor(Math.random() * models.length)];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                const category = categories[Math.floor(Math.random() * categories.length)];
+                const location = locations[Math.floor(Math.random() * locations.length)];
+                
+                // Generate realistic VIN
+                const vinNumber = `LVGBB22E5NG${String(i).padStart(6, '0')}`;
+                
+                // Generate realistic price based on model
+                let basePrice = 45000;
+                if (model === 'Voyah DREAM') basePrice = 52000;
+                else if (model === 'Voyah PASSION') basePrice = 48000;
+                else if (model === 'Voyah HERO') basePrice = 55000;
+                else if (model === 'Voyah COURAGE') basePrice = 58000;
+                
+                const price = basePrice + Math.floor(Math.random() * 5000);
+                const batteryPercentage = Math.floor(Math.random() * 40) + 60; // 60-100%
+                const range = 500 + Math.floor(Math.random() * 100); // 500-600km
+                
+                const car = {
+                    id: `car-${i}`,
+                    vinNumber: vinNumber,
+                    model: model,
+                    brand: 'Voyah',
+                    year: 2024,
+                    color: color,
+                    price: price,
+                    batteryPercentage: batteryPercentage,
+                    range: range,
+                    status: status,
+                    customs: Math.random() > 0.2 ? 'paid' : 'not paid',
+                    pdiStatus: Math.random() > 0.3 ? 'completed' : 'pending',
+                    category: category,
+                    currentLocation: location,
+                    lastUpdated: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    testDriveInfo: null,
+                    pdiCompleted: Math.random() > 0.3,
+                    softwareVersion: Math.random() > 0.2 ? `2.${Math.floor(Math.random() * 10)}.${Math.floor(Math.random() * 10)}` : null,
+                    softwareLastUpdated: Math.random() > 0.2 ? new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() : null,
+                    softwareUpdateBy: Math.random() > 0.2 ? 'IT Team' : null,
+                    softwareUpdateNotes: Math.random() > 0.5 ? 'Latest security patch applied' : null
+                };
+                
+                // Add garage-specific fields for garage cars
+                if (location === 'garage') {
+                    car.assignedMechanic = ['John Smith', 'Sarah Johnson', 'Mike Wilson', 'Lisa Chen'][Math.floor(Math.random() * 4)];
+                    car.repairNotes = ['Battery diagnostic in progress', 'Software update required', 'Routine maintenance', 'Customer reported issue'][Math.floor(Math.random() * 4)];
+                }
+                
+                cars.push(car);
+            }
+            
+            return cars;
+        }
+
+        // Generate comprehensive mock data
+        const allCars = generateMockCars();
+        
+        const mockData = {
+            carInventory: allCars.filter(car => car.currentLocation === 'car_inventory'),
+            showroomFloor1Cars: allCars.filter(car => car.currentLocation === 'showroom_floor_1'),
+            showroomFloor2Cars: allCars.filter(car => car.currentLocation === 'showroom_floor_2'),
+            garageCars: allCars.filter(car => car.currentLocation === 'garage'),
+            inventoryFloor2Cars: allCars.filter(car => car.currentLocation === 'inventory_floor_2'),
+            
+            garageSchedule: [
+                {
+                    id: 'schedule-1',
+                    carId: 'car-15',
+                    carCode: 'LVGBB22E5NG000015',
+                    carModel: 'Voyah DREAM',
+                    startTime: '09:00',
+                    endTime: '17:00',
+                    date: new Date().toISOString().split('T')[0],
+                    status: 'in_progress',
+                    assignedMechanic: 'John Smith',
+                    workType: 'Battery Diagnostic',
+                    priority: 'high',
+                    notes: 'Customer reported battery issues'
+                },
+                {
+                    id: 'schedule-2',
+                    carId: 'car-23',
+                    carCode: 'LVGBB22E5NG000023',
+                    carModel: 'Voyah FREE',
+                    startTime: '10:00',
+                    endTime: '16:00',
+                    date: new Date().toISOString().split('T')[0],
+                    status: 'scheduled',
+                    assignedMechanic: 'Sarah Johnson',
+                    workType: 'Software Update',
+                    priority: 'medium',
+                    notes: 'Routine software update'
+                },
+                {
+                    id: 'schedule-3',
+                    carId: 'car-45',
+                    carCode: 'LVGBB22E5NG000045',
+                    carModel: 'Voyah PASSION',
+                    startTime: '11:00',
+                    endTime: '15:00',
+                    date: new Date().toISOString().split('T')[0],
+                    status: 'scheduled',
+                    assignedMechanic: 'Mike Wilson',
+                    workType: 'Routine Maintenance',
+                    priority: 'low',
+                    notes: 'Regular service check'
+                },
+                {
+                    id: 'schedule-4',
+                    carId: 'car-67',
+                    carCode: 'LVGBB22E5NG000067',
+                    carModel: 'Voyah HERO',
+                    startTime: '14:00',
+                    endTime: '18:00',
+                    date: new Date().toISOString().split('T')[0],
+                    status: 'scheduled',
+                    assignedMechanic: 'Lisa Chen',
+                    workType: 'System Diagnostic',
+                    priority: 'high',
+                    notes: 'Performance optimization'
+                }
+            ],
+            
+            testDriveLogs: [
+                {
+                    id: 'td-1',
+                    carId: 'car-8',
+                    carModel: 'Voyah FREE',
+                    vinNumber: 'LVGBB22E5NG000008',
+                    clientName: 'Ahmed Hassan',
+                    clientPhone: '+961 70 123 456',
+                    startTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                    endTime: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+                    duration: 60,
+                    status: 'completed',
+                    notes: 'Client very interested in the vehicle',
+                    salesRep: 'Maria Santos'
+                },
+                {
+                    id: 'td-2',
+                    carId: 'car-12',
+                    carModel: 'Voyah DREAM',
+                    vinNumber: 'LVGBB22E5NG000012',
+                    clientName: 'Fatima Al-Zahra',
+                    clientPhone: '+961 71 789 012',
+                    startTime: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+                    endTime: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+                    duration: 60,
+                    status: 'completed',
+                    notes: 'Client satisfied with performance',
+                    salesRep: 'Carlos Rodriguez'
+                },
+                {
+                    id: 'td-3',
+                    carId: 'car-19',
+                    carModel: 'Voyah PASSION',
+                    vinNumber: 'LVGBB22E5NG000019',
+                    clientName: 'Omar Khalil',
+                    clientPhone: '+961 76 345 678',
+                    startTime: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+                    endTime: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+                    duration: 60,
+                    status: 'completed',
+                    notes: 'Excellent driving experience',
+                    salesRep: 'Anna Kowalski'
+                },
+                {
+                    id: 'td-4',
+                    carId: 'car-34',
+                    carModel: 'Voyah HERO',
+                    vinNumber: 'LVGBB22E5NG000034',
+                    clientName: 'Layla Mansour',
+                    clientPhone: '+961 78 901 234',
+                    startTime: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+                    endTime: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(),
+                    duration: 60,
+                    status: 'completed',
+                    notes: 'Premium feel and performance',
+                    salesRep: 'David Thompson'
+                }
+            ],
+            
+            repairHistory: [
+                {
+                    id: 'repair-1',
+                    carId: 'car-15',
+                    carModel: 'Voyah DREAM',
+                    vinNumber: 'LVGBB22E5NG000015',
+                    issue: 'Battery system diagnostic',
+                    diagnosis: 'Battery cells showing reduced capacity',
+                    solution: 'Battery replacement recommended',
+                    cost: 2500,
+                    startDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+                    completionDate: null,
+                    status: 'in_progress',
+                    assignedMechanic: 'John Smith',
+                    priority: 'high'
+                },
+                {
+                    id: 'repair-2',
+                    carId: 'car-23',
+                    carModel: 'Voyah FREE',
+                    vinNumber: 'LVGBB22E5NG000023',
+                    issue: 'Software update required',
+                    diagnosis: 'Outdated software version detected',
+                    solution: 'System software update',
+                    cost: 150,
+                    startDate: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+                    completionDate: null,
+                    status: 'in_progress',
+                    assignedMechanic: 'Sarah Johnson',
+                    priority: 'medium'
+                },
+                {
+                    id: 'repair-3',
+                    carId: 'car-45',
+                    carModel: 'Voyah PASSION',
+                    vinNumber: 'LVGBB22E5NG000045',
+                    issue: 'Routine maintenance',
+                    diagnosis: 'Regular service check',
+                    solution: 'Oil change and filter replacement',
+                    cost: 200,
+                    startDate: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString(),
+                    completionDate: null,
+                    status: 'in_progress',
+                    assignedMechanic: 'Mike Wilson',
+                    priority: 'low'
+                },
+                {
+                    id: 'repair-4',
+                    carId: 'car-67',
+                    carModel: 'Voyah HERO',
+                    vinNumber: 'LVGBB22E5NG000067',
+                    issue: 'Performance optimization',
+                    diagnosis: 'System performance analysis',
+                    solution: 'Software optimization and calibration',
+                    cost: 300,
+                    startDate: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+                    completionDate: null,
+                    status: 'in_progress',
+                    assignedMechanic: 'Lisa Chen',
+                    priority: 'high'
+                }
+            ],
+            
+            userActivity: [
+                {
+                    id: 'activity-1',
+                    userId: 'user-1',
+                    userName: 'Maria Santos',
+                    action: 'test_drive_scheduled',
+                    details: 'Scheduled test drive for Voyah FREE',
+                    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                    section: 'Sales'
+                },
+                {
+                    id: 'activity-2',
+                    userId: 'user-2',
+                    userName: 'John Smith',
+                    action: 'repair_started',
+                    details: 'Started battery diagnostic on Voyah DREAM',
+                    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+                    section: 'Garage'
+                },
+                {
+                    id: 'activity-3',
+                    userId: 'user-3',
+                    userName: 'Carlos Rodriguez',
+                    action: 'car_sold',
+                    details: 'Sold Voyah PASSION to client',
+                    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+                    section: 'Sales'
+                },
+                {
+                    id: 'activity-4',
+                    userId: 'user-4',
+                    userName: 'Sarah Johnson',
+                    action: 'software_update',
+                    details: 'Updated software on Voyah FREE',
+                    timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+                    section: 'IT'
+                }
+            ],
+            
+            timeTracking: [
+                {
+                    id: 'time-1',
+                    userId: 'user-1',
+                    userName: 'Maria Santos',
+                    activityType: 'sales_consultation',
+                    startTime: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+                    endTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                    duration: 60,
+                    notes: 'Client consultation for Voyah FREE'
+                },
+                {
+                    id: 'time-2',
+                    userId: 'user-2',
+                    userName: 'John Smith',
+                    activityType: 'repair_work',
+                    startTime: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
+                    endTime: new Date(Date.now() - 23 * 60 * 60 * 1000).toISOString(),
+                    duration: 120,
+                    notes: 'Battery diagnostic work'
+                },
+                {
+                    id: 'time-3',
+                    userId: 'user-3',
+                    userName: 'Carlos Rodriguez',
+                    activityType: 'test_drive',
+                    startTime: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+                    endTime: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+                    duration: 60,
+                    notes: 'Test drive with client'
+                },
+                {
+                    id: 'time-4',
+                    userId: 'user-4',
+                    userName: 'Sarah Johnson',
+                    activityType: 'maintenance',
+                    startTime: new Date(Date.now() - 13 * 60 * 60 * 1000).toISOString(),
+                    endTime: new Date(Date.now() - 11 * 60 * 60 * 1000).toISOString(),
+                    duration: 120,
+                    notes: 'Software update and maintenance'
+                }
+            ],
+            
+            toolsEquipment: [
+                {
+                    id: 'tool-1',
+                    name: 'Battery Diagnostic Tool',
+                    type: 'Diagnostic Equipment',
+                    location: 'Garage',
+                    condition: 'Excellent',
+                    purchaseDate: '2023-01-15',
+                    purchasePrice: 2500,
+                    currentValue: 2200,
+                    assignedTo: 'John Smith',
+                    isActive: true,
+                    lastMaintenance: '2024-01-15',
+                    nextMaintenance: '2024-07-15'
+                },
+                {
+                    id: 'tool-2',
+                    name: 'Software Update Station',
+                    type: 'Computer Equipment',
+                    location: 'IT Department',
+                    condition: 'Good',
+                    purchaseDate: '2023-06-20',
+                    purchasePrice: 1800,
+                    currentValue: 1500,
+                    assignedTo: 'IT Team',
+                    isActive: true,
+                    lastMaintenance: '2024-02-01',
+                    nextMaintenance: '2024-08-01'
+                },
+                {
+                    id: 'tool-3',
+                    name: 'Performance Testing Equipment',
+                    type: 'Testing Equipment',
+                    location: 'Garage',
+                    condition: 'Good',
+                    purchaseDate: '2023-03-10',
+                    purchasePrice: 3200,
+                    currentValue: 2800,
+                    assignedTo: 'Mike Wilson',
+                    isActive: true,
+                    lastMaintenance: '2024-03-01',
+                    nextMaintenance: '2024-09-01'
+                },
+                {
+                    id: 'tool-4',
+                    name: 'Calibration Device',
+                    type: 'Calibration Equipment',
+                    location: 'IT Department',
+                    condition: 'Excellent',
+                    purchaseDate: '2023-08-05',
+                    purchasePrice: 1500,
+                    currentValue: 1300,
+                    assignedTo: 'Lisa Chen',
+                    isActive: true,
+                    lastMaintenance: '2024-01-20',
+                    nextMaintenance: '2024-07-20'
+                }
+            ]
+        };
+
+        function restoreAllMockData() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            try {
+                console.log('🔄 Restoring 100 cars and comprehensive mock data...');
+                
+                // Store all mock data
+                Object.keys(mockData).forEach(key => {
+                    localStorage.setItem(key, JSON.stringify(mockData[key]));
+                    console.log(`✅ Restored ${key}: ${mockData[key].length} items`);
+                });
+                
+                // Additional data
+                localStorage.setItem('clientComments', JSON.stringify([
+                    {
+                        id: 'comment-1',
+                        clientName: 'Ahmed Hassan',
+                        carModel: 'Voyah FREE',
+                        comment: 'Excellent vehicle, very satisfied with the test drive',
+                        category: 'positive',
+                        date: new Date().toISOString()
+                    },
+                    {
+                        id: 'comment-2',
+                        clientName: 'Fatima Al-Zahra',
+                        carModel: 'Voyah DREAM',
+                        comment: 'Great performance and comfortable interior',
+                        category: 'positive',
+                        date: new Date().toISOString()
+                    },
+                    {
+                        id: 'comment-3',
+                        clientName: 'Omar Khalil',
+                        carModel: 'Voyah PASSION',
+                        comment: 'Amazing driving experience, highly recommended',
+                        category: 'positive',
+                        date: new Date().toISOString()
+                    },
+                    {
+                        id: 'comment-4',
+                        clientName: 'Layla Mansour',
+                        carModel: 'Voyah HERO',
+                        comment: 'Premium quality and outstanding performance',
+                        category: 'positive',
+                        date: new Date().toISOString()
+                    }
+                ]));
+                
+                localStorage.setItem('orderedCars', JSON.stringify([
+                    {
+                        id: 'order-1',
+                        model: 'Voyah DREAM',
+                        quantity: 5,
+                        expectedDelivery: '2024-08-15',
+                        status: 'ordered',
+                        orderDate: new Date().toISOString()
+                    },
+                    {
+                        id: 'order-2',
+                        model: 'Voyah FREE',
+                        quantity: 3,
+                        expectedDelivery: '2024-08-20',
+                        status: 'ordered',
+                        orderDate: new Date().toISOString()
+                    },
+                    {
+                        id: 'order-3',
+                        model: 'Voyah PASSION',
+                        quantity: 2,
+                        expectedDelivery: '2024-08-25',
+                        status: 'ordered',
+                        orderDate: new Date().toISOString()
+                    }
+                ]));
+                
+                localStorage.setItem('orderedParts', JSON.stringify([
+                    {
+                        id: 'part-order-1',
+                        partNumber: 'BAT-001',
+                        partName: 'Battery Pack',
+                        quantity: 3,
+                        expectedDelivery: '2024-08-10',
+                        status: 'ordered',
+                        orderDate: new Date().toISOString()
+                    },
+                    {
+                        id: 'part-order-2',
+                        partNumber: 'SW-001',
+                        partName: 'Software Module',
+                        quantity: 5,
+                        expectedDelivery: '2024-08-12',
+                        status: 'ordered',
+                        orderDate: new Date().toISOString()
+                    },
+                    {
+                        id: 'part-order-3',
+                        partNumber: 'SENSOR-001',
+                        partName: 'Performance Sensor',
+                        quantity: 2,
+                        expectedDelivery: '2024-08-18',
+                        status: 'ordered',
+                        orderDate: new Date().toISOString()
+                    }
+                ]));
+                
+                status.innerHTML = `
+                    <div class="success">
+                        <strong>🔄 100 CARS & COMPREHENSIVE MOCK DATA RESTORED!</strong>
+                        <br><br>
+                        <div class="data-section">
+                            <strong>📊 Data Summary:</strong>
+                            <br>• Total Cars: ${allCars.length} vehicles
+                            <br>• Car Inventory: ${mockData.carInventory.length} cars
+                            <br>• Showroom Floor 1: ${mockData.showroomFloor1Cars.length} cars
+                            <br>• Showroom Floor 2: ${mockData.showroomFloor2Cars.length} cars
+                            <br>• Garage Cars: ${mockData.garageCars.length} cars
+                            <br>• Inventory Floor 2: ${mockData.inventoryFloor2Cars.length} cars
+                            <br>• Garage Schedule: ${mockData.garageSchedule.length} appointments
+                            <br>• Test Drive Logs: ${mockData.testDriveLogs.length} records
+                            <br>• Repair History: ${mockData.repairHistory.length} records
+                            <br>• User Activity: ${mockData.userActivity.length} records
+                            <br>• Time Tracking: ${mockData.timeTracking.length} records
+                            <br>• Tools & Equipment: ${mockData.toolsEquipment.length} items
+                        </div>
+                        <br><strong>✅ All sections now have extensive mock data with 100 cars!</strong>
+                    </div>
+                `;
+                
+                // Redirect to app after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 3000);
+                
+            } catch (error) {
+                status.innerHTML = `
+                    <div class="warning">
+                        <strong>❌ Error restoring mock data:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function restoreSpecificSection(section) {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            try {
+                let restoredData = {};
+                
+                switch(section) {
+                    case 'showroom':
+                        restoredData = {
+                            showroomFloor1Cars: mockData.showroomFloor1Cars,
+                            showroomFloor2Cars: mockData.showroomFloor2Cars
+                        };
+                        break;
+                    case 'garage':
+                        restoredData = {
+                            garageCars: mockData.garageCars,
+                            garageSchedule: mockData.garageSchedule,
+                            repairHistory: mockData.repairHistory
+                        };
+                        break;
+                    case 'inventory':
+                        restoredData = {
+                            carInventory: mockData.carInventory,
+                            inventoryFloor2Cars: mockData.inventoryFloor2Cars
+                        };
+                        break;
+                }
+                
+                Object.keys(restoredData).forEach(key => {
+                    localStorage.setItem(key, JSON.stringify(restoredData[key]));
+                    console.log(`✅ Restored ${key}: ${restoredData[key].length} items`);
+                });
+                
+                status.innerHTML = `
+                    <div class="success">
+                        <strong>✅ ${section.toUpperCase()} DATA RESTORED!</strong>
+                        <br>• Restored ${Object.keys(restoredData).length} sections
+                        <br>• Total items: ${Object.values(restoredData).reduce((sum, arr) => sum + arr.length, 0)}
+                    </div>
+                `;
+                
+            } catch (error) {
+                status.innerHTML = `
+                    <div class="warning">
+                        <strong>❌ Error restoring ${section} data:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function checkCurrentData() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            const dataKeys = [
+                'carInventory', 'showroomFloor1Cars', 'showroomFloor2Cars', 
+                'garageCars', 'inventoryFloor2Cars', 'garageSchedule', 
+                'testDriveLogs', 'repairHistory', 'userActivity', 
+                'timeTracking', 'toolsEquipment'
+            ];
+            
+            let html = '<h3>📊 Current Data Status:</h3>';
+            
+            dataKeys.forEach(key => {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        html += `<div class="data-section">
+                            <strong>${key}:</strong> ${Array.isArray(parsed) ? parsed.length + ' items' : 'data exists'}
+                        </div>`;
+                    } catch (e) {
+                        html += `<div class="data-section">
+                            <strong>${key}:</strong> string data exists
+                        </div>`;
+                    }
+                } else {
+                    html += `<div class="data-section">
+                        <strong>${key}:</strong> <span style="color: #ef4444;">No data</span>
+                    </div>`;
+                }
+            });
+            
+            status.innerHTML = html;
+        }
+        
+        function goToApp() {
+            window.location.href = '/';
+        }
+        
+        // Auto-check data on page load
+        window.onload = function() {
+            checkCurrentData();
+        };
+    </script>
+</body>
+</html> 

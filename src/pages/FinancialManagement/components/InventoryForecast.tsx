@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, TrendingUp, AlertTriangle, Clock } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Clock } from 'lucide-react';
 
 interface CarFinancialData {
   id: string;

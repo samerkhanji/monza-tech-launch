@@ -160,6 +160,7 @@ const ShowroomPage: React.FC = () => {
                 <TableHead>Model</TableHead>
                 <TableHead>VIN Number</TableHead>
                 <TableHead>Color</TableHead>
+                <TableHead>Color interior</TableHead>
                 <TableHead>Entry Date</TableHead>
                 <TableHead>Notes</TableHead>
                 <TableHead>Status</TableHead>
@@ -177,6 +178,7 @@ const ShowroomPage: React.FC = () => {
                       {car.vinNumber}
                     </TableCell>
                     <TableCell>{car.color}</TableCell>
+                    <TableCell>{(car as any).interiorColor || (car as any).interior_color || '-'}</TableCell>
                     <TableCell>{formatDate(car.showroomEntryDate)}</TableCell>
                     <TableCell>
                       {car.showroomNote ? (

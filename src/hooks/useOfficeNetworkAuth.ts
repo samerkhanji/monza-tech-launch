@@ -10,6 +10,7 @@ import {
   shouldAllowAccess
 } from '@/config/networkConfig';
 import AccessNotificationService from '@/services/accessNotificationService';
+import DeviceTrustService from '@/services/deviceTrustService';
 
 interface UseOfficeNetworkAuthReturn {
   isAuthorized: boolean;
@@ -42,6 +43,7 @@ export const useOfficeNetworkAuth = (): UseOfficeNetworkAuthReturn => {
   const [pendingRequest, setPendingRequest] = useState(false);
 
   const notificationService = AccessNotificationService.getInstance();
+  const deviceTrust = DeviceTrustService.getInstance();
 
   const checkAuthorization = useCallback(async () => {
     setIsLoading(true);
@@ -68,6 +70,18 @@ export const useOfficeNetworkAuth = (): UseOfficeNetworkAuthReturn => {
       setNetworkInfo(info);
 
       if (info && user) {
+        // If owner has trusted this device, allow immediately
+        if (user.role?.toUpperCase() === 'OWNER' && deviceTrust.isTrustedOwnerDevice(user.id)) {
+          setIsAuthorized(true);
+          setAccessStatus({
+            allowed: true,
+            reason: 'Trusted owner device',
+            requiresNotification: false,
+            notificationMessage: '',
+          });
+          setNetworkConfig(DEFAULT_OFFICE_NETWORK);
+          return;
+        }
         // Check if this is the default office network
         const isOfficeNetwork = isInDefaultOfficeNetwork(info.ip);
         const config = getNetworkConfigForIP(info.ip);

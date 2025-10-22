@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load Mock Data - Monza Tech</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Load Mock Data - Monza Tech</h1>
+        <p>This will load 100 cars of mock data into your application.</p>
+        
+        <button class="button" onclick="loadMockData()">Load 100 Cars Mock Data</button>
+        <button class="button" onclick="checkCurrentData()">Check Current Data</button>
+        <button class="button" onclick="goToApp()">Go to Application</button>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        // Generate 100 cars with realistic data
+        function generateMockCars() {
+            const models = ['Voyah FREE', 'Voyah DREAM', 'Voyah PASSION', 'Voyah HERO', 'Voyah COURAGE'];
+            const colors = ['White', 'Black', 'Red', 'Blue', 'Silver', 'Green', 'Yellow', 'Orange', 'Purple', 'Gray'];
+            const statuses = ['available', 'reserved', 'sold', 'maintenance', 'in_stock'];
+            const categories = ['EV', 'REV', 'ICEV'];
+            const locations = ['car_inventory', 'showroom_floor_1', 'showroom_floor_2', 'garage', 'inventory_floor_2'];
+            
+            const cars = [];
+            
+            for (let i = 1; i <= 100; i++) {
+                const model = models[Math.floor(Math.random() * models.length)];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                const category = categories[Math.floor(Math.random() * categories.length)];
+                const location = locations[Math.floor(Math.random() * locations.length)];
+                
+                // Generate realistic VIN
+                const vinNumber = `LVGBB22E5NG${String(i).padStart(6, '0')}`;
+                
+                // Generate realistic price based on model
+                let basePrice = 45000;
+                if (model === 'Voyah DREAM') basePrice = 52000;
+                else if (model === 'Voyah PASSION') basePrice = 48000;
+                else if (model === 'Voyah HERO') basePrice = 55000;
+                else if (model === 'Voyah COURAGE') basePrice = 58000;
+                
+                const price = basePrice + Math.floor(Math.random() * 5000);
+                const batteryPercentage = Math.floor(Math.random() * 40) + 60; // 60-100%
+                const range = 500 + Math.floor(Math.random() * 100); // 500-600km
+                
+                const car = {
+                    id: `car-${i}`,
+                    vinNumber: vinNumber,
+                    model: model,
+                    brand: 'Voyah',
+                    year: 2024,
+                    color: color,
+                    price: price,
+                    batteryPercentage: batteryPercentage,
+                    range: range,
+                    status: status,
+                    customs: Math.random() > 0.2 ? 'paid' : 'not paid',
+                    pdiStatus: Math.random() > 0.3 ? 'completed' : 'pending',
+                    category: category,
+                    currentLocation: location,
+                    lastUpdated: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    testDriveInfo: null,
+                    pdiCompleted: Math.random() > 0.3,
+                    softwareVersion: Math.random() > 0.2 ? `2.${Math.floor(Math.random() * 10)}.${Math.floor(Math.random() * 10)}` : null,
+                    softwareLastUpdated: Math.random() > 0.2 ? new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() : null,
+                    softwareUpdateBy: Math.random() > 0.2 ? 'IT Team' : null,
+                    softwareUpdateNotes: Math.random() > 0.5 ? 'Latest security patch applied' : null
+                };
+                
+                // Add garage-specific fields for garage cars
+                if (location === 'garage') {
+                    car.assignedMechanic = ['John Smith', 'Sarah Johnson', 'Mike Wilson', 'Lisa Chen'][Math.floor(Math.random() * 4)];
+                    car.repairNotes = ['Battery diagnostic in progress', 'Software update required', 'Routine maintenance', 'Customer reported issue'][Math.floor(Math.random() * 4)];
+                }
+                
+                cars.push(car);
+            }
+            
+            return cars;
+        }
+
+        // Generate comprehensive mock data
+        const allCars = generateMockCars();
+        
+        const mockData = {
+            carInventory: allCars.filter(car => car.currentLocation === 'car_inventory'),
+            showroomFloor1Cars: allCars.filter(car => car.currentLocation === 'showroom_floor_1'),
+            showroomFloor2Cars: allCars.filter(car => car.currentLocation === 'showroom_floor_2'),
+            garageCars: allCars.filter(car => car.currentLocation === 'garage'),
+            inventoryFloor2Cars: allCars.filter(car => car.currentLocation === 'inventory_floor_2'),
+            
+            garageSchedule: [
+                {
+                    id: 'schedule-1',
+                    carId: 'car-15',
+                    carCode: 'LVGBB22E5NG000015',
+                    carModel: 'Voyah DREAM',
+                    startTime: '09:00',
+                    endTime: '17:00',
+                    date: new Date().toISOString().split('T')[0],
+                    status: 'in_progress',
+                    assignedMechanic: 'John Smith',
+                    workType: 'Battery Diagnostic',
+                    priority: 'high',
+                    notes: 'Customer reported battery issues'
+                }
+            ],
+            
+                               testDriveLogs: [
+                       {
+                           id: 'td-1',
+                           carId: 'car-8',
+                           carVin: 'LVGBB22E5NG000008',
+                           carModel: 'Voyah FREE',
+                           carBrand: 'Voyah',
+                           carYear: 2024,
+                           carColor: 'White',
+                           testDriveType: 'client',
+                           driverName: 'Alice Johnson',
+                           driverPhone: '+1234567890',
+                           driverLicense: 'DL123456789',
+                           employeeName: 'John Smith',
+                           loggedBy: 'John Smith',
+                           startTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                           endTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString(),
+                           expectedEndTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000).toISOString(),
+                           duration: '60',
+                           expectedDuration: 30,
+                           status: 'completed',
+                           location: 'Showroom Floor 1',
+                           purpose: 'Client test drive',
+                           notes: 'Client very interested in the vehicle',
+                           batteryStart: 85,
+                           batteryEnd: 82,
+                           route: 'Local test route',
+                           createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+                       },
+                       {
+                           id: 'td-2',
+                           carId: 'car-15',
+                           carVin: 'LVGBB22E5NG000015',
+                           carModel: 'Voyah DREAM',
+                           carBrand: 'Voyah',
+                           carYear: 2024,
+                           carColor: 'Blue',
+                           testDriveType: 'client',
+                           driverName: 'Bob Wilson',
+                           driverPhone: '+1987654321',
+                           driverLicense: 'DL987654321',
+                           employeeName: 'Sarah Johnson',
+                           loggedBy: 'Sarah Johnson',
+                           startTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                           endTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000 + 45 * 60 * 1000).toISOString(),
+                           expectedEndTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000).toISOString(),
+                           duration: '45',
+                           expectedDuration: 30,
+                           status: 'completed',
+                           location: 'Showroom Floor 2',
+                           purpose: 'Extended test drive',
+                           notes: 'Client took longer than expected',
+                           batteryStart: 92,
+                           batteryEnd: 88,
+                           route: 'Extended test route',
+                           createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+                       },
+                       {
+                           id: 'td-3',
+                           carId: 'car-22',
+                           carVin: 'LVGBB22E5NG000022',
+                           carModel: 'Voyah PASSION',
+                           carBrand: 'Voyah',
+                           carYear: 2024,
+                           carColor: 'Red',
+                           testDriveType: 'employee',
+                           driverName: 'Mike Chen',
+                           driverPhone: '+1555123456',
+                           driverLicense: 'DL555123456',
+                           employeeName: 'Mike Chen',
+                           loggedBy: 'Lisa Wang',
+                           startTime: new Date().toISOString(),
+                           expectedEndTime: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+                           duration: undefined,
+                           expectedDuration: 15,
+                           status: 'active',
+                           location: 'Main Inventory',
+                           purpose: 'Employee training',
+                           notes: 'Training new employee on vehicle features',
+                           batteryStart: 78,
+                           batteryEnd: undefined,
+                           route: 'Training route',
+                           createdAt: new Date().toISOString()
+                       },
+                       {
+                           id: 'td-4',
+                           carId: 'car-33',
+                           carVin: 'LVGBB22E5NG000033',
+                           carModel: 'Voyah HERO',
+                           carBrand: 'Voyah',
+                           carYear: 2024,
+                           carColor: 'Black',
+                           testDriveType: 'client',
+                           driverName: 'Emma Davis',
+                           driverPhone: '+1444333222',
+                           driverLicense: 'DL444333222',
+                           employeeName: 'Tom Brown',
+                           loggedBy: 'Tom Brown',
+                           startTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+                           expectedEndTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+                           duration: undefined,
+                           expectedDuration: 60,
+                           status: 'overdue',
+                           location: 'Showroom Floor 1',
+                           purpose: 'Client evaluation',
+                           notes: 'Client evaluating multiple features',
+                           batteryStart: 95,
+                           batteryEnd: undefined,
+                           route: 'Extended evaluation route',
+                           createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+                           isOverdue: true,
+                           overdueBy: '30 minutes'
+                       }
+                   ],
+            
+            repairHistory: [
+                {
+                    id: 'repair-1',
+                    carId: 'car-15',
+                    carVin: 'LVGBB22E5NG000015',
+                    carModel: 'Voyah DREAM',
+                    repairDate: new Date().toISOString().split('T')[0],
+                    mechanic: 'John Smith',
+                    issue: 'Battery system malfunction',
+                    solution: 'Battery diagnostic and calibration',
+                    status: 'in_progress',
+                    cost: 150,
+                    notes: 'Customer reported slow charging'
+                }
+            ],
+            
+            userActivity: [
+                {
+                    id: 'activity-1',
+                    userId: 'user-1',
+                    userName: 'Admin User',
+                    action: 'login',
+                    section: 'dashboard',
+                    timestamp: new Date().toISOString(),
+                    details: 'User logged into the system'
+                }
+            ],
+            
+            timeTracking: [
+                {
+                    id: 'time-1',
+                    userId: 'user-1',
+                    userName: 'Admin User',
+                    date: new Date().toISOString().split('T')[0],
+                    startTime: '09:00',
+                    endTime: '17:00',
+                    activityType: 'work',
+                    description: 'Regular work day',
+                    totalHours: 8
+                }
+            ],
+            
+                               toolsEquipment: [
+                       {
+                           id: 'tool-1',
+                           name: 'Battery Diagnostic Tool',
+                           type: 'Diagnostic Equipment',
+                           location: 'Garage',
+                           condition: 'Excellent',
+                           purchaseDate: '2023-01-15',
+                           purchasePrice: 2500,
+                           currentValue: 2200,
+                           assignedTo: 'John Smith',
+                           isActive: true,
+                           lastMaintenance: '2024-01-15',
+                           nextMaintenance: '2024-07-15'
+                       }
+                   ],
+                   
+                   partsInventory: [
+                       {
+                           id: 'part-1',
+                           partNumber: 'VY-BAT-001',
+                           name: 'Voyah Battery Pack',
+                           category: 'Battery System',
+                           subcategory: 'Battery Packs',
+                           brand: 'Voyah',
+                           model: 'All Models',
+                           price: 2500,
+                           cost: 2000,
+                           quantity: 15,
+                           minQuantity: 5,
+                           location: 'Warehouse A',
+                           supplier: 'Voyah OEM',
+                           compatibility: ['Voyah FREE', 'Voyah DREAM', 'Voyah PASSION', 'Voyah HERO', 'Voyah COURAGE'],
+                           status: 'in_stock',
+                           lastUpdated: new Date().toISOString()
+                       },
+                       {
+                           id: 'part-2',
+                           partNumber: 'VY-BRAKE-001',
+                           name: 'Brake Pad Set',
+                           category: 'Brake System',
+                           subcategory: 'Brake Pads',
+                           brand: 'Voyah',
+                           model: 'All Models',
+                           price: 120,
+                           cost: 80,
+                           quantity: 45,
+                           minQuantity: 10,
+                           location: 'Warehouse B',
+                           supplier: 'BrakeTech Inc',
+                           compatibility: ['Voyah FREE', 'Voyah DREAM', 'Voyah PASSION', 'Voyah HERO', 'Voyah COURAGE'],
+                           status: 'in_stock',
+                           lastUpdated: new Date().toISOString()
+                       },
+                       {
+                           id: 'part-3',
+                           partNumber: 'VY-SOFT-001',
+                           name: 'Software Update Package',
+                           category: 'Software',
+                           subcategory: 'System Updates',
+                           brand: 'Voyah',
+                           model: 'All Models',
+                           price: 75,
+                           cost: 25,
+                           quantity: 100,
+                           minQuantity: 20,
+                           location: 'Digital',
+                           supplier: 'Voyah IT',
+                           compatibility: ['Voyah FREE', 'Voyah DREAM', 'Voyah PASSION', 'Voyah HERO', 'Voyah COURAGE'],
+                           status: 'in_stock',
+                           lastUpdated: new Date().toISOString()
+                       },
+                       {
+                           id: 'part-4',
+                           partNumber: 'VY-AC-001',
+                           name: 'AC Compressor',
+                           category: 'Climate Control',
+                           subcategory: 'AC Components',
+                           brand: 'Voyah',
+                           model: 'All Models',
+                           price: 450,
+                           cost: 300,
+                           quantity: 8,
+                           minQuantity: 3,
+                           location: 'Warehouse A',
+                           supplier: 'ClimateTech',
+                           compatibility: ['Voyah FREE', 'Voyah DREAM', 'Voyah PASSION', 'Voyah HERO', 'Voyah COURAGE'],
+                           status: 'in_stock',
+                           lastUpdated: new Date().toISOString()
+                       },
+                       {
+                           id: 'part-5',
+                           partNumber: 'VY-NAV-001',
+                           name: 'Navigation Module',
+                           category: 'Electronics',
+                           subcategory: 'Navigation',
+                           brand: 'Voyah',
+                           model: 'All Models',
+                           price: 200,
+                           cost: 120,
+                           quantity: 25,
+                           minQuantity: 5,
+                           location: 'Warehouse B',
+                           supplier: 'NavTech Solutions',
+                           compatibility: ['Voyah FREE', 'Voyah DREAM', 'Voyah PASSION', 'Voyah HERO', 'Voyah COURAGE'],
+                           status: 'in_stock',
+                           lastUpdated: new Date().toISOString()
+                       }
+                   ],
+                   
+                   orderedParts: [
+                       {
+                           id: 'order-1',
+                           part_name: 'Voyah Battery Pack',
+                           part_number: 'VY-BAT-001',
+                           quantity: 10,
+                           supplier: 'Voyah OEM',
+                           order_reference: 'ORD-2025-001',
+                           order_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+                           expected_delivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+                           estimated_eta: '3 days',
+                           status: 'ordered',
+                           price: 2500,
+                           shipping_company: 'DHL Express',
+                           tracking_code: 'DHL123456789',
+                           notes: 'Priority order for upcoming repairs',
+                           created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+                           updated_at: new Date().toISOString(),
+                           category: 'voyah'
+                       },
+                       {
+                           id: 'order-2',
+                           part_name: 'Brake Pad Set',
+                           part_number: 'VY-BRAKE-001',
+                           quantity: 25,
+                           supplier: 'BrakeTech Inc',
+                           order_reference: 'ORD-2025-002',
+                           order_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                           expected_delivery: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
+                           estimated_eta: '1 day',
+                           status: 'in_transit',
+                           price: 120,
+                           shipping_company: 'FedEx',
+                           tracking_code: 'FX987654321',
+                           notes: 'Regular maintenance stock',
+                           created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                           updated_at: new Date().toISOString(),
+                           category: 'voyah'
+                       },
+                       {
+                           id: 'order-3',
+                           part_name: 'AC Compressor',
+                           part_number: 'VY-AC-001',
+                           quantity: 5,
+                           supplier: 'ClimateTech',
+                           order_reference: 'ORD-2025-003',
+                           order_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                           expected_delivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+                           estimated_eta: '2 days',
+                           status: 'ordered',
+                           price: 450,
+                           shipping_company: 'UPS',
+                           tracking_code: 'UPS456789123',
+                           notes: 'Emergency order for customer repairs',
+                           created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                           updated_at: new Date().toISOString(),
+                           category: 'voyah'
+                       },
+                       {
+                           id: 'order-4',
+                           part_name: 'Engine Oil Filter',
+                           part_number: 'ICEV-OIL-001',
+                           quantity: 50,
+                           supplier: 'OilTech Solutions',
+                           order_reference: 'ORD-2025-004',
+                           order_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                           expected_delivery: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
+                           estimated_eta: '1 day',
+                           status: 'delivered',
+                           price: 15,
+                           shipping_company: 'Local Delivery',
+                           tracking_code: 'LD789123456',
+                           notes: 'Bulk order for ICEV maintenance',
+                           created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                           updated_at: new Date().toISOString(),
+                           category: 'normal_engine'
+                       },
+                       {
+                           id: 'order-5',
+                           part_name: 'Navigation Module',
+                           part_number: 'VY-NAV-001',
+                           quantity: 8,
+                           supplier: 'NavTech Solutions',
+                           order_reference: 'ORD-2025-005',
+                           order_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                           expected_delivery: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
+                           estimated_eta: '4 days',
+                           status: 'ordered',
+                           price: 200,
+                           shipping_company: 'DHL Express',
+                           tracking_code: 'DHL987654321',
+                           notes: 'Replacement for defective units',
+                           created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                           updated_at: new Date().toISOString(),
+                           category: 'voyah'
+                       }
+                   ]
+        };
+
+        function loadMockData() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            try {
+                console.log('🔄 Loading 100 cars and comprehensive mock data...');
+                
+                // Store all mock data
+                Object.keys(mockData).forEach(key => {
+                    localStorage.setItem(key, JSON.stringify(mockData[key]));
+                    console.log(`✅ Loaded ${key}: ${mockData[key].length} items`);
+                });
+                
+                status.innerHTML = `
+                    <div class="success">
+                        <strong>✅ MOCK DATA LOADED SUCCESSFULLY!</strong>
+                        <br>• Loaded 100 cars total
+                        <br>• Distributed across 5 locations
+                        <br>• Includes garage schedule, test drives, repair history, and more
+                        <br><br>
+                                                       <strong>Data Summary:</strong>
+                               <br>• Car Inventory: ${mockData.carInventory.length} cars
+                               <br>• Showroom Floor 1: ${mockData.showroomFloor1Cars.length} cars
+                               <br>• Showroom Floor 2: ${mockData.showroomFloor2Cars.length} cars
+                               <br>• Garage: ${mockData.garageCars.length} cars
+                               <br>• Inventory Floor 2: ${mockData.inventoryFloor2Cars.length} cars
+                               <br>• Parts Inventory: ${mockData.partsInventory.length} parts
+                               <br>• Ordered Parts: ${mockData.orderedParts.length} orders
+                    </div>
+                `;
+                
+            } catch (error) {
+                status.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Error loading mock data:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function checkCurrentData() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            
+            const dataKeys = [
+                'carInventory', 'showroomFloor1Cars', 'showroomFloor2Cars', 
+                'garageCars', 'inventoryFloor2Cars', 'garageSchedule', 
+                'testDriveLogs', 'repairHistory', 'userActivity', 
+                'timeTracking', 'toolsEquipment'
+            ];
+            
+            let html = '<h3>📊 Current Data Status:</h3>';
+            
+            dataKeys.forEach(key => {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        html += `<div class="data-section">
+                            <strong>${key}:</strong> ${Array.isArray(parsed) ? parsed.length + ' items' : 'data exists'}
+                        </div>`;
+                    } catch (e) {
+                        html += `<div class="data-section">
+                            <strong>${key}:</strong> string data exists
+                        </div>`;
+                    }
+                } else {
+                    html += `<div class="data-section">
+                        <strong>${key}:</strong> <span style="color: #ef4444;">No data</span>
+                    </div>`;
+                }
+            });
+            
+            status.innerHTML = html;
+        }
+        
+        function goToApp() {
+            window.location.href = '/';
+        }
+        
+        // Auto-check data on page load
+        window.onload = function() {
+            checkCurrentData();
+        };
+    </script>
+</body>
+</html> 

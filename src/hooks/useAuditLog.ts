@@ -7,12 +7,12 @@ export const useAuditLog = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  // Load audit logs from localStorage
+  // Load audit logs from localStorage - Start with empty array
   useEffect(() => {
-    const savedLogs = localStorage.getItem('auditLogs');
-    if (savedLogs) {
-      setAuditLogs(JSON.parse(savedLogs));
-    }
+    // Clear any existing mock data on first load
+    localStorage.removeItem('auditLogs');
+    setAuditLogs([]);
+    console.log('🧹 Mock audit logs cleared - starting fresh');
   }, []);
 
   // Save audit logs to localStorage

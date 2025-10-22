@@ -1,3 +1,5 @@
+import { safeLocalStorageGet } from '@/utils/errorHandling';
+
 interface WaitingCar {
   id: string;
   vinNumber: string;
@@ -163,7 +165,7 @@ export class CarWaitingService {
   
   private static getGarageCarsNeedingRepair(): WaitingCar[] {
     try {
-      const garageCars = JSON.parse(localStorage.getItem('garageCars') || '[]');
+      const garageCars = safeLocalStorageGet<any[]>('garageCars', []);
       return garageCars
         .filter((car: any) => car.garageStatus === 'awaiting_parts' || car.garageStatus === 'stored')
         .map((car: any) => ({
@@ -186,8 +188,8 @@ export class CarWaitingService {
   
   private static getShowroomCarsWithIssues(): WaitingCar[] {
     try {
-      const showroom1Cars = JSON.parse(localStorage.getItem('showroomFloor1Cars') || '[]');
-      const showroom2Cars = JSON.parse(localStorage.getItem('showroomFloor2Cars') || '[]');
+      const showroom1Cars = safeLocalStorageGet<any[]>('showroomFloor1Cars', []);
+      const showroom2Cars = safeLocalStorageGet<any[]>('showroomFloor2Cars', []);
       
       const allShowroomCars = [...showroom1Cars, ...showroom2Cars];
       
@@ -213,7 +215,7 @@ export class CarWaitingService {
   
   private static getInventoryCarsForRepair(): WaitingCar[] {
     try {
-      const inventoryCars = JSON.parse(localStorage.getItem('carInventory') || '[]');
+      const inventoryCars = safeLocalStorageGet<any[]>('carInventory', []);
       
       return inventoryCars
         .filter((car: any) => car.status === 'in_stock' && car.batteryPercentage < 50)

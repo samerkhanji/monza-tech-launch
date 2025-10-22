@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon, Download, FileText, TrendingUp, DollarSign, Clock, Wrench } from 'lucide-react';
+import { Download, FileText, TrendingUp, DollarSign, Clock, Wrench } from 'lucide-react';
 import { CustomCalendarIcon } from '@/components/icons/CustomCalendarIcon';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -129,7 +129,6 @@ const ReportGenerator: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CustomCalendarIcon className="h-5 w-5" />
                 Date Range
               </CardTitle>
               <CardDescription>
@@ -151,7 +150,6 @@ const ReportGenerator: React.FC = () => {
                           )}
                           style={{ zIndex: 9999 }}
                         >
-                          <CustomCalendarIcon className="mr-2 h-4 w-4" />
                           {criteria.dateRange.from ? format(criteria.dateRange.from, "PPP") : "Pick a date"}
                         </Button>
                       </PopoverTrigger>
@@ -182,7 +180,6 @@ const ReportGenerator: React.FC = () => {
                           )}
                           style={{ zIndex: 9999 }}
                         >
-                          <CustomCalendarIcon className="mr-2 h-4 w-4" />
                           {criteria.dateRange.to ? format(criteria.dateRange.to, "PPP") : "Pick a date"}
                         </Button>
                       </PopoverTrigger>

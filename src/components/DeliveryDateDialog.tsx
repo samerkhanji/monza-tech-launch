@@ -83,7 +83,7 @@ export const DeliveryDateDialog: React.FC<DeliveryDateDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-white border border-gray-300 shadow-xl" style={{ zIndex: 99999 }}>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-white border border-gray-300 shadow-xl">
         <DialogHeader className="border-b border-gray-200 pb-4">
           <DialogTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
             <Clock className="w-5 h-5 text-monza-yellow" />
@@ -174,7 +174,6 @@ export const DeliveryDateDialog: React.FC<DeliveryDateDialogProps> = ({
                   }}
                 />
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <CustomCalendarIcon className="w-5 h-5 text-yellow-600" />
                 </div>
               </div>
               {daysUntilDelivery !== null && (

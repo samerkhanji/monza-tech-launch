@@ -1,3 +1,5 @@
+import { TestDrivePurpose } from '@/types/purposeReason';
+
 interface TestDriveInfo {
   id?: string;
   isOnTestDrive: boolean;
@@ -8,7 +10,7 @@ interface TestDriveInfo {
   testDriverPhone: string;
   testDriverLicense: string;
   notes?: string;
-  purpose: string;
+  purpose: TestDrivePurpose;
   isClientTestDrive: boolean;
   loggedBy: string;
   loggedByName: string;

@@ -23,7 +23,7 @@ const RepairAnalytics: React.FC = () => {
   const { user } = useAuth();
 
   // If user is not an owner or garage manager, redirect to dashboard
-  if (user?.role !== 'owner' && user?.role !== 'garage_manager') {
+  if (user?.role?.toUpperCase() !== 'OWNER' && user?.role?.toLowerCase() !== 'garage_manager') {
     toast({
       title: "Access Denied",
       description: "Only owners and garage managers can access repair analytics.",
@@ -44,6 +44,8 @@ const RepairAnalytics: React.FC = () => {
         
         <div className="flex items-center gap-3">
           <select
+            id="periodFilter"
+            name="periodFilter"
             className="h-10 rounded-md border border-input bg-background px-3 py-2"
             value={period}
             onChange={(e) => setPeriod(e.target.value)}

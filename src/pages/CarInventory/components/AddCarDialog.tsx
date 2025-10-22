@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { Car, CalendarDays, User, Wrench, FileText, CheckCircle, Settings, Plus, Trash2, Package, Ruler, Zap, Gauge, Thermometer } from 'lucide-react';
+import { Car, User, Wrench, FileText, CheckCircle, Settings, Plus, Trash2, Package, Ruler, Zap, Gauge, Thermometer } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { TechnicalSpecification } from '../types';
 
@@ -345,7 +345,7 @@ export default function AddCarDialog({ onClose, onAdd }: AddCarDialogProps) {
   const getStepIcon = (step: string) => {
     switch (step) {
       case 'basic': return <Car className="h-4 w-4" />;
-      case 'location': return <CalendarDays className="h-4 w-4" />;
+      case 'location': return <Clock className="h-4 w-4" />;
       case 'tech': return <Settings className="h-4 w-4" />;
       case 'review': return <CheckCircle className="h-4 w-4" />;
       default: return <FileText className="h-4 w-4" />;

@@ -69,7 +69,7 @@ export const NetworkAccessManager: React.FC = () => {
         subnetMask: '255.255.255.0',
         gateway: newNetwork.networkAddress.replace('/24', '.1'),
         isActive: true,
-        allowedPorts: [5173, 3000, 8080],
+        allowedPorts: [5173, 5174, 5175, 3000, 8080],
         accessLevel: newNetwork.accessLevel,
         description: newNetwork.description,
         registeredBy: 'manual',
@@ -228,14 +228,14 @@ export const NetworkAccessManager: React.FC = () => {
                     Add Network
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>Add Authorized Network</DialogTitle>
                     <DialogDescription>
                       Add a new network to the authorized list
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4">
+                  <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                     <div>
                       <Label htmlFor="networkName">Network Name</Label>
                       <Input
@@ -243,6 +243,7 @@ export const NetworkAccessManager: React.FC = () => {
                         value={newNetwork.networkName}
                         onChange={(e) => setNewNetwork(prev => ({ ...prev, networkName: e.target.value }))}
                         placeholder="e.g., Office Network"
+                        className="h-10"
                       />
                     </div>
                     <div>
@@ -252,18 +253,26 @@ export const NetworkAccessManager: React.FC = () => {
                         value={newNetwork.networkAddress}
                         onChange={(e) => setNewNetwork(prev => ({ ...prev, networkAddress: e.target.value }))}
                         placeholder="e.g., 192.168.1.0/24"
+                        className="h-10"
                       />
                     </div>
-                    <div>
+                    <div className="network-access-dropdown">
                       <Label htmlFor="accessLevel">Access Level</Label>
                       <Select
                         value={newNetwork.accessLevel}
                         onValueChange={(value) => setNewNetwork(prev => ({ ...prev, accessLevel: value }))}
                       >
-                        <SelectTrigger>
-                          <SelectValue />
+                        <SelectTrigger id="accessLevel" className="h-10">
+                          <SelectValue placeholder="Select access level" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent 
+                          position="popper" 
+                          side="bottom" 
+                          align="start" 
+                          sideOffset={4}
+                          avoidCollisions={true}
+                          className="select-content-fixed"
+                        >
                           <SelectItem value="full">Full Access</SelectItem>
                           <SelectItem value="readonly">Read Only</SelectItem>
                           <SelectItem value="limited">Limited</SelectItem>
@@ -277,6 +286,7 @@ export const NetworkAccessManager: React.FC = () => {
                         value={newNetwork.description}
                         onChange={(e) => setNewNetwork(prev => ({ ...prev, description: e.target.value }))}
                         placeholder="Optional description"
+                        className="h-10"
                       />
                     </div>
                     <div className="flex gap-2">

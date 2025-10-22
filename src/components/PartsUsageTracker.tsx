@@ -328,7 +328,7 @@ const PartsUsageTracker: React.FC<PartsUsageTrackerProps> = ({
                   )}
                   {part.timestamp && (
                     <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
+                                              <Clock className="h-3 w-3" />
                       {new Date(part.timestamp).toLocaleString()}
                     </div>
                   )}

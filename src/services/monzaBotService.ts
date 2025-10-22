@@ -41,8 +41,8 @@ export const monzaBotService = {
             context: {
               ...context,
               userRole: user?.role,
-              canAccessAnalytics: user?.role === 'owner',
-              canAccessClientData: user?.role === 'owner' // Add client data access check
+              canAccessAnalytics: user?.role?.toUpperCase() === 'OWNER',
+              canAccessClientData: user?.role?.toUpperCase() === 'OWNER' // Add client data access check
             }
           }
         });
@@ -65,8 +65,8 @@ export const monzaBotService = {
             context: {
               ...context,
               userRole: user?.role,
-              canAccessAnalytics: user?.role === 'owner',
-              canAccessClientData: user?.role === 'owner' // Add client data access check
+              canAccessAnalytics: user?.role?.toUpperCase() === 'OWNER',
+              canAccessClientData: user?.role?.toUpperCase() === 'OWNER' // Add client data access check
             }
           }
         });
