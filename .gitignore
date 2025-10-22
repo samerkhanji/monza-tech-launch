@@ -33,6 +33,11 @@ node_modules/
 .DS_Store
 Thumbs.db
 
+# API Keys and secrets
+monzabot_claude_chat.py
+monzabot_claude.py
+Python installation setup.html
+
 # Logs
 *.log
 npm-debug.log*
